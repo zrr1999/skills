@@ -4,10 +4,30 @@ An Agent Skills collection for my own projects, to provide reusable workflows in
 
 ## Installation
 
-After you have the `skills` CLI installed locally or globally, you can install all skills from this repo:
+Prerequisite: install `bun` first.
+
+### One-click install
+
+Clone this repo locally, then run the installer:
 
 ```bash
-bunx skills add zrr1999/skills --skill "*"
+git clone https://github.com/zrr1999/skills.git
+cd skills
+bash install.sh
+```
+
+The script checks `bun`, resolves the repo-local `skills/` directory automatically, and then runs:
+
+```bash
+bunx skills add ./skills -g --skill "*" -y
+```
+
+### Manual install
+
+If you do not want to use the script, run the equivalent command directly from this repo:
+
+```bash
+bunx skills add ./skills -g --skill "*" -y
 ```
 
 ## 常用 Skills
