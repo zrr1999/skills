@@ -33,3 +33,23 @@
 
 - `✨ add(modern-tech): add modern-stack skill for my tech-stack`
 - `⬆️ update(paddle-pull-request): support multi template`
+
+## Cursor Cloud specific instructions
+
+This is a **content-only** repository of AI Agent Skills (Markdown files under `skills/`). There is no application code, build system, or test suite.
+
+### Key tool
+
+- The `skills` CLI (via `bunx skills`) is the only runtime tooling. It installs skill files into `~/.agents/skills/` for use by AI coding agents.
+- Bun must be installed (`~/.bun/bin/bun`). The update script handles this automatically.
+
+### Development workflow
+
+- Skills are authored as `skills/<skill-name>/SKILL.md` files with YAML front-matter (`name`, `description`) followed by Markdown content.
+- To test a skill locally: `bunx skills add ./skills -g -y --skill <skill-name>`
+- To install all skills from the local directory: `bunx skills add ./skills -g -y --skill "*"`
+- Always use `-y` flag to avoid interactive prompts in non-TTY environments.
+
+### No lint/test/build
+
+There are no lint, test, or build commands. Validation is limited to verifying that the `skills` CLI can parse and install the Markdown skill files.
