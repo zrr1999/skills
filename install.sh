@@ -2,13 +2,16 @@
 
 set -euo pipefail
 
-SCRIPT_PATH="${BASH_SOURCE[0]}"
-if [[ "$SCRIPT_PATH" == */* ]]; then
-  SCRIPT_DIR="$(cd -- "${SCRIPT_PATH%/*}" && pwd)"
-else
-  SCRIPT_DIR="$(pwd)"
+REPO_SOURCE="zrr1999/skills"
+SKILLS_SOURCE="$REPO_SOURCE"
+
+SCRIPT_PATH="${BASH_SOURCE[0]:-}"
+if [[ -n "$SCRIPT_PATH" && "$SCRIPT_PATH" == */* ]]; then
+  SCRIPT_DIR="$(cd -- "${SCRIPT_PATH%/*}" 2>/dev/null && pwd || true)"
+  if [[ -n "$SCRIPT_DIR" && -d "$SCRIPT_DIR/skills" ]]; then
+    SKILLS_SOURCE="$SCRIPT_DIR/skills"
+  fi
 fi
-SKILLS_DIR="$SCRIPT_DIR/skills"
 
 if ! command -v bun >/dev/null 2>&1; then
   echo "Error: bun is required but was not found in PATH." >&2
@@ -16,11 +19,6 @@ if ! command -v bun >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -d "$SKILLS_DIR" ]; then
-  echo "Error: skills directory not found: $SKILLS_DIR" >&2
-  exit 1
-fi
-
-echo "Installing skills from $SKILLS_DIR"
-bunx skills add "$SKILLS_DIR" -g --skill "*" -y
+echo "Installing skills from $SKILLS_SOURCE"
+bunx skills add "$SKILLS_SOURCE" -g --skill "*" -y
 echo "Done."

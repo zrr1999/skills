@@ -8,26 +8,24 @@ Prerequisite: install `bun` first.
 
 ### One-click install
 
-Clone this repo locally, then run the installer:
+Run the installer directly:
 
 ```bash
-git clone https://github.com/zrr1999/skills.git
-cd skills
-bash install.sh
+curl -fsSL https://raw.githubusercontent.com/zrr1999/skills/main/install.sh | bash
 ```
 
-The script checks `bun`, resolves the repo-local `skills/` directory automatically, and then runs:
+The script checks `bun` and installs all skills from this repo.
 
 ```bash
-bunx skills add ./skills -g --skill "*" -y
+bunx skills add zrr1999/skills -g --skill "*" -y
 ```
 
 ### Manual install
 
-If you do not want to use the script, run the equivalent command directly from this repo:
+If you do not want to use the script, run the equivalent command directly:
 
 ```bash
-bunx skills add ./skills -g --skill "*" -y
+bunx skills add zrr1999/skills -g --skill "*" -y
 ```
 
 ## 常用 Skills
@@ -40,6 +38,9 @@ bunx skills add anthropics/skills -g --skill skill-creator
 ## 本地开发
 
 ```bash
-# 从本地目录添加 skill（用于调试）
+# 在本地 clone 中执行安装脚本，脚本会自动使用仓库内的 ./skills
+bash install.sh
+
+# 或直接从本地目录添加 skill（用于调试）
 bunx skills add ./skills -g --skill unix-software-design
 ```
