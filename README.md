@@ -12,7 +12,7 @@ Run the installer directly:
 curl -fsSL https://raw.githubusercontent.com/zrr1999/skills/main/install.sh | bash
 ```
 
-The script installs `bun` automatically when needed, then installs all skills from this repo.
+The script installs `x-cmd`, uses it to provision a curated modern CLI toolbelt, adds the `gh-llm` GitHub CLI extension, then installs all skills from this repo.
 
 ```bash
 bunx skills add zrr1999/skills --all -g
@@ -31,13 +31,19 @@ bunx skills add zrr1999/skills --all -g
 ```bash
 # 添加全局可用的 skill
 bunx skills add anthropics/skills -g --skill skill-creator
+
+# 添加现代 CLI 工具使用指南
+bunx skills add ./skills -g --skill agent-cli-toolkit
 ```
 
 ## 本地开发
 
 ```bash
-# install.sh 总是安装已发布的 GitHub 仓库版本
+# 默认安装已发布的 GitHub 仓库版本
 bash install.sh
+
+# 调试本地未发布改动时，覆盖技能来源
+REPO_SOURCE=./skills bash install.sh
 
 # 调试本地未发布改动时，直接从本地目录添加
 bunx skills add ./skills -g --skill unix-software-design
