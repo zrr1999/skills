@@ -12,7 +12,7 @@ Run the installer directly:
 curl -fsSL https://raw.githubusercontent.com/zrr1999/skills/main/install.sh | bash
 ```
 
-The script installs `bun`, `uv`, and a curated modern CLI toolbelt automatically when needed, then installs all skills from this repo.
+The script installs `x-cmd`, uses it to provision a curated modern CLI toolbelt, adds `gh-llm`, then installs all skills from this repo.
 
 ```bash
 bunx skills add zrr1999/skills --all -g

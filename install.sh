@@ -3,35 +3,17 @@
 set -euo pipefail
 
 REPO_SOURCE="${REPO_SOURCE:-zrr1999/skills}"
-
-SYSTEM_PACKAGES=(curl ca-certificates git jq fzf duf git-lfs)
-CARGO_TOOLS=(
-  "bat:bat"
-  "fd-find:fd"
-  "ripgrep:rg"
-  "sd:sd"
-  "ast-grep:sg"
-  "lsd:lsd"
-  "bottom:btm"
-  "du-dust:dust"
-  "procs:procs"
-  "git-delta:delta"
-  "difftastic:difft"
-  "hyperfine:hyperfine"
-)
+SYSTEM_PACKAGES=(curl ca-certificates git git-lfs)
+XCMD_PACKAGES=(bun uv gh jq fzf duf bat rg fd sd lsd bottom dust procs delta difft hyperfine httpie)
 UV_TOOLS=(
-  "httpie:http"
+  "gh-llm:gh-llm"
+)
+GH_EXTENSIONS=(
+  "ShigureLab/gh-llm:gh-llm"
 )
 
 APT_UPDATED=0
 SUDO=()
-
-prepend_path() {
-  case ":$PATH:" in
-    *":$1:"*) ;;
-    *) export PATH="$1:$PATH" ;;
-  esac
-}
 
 persist_path_dir() {
   local dir=$1
@@ -42,7 +24,10 @@ persist_path_dir() {
   [[ -f "$HOME/.bashrc" ]] && files+=("$HOME/.bashrc")
   [[ -f "$HOME/.zshrc" ]] && files+=("$HOME/.zshrc")
 
-  prepend_path "$dir"
+  case ":$PATH:" in
+    *":$dir:"*) ;;
+    *) export PATH="$dir:$PATH" ;;
+  esac
 
   for file in "${files[@]}"; do
     touch "$file"
@@ -50,13 +35,6 @@ persist_path_dir() {
       printf '\n%s\n' "$line" >>"$file"
     fi
   done
-}
-
-version_gte() {
-  local current=$1
-  local minimum=$2
-
-  [[ "$(printf '%s\n%s\n' "$minimum" "$current" | sort -V | tail -n1)" == "$current" ]]
 }
 
 has() {
@@ -114,88 +92,51 @@ apt_install() {
   "${SUDO[@]}" apt-get install -y --no-install-recommends "$package"
 }
 
-ensure_bun() {
-  persist_path_dir "${BUN_INSTALL:-$HOME/.bun}/bin"
-
-  if has bun; then
-    log "bun already installed."
-    return
+with_nounset_disabled() {
+  local restore_nounset=0
+  if [[ $- == *u* ]]; then
+    restore_nounset=1
+    set +u
   fi
 
-  log "Installing bun via official script..."
-  export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
-  curl -fsSL https://bun.sh/install | bash
-  persist_path_dir "$BUN_INSTALL/bin"
+  "$@"
+
+  if [[ "$restore_nounset" -eq 1 ]]; then
+    set -u
+  fi
 }
 
-ensure_uv() {
+install_xcmd_script() {
+  eval "$(curl -fsSL https://get.x-cmd.com)"
+}
+
+source_xcmd() {
+  # shellcheck disable=SC1090
+  . "$HOME/.x-cmd.root/X"
+}
+
+ensure_xcmd() {
   persist_path_dir "$HOME/.local/bin"
 
-  if has uv; then
-    log "uv already installed."
-    return
+  if [[ ! -f "$HOME/.x-cmd.root/X" ]]; then
+    log "Installing x-cmd..."
+    with_nounset_disabled install_xcmd_script
   fi
 
-  log "Installing uv via official script..."
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  persist_path_dir "$HOME/.local/bin"
+  if ! has x; then
+    with_nounset_disabled source_xcmd
+  fi
+
+  if ! has x; then
+    echo "error: x-cmd installation failed" >&2
+    exit 1
+  fi
 }
 
-ensure_rust_toolchain() {
-  local cargo_version=""
-
-  persist_path_dir "$HOME/.cargo/bin"
-
-  if has cargo; then
-    cargo_version=$(cargo -V | awk '{print $2}')
-    if version_gte "$cargo_version" "1.85.0"; then
-      log "cargo $cargo_version already installed."
-      return
-    fi
-
-    log "cargo $cargo_version is older than 1.85.0; upgrading via rustup..."
-  fi
-
-  apt_install build-essential
-  apt_install pkg-config
-  apt_install libssl-dev
-
-  if ! has rustup; then
-    log "Installing rustup..."
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
-  fi
-
-  log "Installing or updating stable Rust toolchain..."
-  rustup toolchain install stable --profile minimal
-  rustup default stable
-  persist_path_dir "$HOME/.cargo/bin"
-}
-
-ensure_cargo_binstall() {
-  if cargo binstall --help >/dev/null 2>&1; then
-    log "cargo-binstall already installed."
-    return
-  fi
-
-  log "Installing cargo-binstall via official script..."
-  curl -L --proto '=https' --tlsv1.2 -sSf \
-    https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-}
-
-install_cargo_tool() {
-  local crate=$1
-  local binary=$2
-
-  if has "$binary"; then
-    log "$binary already installed."
-    return
-  fi
-
-  log "Installing $crate..."
-  if ! cargo binstall --locked --no-confirm "$crate"; then
-    log "cargo-binstall failed for $crate, falling back to cargo install."
-    cargo install --locked "$crate"
-  fi
+install_xcmd_packages() {
+  ensure_xcmd
+  log "Installing CLI tools with x-cmd..."
+  with_nounset_disabled x env use "${XCMD_PACKAGES[@]}"
 }
 
 install_uv_tool() {
@@ -211,6 +152,31 @@ install_uv_tool() {
   uv tool install "$package"
 }
 
+install_uv_tools() {
+  local entry package binary
+
+  persist_path_dir "$HOME/.local/bin"
+  for entry in "${UV_TOOLS[@]}"; do
+    IFS=":" read -r package binary <<<"$entry"
+    install_uv_tool "$package" "$binary"
+  done
+}
+
+ensure_gh_extensions() {
+  local entry repo extension
+
+  for entry in "${GH_EXTENSIONS[@]}"; do
+    IFS=":" read -r repo extension <<<"$entry"
+    if gh extension list | grep -Fq "$repo"; then
+      log "Upgrading gh extension $extension..."
+      gh extension upgrade "$extension"
+    else
+      log "Installing gh extension $repo..."
+      gh extension install "$repo"
+    fi
+  done
+}
+
 install_system_packages() {
   if ! has apt-get; then
     log "apt-get not found; skipping apt-managed tools."
@@ -223,23 +189,6 @@ install_system_packages() {
   done
 }
 
-install_cli_tools() {
-  local entry crate binary
-
-  ensure_rust_toolchain
-  ensure_cargo_binstall
-
-  for entry in "${CARGO_TOOLS[@]}"; do
-    IFS=":" read -r crate binary <<<"$entry"
-    install_cargo_tool "$crate" "$binary"
-  done
-
-  for entry in "${UV_TOOLS[@]}"; do
-    IFS=":" read -r crate binary <<<"$entry"
-    install_uv_tool "$crate" "$binary"
-  done
-}
-
 configure_tools() {
   if has git-lfs; then
     log "Configuring git-lfs..."
@@ -249,9 +198,9 @@ configure_tools() {
 
 main() {
   install_system_packages
-  ensure_bun
-  ensure_uv
-  install_cli_tools
+  install_xcmd_packages
+  install_uv_tools
+  ensure_gh_extensions
   configure_tools
 
   log "Installing skills from $REPO_SOURCE..."
