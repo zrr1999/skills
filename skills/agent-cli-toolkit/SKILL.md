@@ -1,6 +1,6 @@
 ---
 name: agent-cli-toolkit
-description: 给 agent 的现代 CLI 工具使用指南；已安装工具：x-cmd、bun、uv、gh、gh-llm、bat、fd、rg、sd、lsd、bottom、dust、procs、git-delta、difftastic、hyperfine、jq、fzf、duf、git-lfs、httpie。
+description: 给 agent 的现代 CLI 工具使用指南；已安装工具：x-cmd、bun、uv、gh、gh-llm extension、bat、fd、rg、sd、lsd、bottom、dust、procs、git-delta、difftastic、hyperfine、jq、fzf、duf、git-lfs、httpie。
 ---
 
 ## 目的
@@ -48,7 +48,6 @@ description: 给 agent 的现代 CLI 工具使用指南；已安装工具：x-cm
 ### 安装与扩展管理
 
 - `x env use ...`：统一安装或升级常用 CLI。
-- `uv tool install ...`：安装 Python CLI，例如 `gh-llm`。
 - `gh extension ...`：安装、升级、列出 GitHub CLI 扩展。
 
 ## Agent 使用规则
@@ -99,7 +98,6 @@ git lfs ls-files
 
 ```bash
 x env use gh bun uv jq rg fd sd lsd bottom dust procs delta difft hyperfine httpie
-uv tool install gh-llm
 gh auth status
 gh pr view 7 --comments
 gh run list
@@ -107,7 +105,7 @@ gh run view 123456 --log
 gh extension list
 gh extension install ShigureLab/gh-llm
 gh llm pr view 7 --repo zrr1999/skills
-gh-llm issue view 12 --repo owner/repo
+gh llm issue view 12 --repo owner/repo
 ```
 
 ### gh-llm 适用场景
@@ -131,7 +129,7 @@ duf
 
 - 只改字面文本：`sd`
 - 查 GitHub PR / Issue：`gh`
-- 查 GitHub 完整对话 / review thread：`gh-llm`
+- 查 GitHub 完整对话 / review thread：`gh llm`
 - 查 API：`http` + `jq`
 - 查性能：`hyperfine`
 - 查磁盘和进程：`dust` / `duf` / `procs` / `btm`

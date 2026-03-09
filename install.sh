@@ -5,9 +5,6 @@ set -euo pipefail
 REPO_SOURCE="${REPO_SOURCE:-zrr1999/skills}"
 SYSTEM_PACKAGES=(curl ca-certificates git git-lfs)
 XCMD_PACKAGES=(bun uv gh jq fzf duf bat rg fd sd lsd bottom dust procs delta difft hyperfine httpie)
-UV_TOOLS=(
-  "gh-llm:gh-llm"
-)
 GH_EXTENSIONS=(
   "ShigureLab/gh-llm:gh-llm"
 )
@@ -139,29 +136,6 @@ install_xcmd_packages() {
   with_nounset_disabled x env use "${XCMD_PACKAGES[@]}"
 }
 
-install_uv_tool() {
-  local package=$1
-  local binary=$2
-
-  if has "$binary"; then
-    log "$binary already installed."
-    return
-  fi
-
-  log "Installing $package via uv tool..."
-  uv tool install "$package"
-}
-
-install_uv_tools() {
-  local entry package binary
-
-  persist_path_dir "$HOME/.local/bin"
-  for entry in "${UV_TOOLS[@]}"; do
-    IFS=":" read -r package binary <<<"$entry"
-    install_uv_tool "$package" "$binary"
-  done
-}
-
 ensure_gh_extensions() {
   local entry repo extension
 
@@ -199,7 +173,6 @@ configure_tools() {
 main() {
   install_system_packages
   install_xcmd_packages
-  install_uv_tools
   ensure_gh_extensions
   configure_tools
 
