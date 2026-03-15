@@ -1,11 +1,17 @@
 ---
 name: agent-cli-toolkit
-description: 给 agent 的现代 CLI 工具使用指南；已安装工具：x-cmd、bun、uv、gh、gh-llm extension、bat、fd、rg、sd、lsd、bottom、dust、procs、git-delta、difftastic、hyperfine、jq、fzf、duf、git-lfs、httpie。
+description: 适用于需要在终端里搜索代码、浏览文件、查看 diff、调用 HTTP API、查看系统状态、比较性能、或操作 GitHub 的任务。只要问题主要依赖 CLI 探索和自动化，而不是纯粹的文件编辑，就应优先使用这个 skill；具体工具和命令模板会在正文里说明。
 ---
 
 ## 目的
 
 当任务需要在终端里浏览代码、改写文本、查看 diff、排查系统状态、调用 HTTP API 或管理大文件时，优先使用这组现代 CLI，而不是退回到更原始或更低效的命令。
+
+## 不适用
+
+- 主要任务是设计系统边界而不是用 CLI 获取现场
+- 主要任务是写业务方案或项目 kickoff，而不是终端探索
+- 只是单文件的小编辑，且不需要终端证据
 
 ## 工具总览
 

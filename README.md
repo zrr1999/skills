@@ -2,6 +2,18 @@
 
 An Agent Skills collection for my own projects, to provide reusable workflows in tools like Cursor, Copilot, etc.
 
+These skills are designed to pair with the sibling `roles` repo:
+
+- roles choose the work mode and delegation path
+- skills provide the reusable working method
+
+Current work modes:
+
+- `directors/new-project` -> `project-kickoff`
+- `directors/maintain-project` -> `maintenance-pass`
+- `directors/learn-project` -> `project-reading`
+- cross-cutting choices -> `tech-preferences`
+
 ## Installation
 
 ### One-click install
@@ -34,6 +46,15 @@ bunx skills add anthropics/skills -g --skill skill-creator
 
 # 添加现代 CLI 工具使用指南
 bunx skills add ./skills -g --skill agent-cli-toolkit
+
+# 添加开新坑方法
+bunx skills add ./skills -g --skill project-kickoff
+
+# 添加维护老项目方法
+bunx skills add ./skills -g --skill maintenance-pass
+
+# 添加读项目学习方法
+bunx skills add ./skills -g --skill project-reading
 ```
 
 ## 本地开发
