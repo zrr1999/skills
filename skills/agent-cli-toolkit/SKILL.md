@@ -1,6 +1,6 @@
 ---
 name: agent-cli-toolkit
-description: 适用于需要在终端里搜索代码、浏览文件、查看 diff、调用 HTTP API、查看系统状态、比较性能、或操作 GitHub 的任务。只要问题主要依赖 CLI 探索和自动化，而不是纯粹的文件编辑，就应优先使用这个 skill；具体工具和命令模板会在正文里说明。
+description: 适用于终端搜索代码(rg/fd)、浏览文件、查看 diff(delta/difft)、调用 HTTP API(http/jq)、查看系统状态(dust/duf/procs)、比较性能(hyperfine)、操作 GitHub(gh)等任务。只要问题主要依赖 CLI 探索和自动化，而不是纯粹的文件编辑，就应优先使用。
 ---
 
 ## 目的
@@ -48,8 +48,20 @@ description: 适用于需要在终端里搜索代码、浏览文件、查看 dif
 ### 语言工具链
 
 - `x-cmd`（`x`）：跨平台安装和更新 CLI 的统一入口。
+- `vp`（Vite+）：Vite 项目统一入口；`vp dev` / `vp build` / `vp check` / `vp test` / `vp install`。安装：`curl -fsSL https://vite.plus | bash`。
 - `bun`：安装或执行 JavaScript / TypeScript CLI。
 - `uv`：Python 依赖、虚拟环境与工具安装首选。
+
+### Vite+ 项目常用命令
+
+```bash
+vp install          # 安装依赖
+vp dev              # 开发服务器
+vp build            # 生产构建
+vp check            # 格式化 + lint + 类型检查
+vp test             # 运行测试
+vp run <script>     # 执行 package.json 脚本
+```
 
 ### 安装与扩展管理
 
@@ -133,6 +145,7 @@ duf
 
 ## 选择建议
 
+- Vite 项目开发/构建/检查：`vp dev` / `vp build` / `vp check`
 - 只改字面文本：`sd`
 - 查 GitHub PR / Issue：`gh`
 - 查 GitHub 完整对话 / review thread：`gh llm`

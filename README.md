@@ -9,12 +9,18 @@ These skills are designed to pair with the sibling `roles` repo:
 
 Current work modes:
 
+- `work-mode-routing` -> routes to directors when mode is unclear
 - `directors/new-project` -> `project-kickoff`
 - `directors/maintain-project` -> `maintenance-pass`
 - `directors/learn-project` -> `project-reading`
 - cross-cutting choices -> `tech-preferences`
+- specialized: `agent-cli-toolkit` (CLI 探索), `unix-software-design` (设计原则)
 
-## Installation
+**数量说明**：7 个 skill，职责互不重叠。skills 按 description 匹配按需加载，不会全部同时加载；合并会模糊边界、增加单 skill 体积，不建议减少。
+
+## Evals（skill-creator 格式）
+
+每个 skill 在 `skills/<skill-name>/evals/evals.json` 下有评测用例。7 个 skill 均有 evals，效果对比与改进建议见 `evals/EVAL_REPORT.md`。
 
 ### One-click install
 
@@ -43,6 +49,9 @@ bunx skills add zrr1999/skills --all -g
 ```bash
 # 添加全局可用的 skill
 bunx skills add anthropics/skills -g --skill skill-creator
+
+# 添加工作模式路由（开坑/维护/学习）
+bunx skills add ./skills -g --skill work-mode-routing
 
 # 添加现代 CLI 工具使用指南
 bunx skills add ./skills -g --skill agent-cli-toolkit
