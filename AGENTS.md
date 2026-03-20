@@ -3,6 +3,12 @@
 - 小步提交，确保每个提交聚焦单一主题
 - 优先保持 skill 职责单一；不要把 role 路由逻辑塞进 skill
 
+## 与 `roles` 仓库的配合
+
+- `zrr1999/roles` 仅提供专家角色：`researcher`、`analyst`、`coder`、`tester`、`writer`；不再通过 `new-project` / `maintain-project` / `learn-project` 等中间层路由。
+- 需要统一「按场景选专家、何时并行」时，加载 skill `work-mode-routing`。
+- 需要具体打法时，再加载 `project-kickoff`、`maintenance-pass`、`project-reading`、`tech-preferences` 等（本仓库或其他 skills）；与当前激活的专家正交。
+
 ## Commit message 规范
 
 格式：`<emoji> <type>(<scope>): <subject>`，与 [Conventional Commits](https://www.conventionalcommits.org/) 兼容。  

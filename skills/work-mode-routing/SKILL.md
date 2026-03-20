@@ -1,38 +1,43 @@
 ---
 name: work-mode-routing
 description: >-
-  Routes requests into `directors/new-project`, `directors/maintain-project`, or
-  `directors/learn-project` when work mode is unclear, mixed, or needs explicit
-  selection. Use when the user's request involves starting new projects,
-  maintaining existing projects, or studying other projects.
+  When the task type is unclear or you need to split work, route straight to
+  roles-repo experts (researcher, analyst, coder, tester, writer) with explicit
+  briefs. No director or work-mode role layer.
 ---
 
-# Work Mode Routing
+## Constraints
 
-When routing work to directors, follow these rules.
+- The `roles` package does **not** define `new-project`, `maintain-project`, or `learn-project`. Do not assume a coordinator role exists.
+- You (or the main agent) orchestrate: merge outputs, choose serial vs parallel, and keep briefs explicit (`goal`, `inputs`, `non-goals`, `expected output`, blocking or not).
 
-## Director Selection
+## Pick experts by scenario
 
-- Choose one primary lane: `directors/new-project`, `directors/maintain-project`, or `directors/learn-project`.
-- Keep the chosen mode explicit in reasoning and handoffs.
-- `directors/new-project`: greenfield shaping and first proof.
-- `directors/maintain-project`: continuing and improving existing work.
-- `directors/learn-project`: extracting reusable lessons from other projects.
+| Scenario | Typical flow |
+|----------|--------------|
+| Greenfield / prototype / smallest first step | Parallel `researcher` + `analyst` when feasibility splits into independent questions; then `coder`; then `tester` to validate the claim. |
+| Existing repo: continue, fix, refactor | Parallel `analyst` + `tester` when structure review and repro are independent; then `coder`; then `tester` for regression. |
+| Study another codebase | Parallel `researcher` briefs per question or subsystem; then `analyst` for pattern/tradeoff synthesis; `writer` only to package—no new facts. |
+| Mixed ask (e.g. learn external + change own repo) | Two separate expert pipelines; finish learning track before collapsing into implementation briefs for your repo. |
 
-## Routing Rules
+## Skills to load alongside (optional)
 
-- Delegate to directors first.
-- For non-trivial work, require the active director to make decomposition explicit: subproblems, dependencies, output floors, and which specialist briefs can run in parallel.
-- Keep one primary mode active unless the user clearly wants a combined pass.
-- If the request mixes modes, sequence them deliberately instead of blurring them together. Prefer parallel lanes inside one mode before mixing modes together.
-- If two or more subproblems inside the same mode are independent, expect the director to launch them in parallel rather than serializing them.
-- Do not let directors absorb clearly specialist-sized work unless the task is too small to justify delegation or the work requires tight synthesis that would make delegation wasteful.
-- Ask each active director for a concrete output floor and a merge-ready packet before accepting the result.
+Use when they shorten the path; they do **not** replace an expert:
 
-## Cross-Cutting
+- `project-kickoff` — greenfield shape and constraints
+- `maintenance-pass` — ongoing repo continuation
+- `project-reading` — structured reading of foreign projects
+- `tech-preferences` — stack/tooling defaults before real choices
 
-- For any meaningful technology choice, load and apply the `tech-preferences` skill first.
+## Cross-cutting
+
+- For any meaningful technology choice, load and apply the `tech-preferences` skill when it helps.
 - Treat preference discovery as part of the work. Infer what you can from the request and the repo before asking questions.
 - Default to English for code comments, docstrings, README additions, and design notes unless the user explicitly asks for another language.
 - Keep the conversation language aligned with the user's language.
 - Do not invent durable memory responsibilities. This skill is about routing and execution boundaries, not maintaining a global memory file.
+
+## Parallelization
+
+- Independent briefs → parallel by default.
+- Serial when one result materially changes the next brief.

@@ -2,19 +2,23 @@
 
 An Agent Skills collection for my own projects, to provide reusable workflows in tools like Cursor, Copilot, etc.
 
-These skills are designed to pair with the sibling `roles` repo:
+## Related: `roles` repo
 
-- roles choose the work mode and delegation path
-- skills provide the reusable working method
+The sibling [`zrr1999/roles`](https://github.com/zrr1999/roles) package defines **expert subagent roles** only (`researcher`, `analyst`, `coder`, `tester`, `writer`). There is **no** director / work-mode role layer there.
 
-Current work modes:
+- **Skills** (this repo): reusable *methods*—how to kick off a project, run a maintenance pass, read a foreign repo, stack prefs, etc.
+- **Roles**: *who* runs a bounded brief; orchestration picks experts and merges results.
 
-- `work-mode-routing` -> routes to directors when mode is unclear
-- `directors/new-project` -> `project-kickoff`
-- `directors/maintain-project` -> `maintenance-pass`
-- `directors/learn-project` -> `project-reading`
-- cross-cutting choices -> `tech-preferences`
-- specialized: `agent-cli-toolkit` (CLI 探索), `unix-software-design` (设计原则)
+Load `work-mode-routing` when you need a consistent rule for **which expert to call** and when to parallelize; load domain skills (`project-kickoff`, `maintenance-pass`, `project-reading`, `tech-preferences`, …) when the task benefits from that playbook, independent of which expert is active.
+
+**Routing overview**
+
+- `work-mode-routing` — when the split is unclear: pick experts and parallelization; pair with domain skills as needed.
+- `project-kickoff` — greenfield shaping (often with `researcher` / `analyst` / `coder`).
+- `maintenance-pass` — continuing existing work (`analyst` / `tester` / `coder`).
+- `project-reading` — study another codebase (`researcher` / `analyst` / `writer`).
+- `tech-preferences` — cross-cutting stack/tooling defaults before real choices.
+- Specialized: `agent-cli-toolkit` (CLI 探索), `unix-software-design` (设计原则).
 
 **数量说明**：7 个 skill，职责互不重叠。skills 按 description 匹配按需加载，不会全部同时加载；合并会模糊边界、增加单 skill 体积，不建议减少。
 
@@ -50,7 +54,7 @@ bunx skills add zrr1999/skills --all -g
 # 添加全局可用的 skill
 bunx skills add anthropics/skills -g --skill skill-creator
 
-# 添加工作模式路由（开坑/维护/学习）
+# 添加工作模式路由（按场景选专家、并行策略）
 bunx skills add ./skills -g --skill work-mode-routing
 
 # 添加现代 CLI 工具使用指南
