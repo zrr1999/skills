@@ -1,0 +1,16 @@
+{
+  "skill_name": "agent-cli-toolkit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我在终端里快速搜这个仓库的 API 调用点，顺便看下最近 diff 和一个接口的 JSON 返回。",
+      "expected_output": "Agent 应使用 rg/fd 搜索、delta/difft 查看 diff、http/jq 调用接口并解析 JSON，而非 grep/find/sed 等原始命令。",
+      "files": [],
+      "expectations": [
+        "搜索使用 rg 或 fd，而非 grep -R 或复杂 find",
+        "查看 diff 使用 delta 或 difft",
+        "查看 JSON 使用 jq 配合 http 或 curl"
+      ]
+    }
+  ]
+}

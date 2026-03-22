@@ -1,0 +1,16 @@
+{
+  "skill_name": "unix-software-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要重新想一下这个工具的模块边界和接口设计，怎样拆才能更简单透明？",
+      "expected_output": "Agent 应参考 Unix 哲学下的设计原则（模块化、简洁性、健壮性等），给出模块边界和接口拆分建议。不应混淆为单纯选工具或纯实现任务。",
+      "files": [],
+      "expectations": [
+        "输出涉及模块边界或接口设计",
+        "引用或体现 Unix 设计原则（如 Rule of Modularity、Separation 等）",
+        "未仅给出工具选型建议"
+      ]
+    }
+  ]
+}
