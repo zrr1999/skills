@@ -1,0 +1,27 @@
+{
+  "skill_name": "modern-python",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "新开一个 Python CLI 小工具目录，想用 uv、ruff、ty，帮我写 pyproject 和本地怎么检查。",
+      "expected_output": "Agent 应加载 modern-python：给出 uv 初始化思路、pyproject 中 ruff/ty 的配置方向、以及 ruff/ty/pytest 等本地验证命令；与 tech-preferences 的 uv+ruff+ty 基线一致。",
+      "files": [],
+      "expectations": [
+        "输出包含 uv 或等价的项目初始化步骤",
+        "输出包含 ruff 与 ty 的配置或明确引用 pyproject 片段",
+        "输出包含可执行的本地检查命令"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "这个仓库还在用 black、mypy、requirements.txt，想迁到 ruff 和 ty，并改用 uv，步骤怎么安排？",
+      "expected_output": "Agent 应给出迁移顺序：依赖与锁文件迁移、ruff 替代 black、ty 替代 mypy 的注意事项、双跑/回滚策略；避免只列工具名而无步骤。",
+      "files": [],
+      "expectations": [
+        "输出包含从旧栈到新栈的分阶段或有序步骤",
+        "输出提及 mypy/插件或复杂配置时保留或并行检查的风险",
+        "输出提及 requirements.txt 与 uv.lock 的单源化方向"
+      ]
+    }
+  ]
+}

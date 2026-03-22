@@ -8,6 +8,7 @@
 | **tech-preferences** | ✅ 偏好分析流程 | ✅ 具体选型建议 | ✅ 偏好分析在建议前 | 3/3 |
 | **agent-cli-toolkit** | ✅ rg/fd 搜索 | ✅ delta/difft | ✅ jq + http/curl | 3/3 |
 | **unix-software-design** | ✅ 模块边界/接口设计 | ✅ 引用 Unix 原则 | ✅ 未仅工具选型 | 3/3 |
+| **modern-python** | ✅ uv 初始化与 pyproject 方向 | ✅ ruff + ty 配置或片段 | ✅ 本地可执行检查命令 | 见 `skills/modern-python/evals/evals.json` |
 
 **说明**：`project-workflows` 由原 `project-kickoff`、`maintenance-pass`、`project-reading`、`work-mode-routing` 合并；eval 用例已迁入 `project-workflows/evals/evals.json`（共 6 条）。
 

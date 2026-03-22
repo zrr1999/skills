@@ -6,8 +6,8 @@
 ## 与 `roles` 仓库的配合
 
 - `zrr1999/roles` 仅提供专家角色：`researcher`、`analyst`、`coder`、`tester`、`writer`；不再通过 `new-project` / `maintain-project` / `learn-project` 等中间层路由。
-- 需要统一「按场景选专家、何时并行」时，加载 skill `work-mode-routing`。
-- 需要具体打法时，再加载 `project-kickoff`、`maintenance-pass`、`project-reading`、`tech-preferences` 等（本仓库或其他 skills）；与当前激活的专家正交。
+- 需要统一「按场景选专家、何时并行」与 kickoff / continuation / learning 的输出契约时，加载 skill `project-workflows`（合并原 `work-mode-routing`、`project-kickoff`、`maintenance-pass`、`project-reading`）。
+- 需要横切技术选型或偏好基线时加载 `tech-preferences`；需要 Python 工程化落地（uv、ruff、ty、CI 等）时加载 `modern-python`；与当前激活的专家正交。
 
 ## Commit message 规范
 
@@ -42,3 +42,12 @@
 
 - `✨ feat(modern-tech): add modern-stack skill for tech-stack`
 - `✨ feat(paddle-pull-request): support multi template`
+
+## Learned User Preferences
+
+- 编写或维护 skill 的 YAML `description` 时，用具体场景词与边界说明，减少漏触发和误触发。
+
+## Learned Workspace Facts
+
+- 新开/维护/读项目/混合模式路由与三种 packet 契约由 `project-workflows` 承担；与 `roles` 的用法见 README 与该 skill。
+- 各 skill 的评测用例在 `skills/<skill-name>/evals/evals.json`；汇总说明在 `evals/EVAL_REPORT.md`。
