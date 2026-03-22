@@ -1,6 +1,6 @@
 ---
 name: agent-cli-toolkit
-description: 适用于终端搜索代码(rg/fd)、浏览文件、查看 diff(delta/difft)、调用 HTTP API(http/jq)、查看系统状态(dust/duf/procs)、比较性能(hyperfine)、操作 GitHub(gh)等任务。只要问题主要依赖 CLI 探索和自动化，而不是纯粹的文件编辑，就应优先使用。
+description: 终端取证与 CLI 自动化优先：用 rg/fd、bat、sd、delta/difft、http/jq、fzf、hyperfine、dust/duf/procs/btm、gh/gh-llm、x/vp/bun/uv；多窗格/命名会话/长时并行或 layout 用 zellij。应在用户或任务出现「终端/命令行/shell/CLI」「在机器上跑/验证」「搜仓库/找文件」「看 diff 或 JSON」「查 PR/Issue/GitHub」「磁盘/进程/性能对比」「并行跑多个服务或测试」「tmux 式多会话」或 agent 需用上述工具链而非仅靠编辑器时加载。
 ---
 
 ## 目的
@@ -45,6 +45,12 @@ description: 适用于终端搜索代码(rg/fd)、浏览文件、查看 diff(del
 - `dust`：看目录体积构成。
 - `duf`：看磁盘占用。
 
+### 终端多路复用与布局（zellij）
+
+- `zellij`：终端 multiplexer；命名会话、多窗格/tab、layout（`.kdl`）编排，适合并行跑 dev server、测试、日志与 `rg` 等。
+- 与「开一个 shell 顺序执行」相比：需要**可恢复的命名会话**、**同一终端里多窗格并行**、或**用 layout 一键拉起多面板**时用 zellij。
+- 已在 zellij 会话内时，可用 `zellij run`（`zellij r`）在新窗格里跑命令；自动化脚本注意 `--cwd`、`--close-on-exit`、以及非交互场景下是否改用普通后台进程。
+
 ### 语言工具链
 
 - `x-cmd`（`x`）：跨平台安装和更新 CLI 的统一入口。
@@ -78,6 +84,7 @@ vp run <script>     # 执行 package.json 脚本
 6. 遇到大文件、磁盘或进程问题时，优先用 `dust`、`duf`、`procs`、`btm` 获取现场信息。
 7. 读 GitHub PR / Issue 时，优先 `gh`；如果需要保留更完整的 timeline、review thread、action hints，就切到 `gh-llm`。
 8. `fzf`、`btm` 这类交互式工具只在当前终端可交互时使用；自动化脚本里优先选非交互命令。
+9. 需要多窗格并行、命名会话、或 layout 编排长时任务时，用 `zellij`（`ls` / `attach` / `run` / `-n`/`-l` + layout）；不要为「单条顺序命令」强行开 multiplexer。
 
 ## 常用命令模板
 
@@ -143,6 +150,19 @@ dust .
 duf
 ```
 
+### zellij（会话与窗格）
+
+```bash
+zellij -s myproj              # 新建命名会话
+zellij ls                     # 列出活动会话（同 list-sessions）
+zellij attach myproj          # 附加到会话（同 zellij a myproj）
+zellij kill-session myproj    # 结束指定会话
+zellij -n path/to/layout.kdl  # 总是用布局新开会话（从脚本/外部调用时更明确）
+zellij -l path/to/layout.kdl  # 无会话时新开；已在 zellij 内则把该布局加成新 tab
+zellij run --cwd /path/to/repo -- bash -lc 'vp dev'   # 在新窗格跑命令
+zellij run -c -- echo done    # 命令结束即关窗格
+```
+
 ## 选择建议
 
 - Vite 项目开发/构建/检查：`vp dev` / `vp build` / `vp check`
@@ -153,3 +173,4 @@ duf
 - 查性能：`hyperfine`
 - 查磁盘和进程：`dust` / `duf` / `procs` / `btm`
 - 查 Git 变更可读性：`delta` / `difft`
+- 多窗格/命名会话/布局并行：`zellij`
