@@ -5,6 +5,7 @@ set -euo pipefail
 REPO_SOURCE="${REPO_SOURCE:-zrr1999/skills}"
 SYSTEM_PACKAGES=(curl ca-certificates git git-lfs)
 XCMD_PACKAGES=(bun uv gh jq fzf duf bat rg fd sd lsd bottom dust procs delta difft hyperfine httpie)
+BUN_GLOBAL_PACKAGES=("@aisuite/chub")
 GH_EXTENSIONS=(
   "ShigureLab/gh-llm:gh-llm"
 )
@@ -151,6 +152,15 @@ ensure_gh_extensions() {
   done
 }
 
+install_chub() {
+  if has chub; then
+    log "chub already installed."
+    return
+  fi
+  log "Installing chub (Context Hub CLI)..."
+  bun install -g @aisuite/chub
+}
+
 install_system_packages() {
   if ! has apt-get; then
     log "apt-get not found; skipping apt-managed tools."
@@ -175,6 +185,8 @@ main() {
   install_xcmd_packages
   ensure_gh_extensions
   configure_tools
+
+  install_chub
 
   log "Installing skills from $REPO_SOURCE..."
   bunx skills add "$REPO_SOURCE" --all -g
