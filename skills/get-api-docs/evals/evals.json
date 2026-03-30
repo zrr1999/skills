@@ -1,0 +1,27 @@
+{
+  "skill_name": "get-api-docs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我用 OpenAI 的 chat completion API 写一个 Python 调用，要用最新的 SDK。",
+      "expected_output": "Agent 应先用 chub search/get 获取 OpenAI 文档，再基于文档编写代码，而非依赖训练知识。",
+      "files": [],
+      "expectations": [
+        "使用 chub search 或 chub get 查找/获取文档",
+        "基于获取的文档内容编写代码",
+        "不直接从记忆中输出 API 调用"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "用 Stripe 的 Python SDK 实现一个支付接口，另外上次踩过 webhook 验证的坑，帮我查一下之前的标注。",
+      "expected_output": "Agent 应用 chub get 获取文档，且检查 chub annotate --list 或直接 get 时查看已有标注。",
+      "files": [],
+      "expectations": [
+        "使用 chub get stripe 相关文档",
+        "检查或提及 annotation 机制",
+        "基于文档和标注编写代码"
+      ]
+    }
+  ]
+}
