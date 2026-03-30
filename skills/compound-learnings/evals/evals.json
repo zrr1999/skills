@@ -1,0 +1,28 @@
+{
+  "skill_name": "compound-learnings",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "刚花了半小时修好一个 Docker 多阶段构建的坑，uv 在 Alpine 上需要额外的编译依赖。帮我记录下来。",
+      "expected_output": "Agent 应将此经验沉淀到 .learnings/gotchas/ 目录，使用结构化 frontmatter 格式，并更新索引。",
+      "files": [],
+      "expectations": [
+        "创建 .learnings/gotchas/ 下的 markdown 文件",
+        "文件包含 frontmatter（title, category, tags, created, context）",
+        "内容包含问题描述和解决方案",
+        "更新 .learnings/README.md 索引"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我要开始改这个项目的认证模块，先看看之前有没有相关的经验记录。",
+      "expected_output": "Agent 应检索 .learnings/ 目录中与认证相关的 learnings，展示相关经验摘要。",
+      "files": [],
+      "expectations": [
+        "检查 .learnings/ 目录是否存在",
+        "搜索与认证/auth 相关的 learnings",
+        "展示匹配的 learnings 摘要"
+      ]
+    }
+  ]
+}
