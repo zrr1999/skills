@@ -4,20 +4,38 @@ An Agent Skills collection for my own projects, to provide reusable workflows in
 
 ## Related: `roles` repo
 
-The sibling [`zrr1999/roles`](https://github.com/zrr1999/roles) package defines **expert subagent roles** only (`researcher`, `analyst`, `coder`, `tester`, `writer`). There is **no** director / work-mode role layer there.
+The sibling [`zrr1999/roles`](https://github.com/zrr1999/roles) package defines **agent-first** subagent roles only:
 
-- **Skills** (this repo): reusable *methods*—how to kick off a project, run a maintenance pass, read a foreign repo, stack prefs, etc.
-- **Roles**: *who* runs a bounded brief; orchestration picks experts and merges results.
+- **`inspector`** — bounded evidence, reading, structure, tradeoffs, scoping
+- **`executor`** — focused implementation with a merge-ready diff / checks contract
+- **`verifier`** — repro, regression, and review against a named claim; set optional **`lens`** (`security`, `performance`, `architecture`) on the brief for specialized review depth
 
-Load `project-workflows` when you need a consistent playbook for **新开 / 维护 / 读项目 / 混合模式路由** and when to parallelize; load domain skills (`tech-preferences`, …) when the task benefits from that layer, independent of which expert is active.
+There is **no** director / work-mode role layer there.
 
-**Routing overview**
+- **Skills** (this repo): reusable *methods*—workflows, preferences, design principles, docs, learnings.
+- **Roles**: *which responsibility contract* runs a bounded brief; orchestration picks roles and merges results.
 
-- `project-workflows` — greenfield shaping, continuing existing work, studying another codebase, or clarifying mixed modes (合并原 `work-mode-routing`、`project-kickoff`、`maintenance-pass`、`project-reading`). Typical pairings with roles: 新开 often `researcher` / `analyst` / `coder`; 维护 `analyst` / `tester` / `coder`; 读项目 `researcher` / `analyst` / `writer`.
-- `tech-preferences` — cross-cutting stack/tooling defaults before real choices.
-- Specialized: `agent-cli-toolkit` (CLI 探索), `modern-python` (uv / ruff / ty 工程化), `unix-software-design` (设计原则).
+Load **`project-workflows`** when you need a consistent playbook for greenfield / maintenance / learning-from-a-repo / mixed asks, when to clarify, when to parallelize, and when to call other skills. **Requirement clarification, parallel brief splitting, and CLI-first investigation are built into `project-workflows`**—they are not separate skills in this repository. Load domain skills when the task benefits, independent of which [`roles`](https://github.com/zrr1999/roles) contract is active (`inspector` / `executor` / `verifier`).
 
-**数量说明**：5 个 skill，职责互不重叠。`project-workflows` 合并了原先分开的开坑/维护/学习/路由说明，按需加载时仍按 description 匹配。
+**Skills in this repository (6)**
+
+| Skill | What it covers |
+|-------|----------------|
+| `project-workflows` | Unified project workflow: packet contract, clarification, parallelization boundaries, CLI-first, delegation to other skills; **brief fields align with [`zrr1999/roles` Brief contract](https://github.com/zrr1999/roles/blob/main/README.md#brief-contract)** when dispatching subagents |
+| `tech-preferences` | Stack and tooling preferences / tradeoffs |
+| `unix-software-design` | Module boundaries, interfaces, simplicity |
+| `modern-python` | uv, ruff, ty, Python project hygiene |
+| `get-api-docs` | Third-party library / API documentation |
+| `compound-learnings` | Structured learnings and retrieval |
+
+**Typical pairings with `roles` (examples)**
+
+- **Greenfield** — parallel `inspector` briefs when feasibility splits; then `executor`; then `verifier` to validate the claim.
+- **Maintenance** — `inspector` + `verifier` in parallel when structure review and repro are independent; then `executor`; then `verifier` for regression.
+- **Study another repo** — parallel `inspector` briefs per subsystem or question; synthesize in one pass or merge at orchestration; no separate “writer” role—packaging is orchestrator output unless you split a brief explicitly.
+- **Focused review** — `verifier` with `lens: security` / `performance` / `architecture` as needed.
+
+**数量说明**：本仓库当前 **6** 个 skill，职责互不重叠。`project-workflows` 合并了原先分散的开坑/维护/读项目/路由与澄清、并行、CLI-first 说明；不再单独提供 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit` 作为本仓库内的 skill。
 
 ## Evals（skill-creator 格式）
 
@@ -45,20 +63,19 @@ If you do not want to use the script, run the equivalent command directly:
 bunx skills add zrr1999/skills --all -g
 ```
 
-## 常用 Skills
+## 常用 Skills（本仓库内）
 
 ```bash
-# 添加全局可用的 skill
-bunx skills add anthropics/skills -g --skill skill-creator
+# 添加全局可用的 skill（一次性装齐 6 个）
+bunx skills add zrr1999/skills --all -g
 
-# 开新坑 / 维护老项目 / 读项目学习 / 模式路由（合并为一个 skill）
+# 或按需单独添加示例
 bunx skills add ./skills -g --skill project-workflows
-
-# 现代 CLI 工具使用指南
-bunx skills add ./skills -g --skill agent-cli-toolkit
-
-# Python 现代工具链（uv、ruff、ty）
+bunx skills add ./skills -g --skill tech-preferences
+bunx skills add ./skills -g --skill unix-software-design
 bunx skills add ./skills -g --skill modern-python
+bunx skills add ./skills -g --skill get-api-docs
+bunx skills add ./skills -g --skill compound-learnings
 ```
 
 ## 本地开发

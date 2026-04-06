@@ -5,13 +5,13 @@
 
 ## 与 `roles` 仓库的配合
 
-- `zrr1999/roles` 仅提供专家角色：`researcher`、`analyst`、`coder`、`tester`、`writer`；不再通过 `new-project` / `maintain-project` / `learn-project` 等中间层路由。
-- 需要统一「按场景选专家、何时并行」与 kickoff / continuation / learning 的输出契约时，加载 skill `project-workflows`（合并原 `work-mode-routing`、`project-kickoff`、`maintenance-pass`、`project-reading`）。
-- 需要横切技术选型或偏好基线时加载 `tech-preferences`；需要 Python 工程化落地（uv、ruff、ty、CI 等）时加载 `modern-python`；与当前激活的专家正交。
+- `zrr1999/roles` 仅提供 **agent-first** 职责型角色：`inspector`（证据与阅读、现状与范围）、`executor`（有边界的实现与改动契约）、`verifier`（复现、回归、审查；专项审查在 brief 上使用 `lens: security | performance | architecture`）。不再通过 `new-project` / `maintain-project` / `learn-project` 等中间层路由。
+- 需要统一「如何推进一个项目级任务、何时澄清、何时并行、何时调用其他 skill」时，加载 skill `project-workflows`；它是统一入口，不再先分 new-project / maintain-project / learn-project 三种模式。
+- 需要横切技术选型或偏好基线时加载 `tech-preferences`；需要 Python 工程化落地（uv、ruff、ty、CI 等）时加载 `modern-python`；与当前激活的 **role** 正交。
 
 ## Commit message 规范
 
-格式：`<emoji> <type>(<scope>): <subject>`，与 [Conventional Commits](https://www.conventionalcommits.org/) 兼容。  
+格式：`<emoji> <type>(<scope>): <subject>`，与 [Conventional Commits](https://www.conventionalcommits.org/) 兼容。
 围绕 **skill 的新增/修改/修复/文档** 写 subject；与 skill 无关的改动用 `docs` / `chore`，可不写 scope。**emoji 必须写**，放在 type 前。
 
 **type（够用即可）**：
@@ -49,5 +49,5 @@
 
 ## Learned Workspace Facts
 
-- 新开/维护/读项目/混合模式路由与三种 packet 契约由 `project-workflows` 承担；与 `roles` 的用法见 README 与该 skill。
+- `project-workflows` 现为统一工作流入口：内建需求澄清、与 `roles` 一致的 brief 编排（职责并行）、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`modern-python`、`unix-software-design`、`get-api-docs`、`compound-learnings`。
 - 各 skill 的评测用例在 `skills/<skill-name>/evals/evals.json`；汇总说明在 `evals/EVAL_REPORT.md`。

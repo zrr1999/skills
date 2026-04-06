@@ -101,5 +101,5 @@ grep -rl "tags:.*stripe" .learnings/
 ## 与其他 skill 的关系
 
 - 与 `get-api-docs` 互补：chub annotation 解决 API 文档补丁，本 skill 解决项目级经验沉淀
-- 与 `project-workflows` 互补：可作为 maintain-project 流程的收尾步骤
+- 与 `project-workflows` 互补：可作为统一工作流一次非平凡推进后的收尾步骤
 - 与 `tech-preferences` 互补：decisions 分类中的选型决策可以反哺 tech-preferences 的偏好基线

@@ -4,67 +4,78 @@
     {
       "id": 1,
       "prompt": "我想先看看这个优秀项目有哪些设计值得借鉴，然后顺手把我自己的老项目下一步怎么改也一起想一下。",
-      "expected_output": "Agent 应识别为混合模式，先完成学习（learning packet 或等价结构）再处理维护（continuation packet），保持模式显式、不混淆。",
+      "expected_output": "Agent 应使用统一工作流，先澄清当前目标与两个阶段的关系，再给出一个统一 packet，明确现状、可借鉴模式、迁回当前项目的落点，以及下一步动作。",
       "files": [],
       "expectations": [
-        "输出明确区分两个模式（学习 + 维护）",
-        "先学习再维护，或并行但模式不混",
-        "未将两种请求合并为一个模糊输出"
+        "输出包含统一 packet 或等价结构",
+        "输出明确参考项目洞察与当前项目推进点",
+        "未要求先选择新开/维护/学习模式"
       ]
     },
     {
       "id": 2,
       "prompt": "我想开一个新的小 repo，先做第一版原型，帮我收敛出最小可行方案和前三步。",
-      "expected_output": "Agent 应产出 kickoff packet，包含：目标、约束、最小可行形态、第一阶段要证明的点、下一步 3 个动作。不应混淆为维护或学习场景。",
+      "expected_output": "Agent 应使用统一工作流收敛目标、约束、成功标准和最小下一步，给出统一 packet 与下一步 3 个动作，而不是切到单独的新开模式。",
       "files": [],
       "expectations": [
-        "输出包含目标、约束、最小可行形态",
+        "输出包含目标、约束、最小可行范围",
         "输出包含下一步 3 个具体动作",
-        "未建议从零重写或全量重构"
+        "未要求先定义工作模式"
       ]
     },
     {
       "id": 3,
-      "prompt": "我想做一个 CLI 小工具，用来批量重命名图片，帮我收敛出最小可行方案和前三步。",
-      "expected_output": "Agent 应产出针对「图片批量重命名 CLI」的 kickoff packet，包含具体技术路径和可执行的前三步。",
+      "prompt": "我想做一个 CLI 小工具，用来批量重命名图片，顺便看看仓库里现有脚本能不能复用，必要的话在终端里直接搜。",
+      "expected_output": "Agent 应使用统一工作流，并在需要终端证据时启用内建 CLI-first 工作法，而不是依赖单独的 agent-cli-toolkit。",
       "files": [],
       "expectations": [
-        "输出针对图片批量重命名的具体方案",
-        "输出包含下一步 3 个具体动作",
-        "未建议从零重写或全量重构"
+        "输出体现 CLI-first 或终端取证思路",
+        "输出包含最小下一步与复用现有脚本的判断",
+        "未要求加载单独的 agent-cli-toolkit"
       ]
     },
     {
       "id": 4,
       "prompt": "这个老项目现在有点乱，帮我基于现状挑一个最值得继续推进的点，不要推倒重来。",
-      "expected_output": "Agent 应产出 continuation packet，包含：当前状态、推进点、为什么先做这个、具体下一步改动、风险和后续事项。不应建议无证据全量重写。",
+      "expected_output": "Agent 应基于统一工作流给出当前现场、建议推进点、原因、风险和下一步动作，不应建议无证据全量重写。",
       "files": [],
       "expectations": [
-        "输出包含当前状态和选定的推进点",
-        "输出包含具体下一步改动",
+        "输出包含当前状态和最值得推进的一点",
+        "输出包含具体下一步动作",
         "未建议全量重写或从零开新坑"
       ]
     },
     {
       "id": 5,
-      "prompt": "这个项目太乱了，我想全推倒重写，你帮我规划一下。",
-      "expected_output": "Agent 应基于现状分析，但反对无证据的全量重写，引导有节制的渐进改进。",
+      "prompt": "这个项目太乱了，我想全推倒重写，你帮我规划一下。如果需要也可以顺便把任务拆给不同专家并行做。",
+      "expected_output": "Agent 应先基于统一工作流分析现状，再谨慎判断是否需要并行拆解；不应因为用户提到并行就跳过现状分析，也不应无证据支持全量重写。",
       "files": [],
       "expectations": [
         "输出包含当前状态分析",
         "未直接顺从「全推倒重写」的请求",
-        "建议基于现状的渐进式改进"
+        "只有在子问题边界清楚时才提并行拆解"
       ]
     },
     {
       "id": 6,
-      "prompt": "帮我读一下这个优秀 repo，看看有哪些设计值得借鉴，哪些地方不要直接照搬。",
-      "expected_output": "Agent 应产出 learning packet，包含：项目快照、值得借鉴的模式、不宜直接照搬的部分、可迁移建议。不应混淆为 kickoff 或 continuation。",
+      "prompt": "我要给这个 TypeScript 服务拆模块边界，也想知道该不该换框架。你先帮我理一理下一步怎么推进，必要时告诉我该调用哪些专项 skill。",
+      "expected_output": "Agent 应使用统一工作流，同时明确把技术选型让给 tech-preferences、把边界拆分让给 unix-software-design，而自己负责项目推进框架与下一步动作。",
       "files": [],
       "expectations": [
-        "输出包含项目快照和值得借鉴的模式",
-        "输出包含不宜直接照搬的部分",
-        "输出包含可迁移到用户项目的具体建议"
+        "明确 tech-preferences 和 unix-software-design 的使用时机",
+        "输出仍以统一 packet / 下一步推进为主",
+        "未把专项 skill 的职责吞进 project-workflows"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "这个改动我想拆成三个 brief：先查现状和 diff，再落一版改动，最后做性能审查。你按现在的 roles 帮我规划一下该怎么分给子代理。",
+      "expected_output": "Agent 应按 roles 仓库当前的 inspector / executor / verifier 约定来拆 brief，并给性能审查使用 verifier 的 performance lens，而不是使用旧的 researcher / analyst / coder / tester / writer 分工。",
+      "files": [],
+      "expectations": [
+        "输出使用 inspector、executor、verifier 这三个角色契约",
+        "性能审查使用 verifier 且带 performance lens 或等价说明",
+        "输出包含 brief contract 关键信息，如 goal、inputs、non_goals、expected_output、blocking"
       ]
     }
   ]
