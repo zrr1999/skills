@@ -180,6 +180,19 @@ configure_tools() {
   fi
 }
 
+install_skills() {
+  log "Installing skills from $REPO_SOURCE..."
+  bunx skills add "$REPO_SOURCE" --all -g
+
+  log "Installing external skills..."
+  bunx skills add anthropics/skills       -g --skill skill-creator
+  bunx skills add cloudflare/skills       -g --skill cloudflare --skill wrangler
+  bunx skills add shigurelab/gh-llm       -g --skill github-conversation
+  bunx skills add aviator-co/agent-plugins -g --skill av-cli
+  bunx skills add vibe-motion/skills      -g --skill svg-assembly-animator --skill procedural-fish-render --skill ruler-progress-render
+  bunx skills add spore-lang/spore        -g --skill spore-language
+}
+
 main() {
   install_system_packages
   install_xcmd_packages
@@ -187,9 +200,8 @@ main() {
   configure_tools
 
   install_chub
+  install_skills
 
-  log "Installing skills from $REPO_SOURCE..."
-  bunx skills add "$REPO_SOURCE" --all -g
   log "Done."
 }
 

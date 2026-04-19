@@ -22,9 +22,9 @@ description: 用现代 Python 工具链（uv、ruff、ty）初始化或改造项
 
 - **默认下限**：`project.requires-python` 宜为 **`>=3.12`**（除非用户或上游约束更旧）。
 - **尽量用新**：在兼容依赖的前提下，本地与 CI 优先使用**当前目标范围内的最新稳定小版本**（例如下限 3.12 时可用 3.12.x 最新；若项目明确以 3.13 为下限，则用 3.13.x 最新），并与 `uv python pin`、测试镜像一致。
-- **按下限叠读 What's New**：设项目支持的最低版本为 **N**（如 3.12、3.13），写代码与评审时应对 **3.12 起至 N 的每个小版本** 阅读官方 *What's New*，以便主动用上该范围内的新语法与标准库变化。  
-  - 例：仅支持到 **3.12** → 至少读 [3.12](https://docs.python.org/zh-cn/3.12/whatsnew/3.12.html)。  
-  - 例：最低 **3.13** → 读 [3.12](https://docs.python.org/zh-cn/3.12/whatsnew/3.12.html) 与 [3.13](https://docs.python.org/zh-cn/3.13/whatsnew/3.13.html)。  
+- **按下限叠读 What's New**：设项目支持的最低版本为 **N**（如 3.12、3.13），写代码与评审时应对 **3.12 起至 N 的每个小版本** 阅读官方 *What's New*，以便主动用上该范围内的新语法与标准库变化。
+  - 例：仅支持到 **3.12** → 至少读 [3.12](https://docs.python.org/zh-cn/3.12/whatsnew/3.12.html)。
+  - 例：最低 **3.13** → 读 [3.12](https://docs.python.org/zh-cn/3.12/whatsnew/3.12.html) 与 [3.13](https://docs.python.org/zh-cn/3.13/whatsnew/3.13.html)。
   - 例：最低 **3.14** → 依次读 3.12、3.13、3.14（依此类推）。
 - **与工具对齐**：`[tool.ruff]` 的 `target-version`（及 ty 的 Python 目标）应与**实际检查的版本**一致，通常取 `requires-python` 的下界或团队统一的目标特性版本，避免 lint/类型与运行时假设脱节。
 
