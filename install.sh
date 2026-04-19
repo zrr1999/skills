@@ -15,20 +15,29 @@ log() {
   printf '==> %s\n' "$*"
 }
 
-ensure_bun() {
-  if has bun; then
+ensure_node() {
+  if has node; then
     return
   fi
 
-  log "bun not found, installing via brew or x-cmd..."
-  if has brew; then
-    brew install bun
-  elif has x; then
-    x env use bun
-  else
-    echo "error: neither brew nor x-cmd found; install bun manually: https://bun.sh" >&2
-    exit 1
+  log "Installing fnm..."
+  curl -fsSL https://fnm.vercel.app/install | bash
+  export PATH="$HOME/.local/share/fnm:$PATH"
+  eval "$(fnm env)"
+
+  log "Installing Node.js LTS via fnm..."
+  fnm install --lts
+  fnm use lts-latest
+}
+
+ensure_pnpm() {
+  if has pnpm; then
+    return
   fi
+
+  log "Installing pnpm..."
+  curl -fsSL https://get.pnpm.io/install.sh | sh -
+  export PATH="$HOME/.local/share/pnpm:$PATH"
 }
 
 ensure_gh_extensions() {
@@ -55,24 +64,25 @@ install_chub() {
     return
   fi
   log "Installing chub (required by get-api-docs skill)..."
-  bun install -g @aisuite/chub
+  pnpm install -g @aisuite/chub
 }
 
 install_skills() {
   log "Installing skills from $REPO_SOURCE..."
-  bunx skills add "$REPO_SOURCE" --all -g
+  pnpx skills add "$REPO_SOURCE" --all -g
 
   log "Installing external skills..."
-  bunx skills add anthropics/skills        -g --skill skill-creator
-  bunx skills add cloudflare/skills        -g --skill cloudflare --skill wrangler
-  bunx skills add shigurelab/gh-llm        -g --skill github-conversation
-  bunx skills add aviator-co/agent-plugins -g --skill av-cli
-  bunx skills add vibe-motion/skills       -g --skill svg-assembly-animator --skill procedural-fish-render --skill ruler-progress-render
-  bunx skills add spore-lang/spore         -g --skill spore-language
+  pnpx skills add anthropics/skills        -g --skill skill-creator
+  pnpx skills add cloudflare/skills        -g --skill cloudflare --skill wrangler
+  pnpx skills add shigurelab/gh-llm        -g --skill github-conversation
+  pnpx skills add aviator-co/agent-plugins -g --skill av-cli
+  pnpx skills add vibe-motion/skills       -g --skill svg-assembly-animator --skill procedural-fish-render --skill ruler-progress-render
+  pnpx skills add spore-lang/spore         -g --skill spore-language
 }
 
 main() {
-  ensure_bun
+  ensure_node
+  ensure_pnpm
   ensure_gh_extensions
   install_chub
   install_skills
