@@ -69,15 +69,15 @@ install_chub() {
 
 install_skills() {
   log "Installing skills from $REPO_SOURCE..."
-  pnpx skills add "$REPO_SOURCE" --all -g
+  pnpx skills add "$REPO_SOURCE" --all -g -y
 
   log "Installing external skills..."
-  pnpx skills add anthropics/skills        -g --skill skill-creator
-  pnpx skills add cloudflare/skills        -g --skill cloudflare --skill wrangler
-  pnpx skills add shigurelab/gh-llm        -g --skill github-conversation
-  pnpx skills add aviator-co/agent-plugins -g --skill av-cli
-  pnpx skills add vibe-motion/skills       -g --skill svg-assembly-animator --skill procedural-fish-render --skill ruler-progress-render
-  pnpx skills add spore-lang/spore         -g --skill spore-language
+  pnpx skills add anthropics/skills -g --skill skill-creator -y
+  pnpx skills add cloudflare/skills -g --skill cloudflare --skill wrangler -y
+  pnpx skills add shigurelab/gh-llm -g --skill github-conversation -y
+  pnpx skills add aviator-co/agent-plugins -g --skill av-cli -y
+  pnpx skills add vibe-motion/skills -g --skill svg-assembly-animator --skill procedural-fish-render --skill ruler-progress-render -y
+  pnpx skills add spore-lang/spore -g --skill spore-language -y
 }
 
 main() {

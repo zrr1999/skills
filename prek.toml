@@ -15,6 +15,13 @@ hooks = [
 ]
 
 [[repos]]
+repo = "https://github.com/scop/pre-commit-shfmt"
+rev = "v3.13.1-1"
+hooks = [
+  { id = "shfmt" },
+]
+
+[[repos]]
 repo = "https://github.com/tombi-toml/tombi-pre-commit"
 rev = "v0.7.27"
 hooks = [
