@@ -1,0 +1,53 @@
+{
+  "skill_name": "spark",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我有个想法，想做一个把零散项目灵感整理成 SPARK.md 的工具，帮我先聊清楚，不要一上来让我填表。",
+      "expected_output": "Agent 应使用 spark 的 Capture 模式，用中文对话式提问，最多一次问 2-3 个问题，并明确后续会按中文 SPARK.md 结构起草。",
+      "files": [],
+      "expectations": [
+        "输出使用中文作为工作语言",
+        "没有要求用户填写表单式字段清单",
+        "问题覆盖核心洞察、目标体验、目标用户、Non-goals、启发来源或成功信号中的关键缺口",
+        "提到会使用中文 SPARK.md 结构或等价说明"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have an idea for a developer tool that turns messy terminal history into reusable runbooks. Help me write a SPARK.md and ask whatever is missing.",
+      "expected_output": "Agent should use spark Capture mode in English, ask conversational questions, and preserve English for confirmation phrasing and the future SPARK.md draft.",
+      "files": [],
+      "expectations": [
+        "Output uses English as the working language",
+        "Does not include Chinese-only confirmation text such as 有没有明显偏差的地方",
+        "Asks no more than 2-3 questions at once",
+        "Mentions or implies the English SPARK.md structure"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "这里有一个现成 SPARK.md，方向已经变了：现在不做 UI，只做 CLI。帮我更新一下。文件内容：---\ndescription: 一个项目灵感整理工具\nowner: zrr1999\ncreated: 2026-04-20\nupdated: 2026-04-20\ninspired_by: []\n---\n\n## 起源\n我想把零散想法收起来。\n\n## 产品/设计目标\n先做一个网页。\n\n## 开放问题\nUI 复杂度怎么控制？",
+      "expected_output": "Agent 应进入 Refine 模式，先中文总结理解，再提出具体中文修改，并说明需要 bump updated 与补充修订记录。",
+      "files": [],
+      "expectations": [
+        "输出使用中文",
+        "识别这是已有 SPARK.md 的 Refine 场景",
+        "提出实际可写入的中文改动，而不只是抽象建议",
+        "说明需要更新 updated 并添加 修订记录"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Given this SPARK.md, turn it into what I should do this week, not a roadmap. ---\ndescription: A tool that turns project sparks into structured decisions\nowner: zrr1999\ncreated: 2026-04-26\nupdated: 2026-04-26\ninspired_by: []\n---\n\n## Origin\nProject ideas get lost before they become repos.\n\n## Capability map (directional)\n- Capture a raw idea through conversation\n- Draft a SPARK.md in the user's language\n\n## Success signals\nA first-time user can get a useful first draft without reading docs.\n\n## Open questions\nShould this be a CLI or a chat-only workflow?",
+      "expected_output": "Agent should enter Plan mode, output English next steps with size tags, tie actions back to capabilities or success signals, and avoid producing a full roadmap.",
+      "files": [],
+      "expectations": [
+        "Output uses English",
+        "Produces concrete next actions tagged [small], [medium], or [large]",
+        "Ties actions back to capability map or success signals",
+        "Does not produce a long roadmap or implementation schedule"
+      ]
+    }
+  ]
+}
