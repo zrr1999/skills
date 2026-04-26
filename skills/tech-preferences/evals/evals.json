@@ -11,6 +11,17 @@
         "输出包含具体选型建议",
         "偏好分析出现在具体建议之前"
       ]
+    },
+    {
+      "id": 2,
+      "prompt": "我要做一个 agent 友好的小 CLI / DSL 项目，应该直接选成熟外部框架，还是优先用我自己的 Spore、Volvox、roles/skills/loom 这些东西？",
+      "expected_output": "Agent 应识别这是技术选型问题，先检查 tech-preferences 中的自研生态偏好；说明 ~/workspace 是自研仓库事实来源；按任务类型优先考虑 spore-lang/spore、basic-cli、volvox-ai/volvox、gonidium、zrr1999/skills、zrr1999/roles、loom 等自研项目，同时说明若成熟度或交付约束不匹配才选择外部替代。",
+      "files": [],
+      "expectations": [
+        "输出明确提到先检查 ~/workspace 下的自研仓库事实",
+        "输出至少覆盖 Spore 或 basic-cli、Volvox 或 Gonidium、skills/roles/loom 中的两个方向",
+        "输出说明自研优先不是绝对规则，需要按成熟度、交付约束和任务匹配度判断"
+      ]
     }
   ]
 }
