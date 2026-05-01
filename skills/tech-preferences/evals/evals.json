@@ -22,6 +22,17 @@
         "输出至少覆盖 Spore 或 basic-cli、Volvox 或 Gonidium、skills/roles/loom 中的两个方向",
         "输出说明自研优先不是绝对规则，需要按成熟度、交付约束和任务匹配度判断"
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "我有个 CLI 工具，想顺手做一个 GitHub Action 给别人调用。这个 Action 只是薄薄一层去调用 CLI，本身没多少独立逻辑。我应该单独开 action 仓库，还是直接放回 CLI 仓库里？",
+      "expected_output": "Agent 应先识别这是仓库边界/技术选型问题，并按 tech-preferences 说明：薄 GitHub Action wrapper 默认与底层工具/CLI 放在同一仓库维护；只有当 Action 需要独立发布节奏、面向更广泛复用或生命周期明显独立时，才建议拆分为独立仓库。",
+      "files": [],
+      "expectations": [
+        "输出明确说明薄 GitHub Action wrapper 默认与底层工具/CLI 同仓库",
+        "输出说明何时才应拆成独立 action 仓库",
+        "输出把这条建议表述为偏好而非绝对规则"
+      ]
     }
   ]
 }
