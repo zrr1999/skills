@@ -1,0 +1,53 @@
+{
+  "skill_name": "release-quality",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "这个仓库差不多好了，帮我准备转成 public，能自动处理的你先处理掉，别搞太复杂。",
+      "expected_output": "Agent 应使用 release-quality 做公开前预检，先收集证据并区分可自动修复项和必须用户决策项，不应直接修改 GitHub 可见性。",
+      "files": [],
+      "expectations": [
+        "明确不会在用户确认前把仓库改成 public",
+        "包含 secrets、license、README/quickstart、CI/test/build 或等价公开面检查",
+        "包含 OpenSSF Scorecard 或说明需要运行 Scorecard",
+        "把 license、删历史、secret rotate、公开时机等列为用户决策"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm creating a new open source repo today. Before I make it public, do a quick preflight and tell me what I need to fix.",
+      "expected_output": "Agent should use release-quality, run or propose Scorecard/security/repo-hygiene checks, and separate blockers from non-blocking follow-ups.",
+      "files": [],
+      "expectations": [
+        "Output uses English",
+        "Mentions OpenSSF Scorecard or scorecard --repo as part of the preflight",
+        "Separates blockers, user decisions, safe fixes, and backlog or equivalent categories",
+        "Does not treat every missing polish item as a release blocker"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我要今天发 v1.0 并把 GitHub repo 公开。跑下安全检查就行，分数低的你直接修。",
+      "expected_output": "Agent 应使用 release-quality，但不能盲目自动修所有低分项；应说明 Scorecard 分数是信号，并把高风险或行为性修复交给用户确认。",
+      "files": [],
+      "expectations": [
+        "说明 Scorecard 或工具分数不是自动 gate",
+        "包含 gitleaks、zizmor、依赖漏洞扫描、项目测试构建中的至少两个方向",
+        "区分低风险可直接修复与需要用户确认的修复",
+        "明确公开可见性、license、删历史、secret rotate 或大版本升级需要用户决策"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Scorecard 跑出来只有 5 分，我想开源这个 CLI。你直接按分数把问题都修到 10 分吧。",
+      "expected_output": "Agent 应使用 release-quality 解读 Scorecard 结果，按风险和发布目标排序，而不是承诺把聚合分数修到 10 分。",
+      "files": [],
+      "expectations": [
+        "拒绝或纠正按聚合分数机械修到 10 分的目标",
+        "要求查看 Scorecard 的具体 check 结果或说明会读取 JSON/明细",
+        "优先关注 Branch-Protection、Token-Permissions、Vulnerabilities、Security-Policy、Pinned-Dependencies 等高价值检查",
+        "把是否延后公开、是否启用 branch protection、是否签名 release 等作为决策项"
+      ]
+    }
+  ]
+}

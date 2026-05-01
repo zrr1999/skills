@@ -17,7 +17,7 @@ There is **no** director / work-mode role layer there.
 
 Load **`project-workflows`** when you need a consistent playbook for greenfield / maintenance / learning-from-a-repo / mixed asks, when to clarify, when to parallelize, and when to call other skills. **Requirement clarification, parallel brief splitting, and CLI-first investigation are built into `project-workflows`**—they are not separate skills in this repository. Load domain skills when the task benefits, independent of which [`roles`](https://github.com/zrr1999/roles) contract is active (`inspector` / `executor` / `verifier`).
 
-**Skills in this repository (6)**
+**Skills in this repository (8)**
 
 | Skill | What it covers |
 |-------|----------------|
@@ -27,6 +27,8 @@ Load **`project-workflows`** when you need a consistent playbook for greenfield 
 | `modern-python` | uv, ruff, ty, Python project hygiene |
 | `get-api-docs` | Third-party library / API documentation |
 | `compound-learnings` | Structured learnings and retrieval |
+| `spark` | Capture, refine, and plan from project ideas via SPARK.md |
+| `release-quality` | Public-release preflight for repo hygiene, Scorecard, security checks, and user decisions |
 
 **Typical pairings with `roles` (examples)**
 
@@ -35,7 +37,7 @@ Load **`project-workflows`** when you need a consistent playbook for greenfield 
 - **Study another repo** — parallel `inspector` briefs per subsystem or question; synthesize in one pass or merge at orchestration; no separate “writer” role—packaging is orchestrator output unless you split a brief explicitly.
 - **Focused review** — `verifier` with `lens: security` / `performance` / `architecture` as needed.
 
-**数量说明**：本仓库当前 **6** 个 skill，职责互不重叠。`project-workflows` 合并了原先分散的开坑/维护/读项目/路由与澄清、并行、CLI-first 说明；不再单独提供 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit` 作为本仓库内的 skill。
+**数量说明**：本仓库当前 **8** 个 skill，职责互不重叠。`project-workflows` 合并了原先分散的开坑/维护/读项目/路由与澄清、并行、CLI-first 说明；不再单独提供 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit` 作为本仓库内的 skill。
 
 ## Evals（skill-creator 格式）
 
@@ -66,7 +68,7 @@ bunx skills add zrr1999/skills --all -g
 ## 常用 Skills（本仓库内）
 
 ```bash
-# 添加全局可用的 skill（一次性装齐 6 个）
+# 添加全局可用的 skill（一次性装齐 8 个）
 bunx skills add zrr1999/skills --all -g
 
 # 或按需单独添加示例
@@ -76,6 +78,8 @@ bunx skills add ./skills -g --skill unix-software-design
 bunx skills add ./skills -g --skill modern-python
 bunx skills add ./skills -g --skill get-api-docs
 bunx skills add ./skills -g --skill compound-learnings
+bunx skills add ./skills -g --skill spark
+bunx skills add ./skills -g --skill release-quality
 ```
 
 ## 本地开发
