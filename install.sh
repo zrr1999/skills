@@ -20,14 +20,37 @@ ensure_node() {
     return
   fi
 
-  log "Installing fnm..."
-  curl -fsSL https://fnm.vercel.app/install | bash
-  export PATH="$HOME/.local/share/fnm:$PATH"
-  eval "$(fnm env)"
+  log "Installing Vite+ (vp): curl -fsSL https://vite.plus | bash"
+  export VP_NODE_MANAGER="${VP_NODE_MANAGER:-yes}"
+  curl -fsSL https://vite.plus | bash
 
-  log "Installing Node.js LTS via fnm..."
-  fnm install --lts
-  fnm use lts-latest
+  export VP_HOME="${VP_HOME:-$HOME/.vite-plus}"
+  export PATH="$VP_HOME/bin:$HOME/.local/bin:$PATH"
+
+  if ! has vp; then
+    log "error: vp not found after Vite+ install. Add $VP_HOME/bin (and ~/.local/bin if needed) to PATH."
+    return 1
+  fi
+
+  log "Configuring Vite+ managed Node.js (LTS)..."
+  vp env setup --refresh 2>/dev/null || vp env setup
+  vp env on 2>/dev/null || true
+  vp env default lts 2>/dev/null || true
+  if vp env print >/dev/null 2>&1; then
+    eval "$(vp env print)"
+  fi
+
+  if ! has node; then
+    vp env install lts 2>/dev/null || true
+    if vp env print >/dev/null 2>&1; then
+      eval "$(vp env print)"
+    fi
+  fi
+
+  if ! has node; then
+    log "error: node not available after Vite+ setup. Try a new shell, or run: eval \"\$(vp env print)\""
+    return 1
+  fi
 }
 
 ensure_pnpm() {
@@ -70,8 +93,16 @@ install_chub() {
 install_skills() {
   log "Installing skills from $REPO_SOURCE..."
   pnpx skills add "$REPO_SOURCE" --all -g -y
+  pnpx skills add "$REPO_SOURCE" -g --skill project-workflows \
+    --skill tech-preferences \
+    --skill unix-software-design \
+    --skill modern-python \
+    --skill get-api-docs \
+    --skill compound-learnings \
+    --skill spark \
+    --skill release-quality \
+    --skill tech-debt-audit
 
-  log "Installing external skills..."
   pnpx skills add anthropics/skills -g --skill skill-creator -y
   pnpx skills add cloudflare/skills -g --skill cloudflare --skill wrangler -y
   pnpx skills add shigurelab/gh-llm -g --skill github-conversation -y

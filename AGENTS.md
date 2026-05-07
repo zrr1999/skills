@@ -50,4 +50,4 @@
 ## Learned Workspace Facts
 
 - `project-workflows` 现为统一工作流入口：内建需求澄清、与 `roles` 一致的 brief 编排（职责并行）、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`modern-python`、`unix-software-design`、`get-api-docs`、`compound-learnings`。
-- 各 skill 的评测用例在 `skills/<skill-name>/evals/evals.json`；汇总说明在 `evals/EVAL_REPORT.md`。
+- 各 skill 的评测用例在 `skills/<skill-name>/evals/evals.json`。

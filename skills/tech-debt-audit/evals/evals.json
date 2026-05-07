@@ -1,0 +1,65 @@
+{
+  "skill_name": "tech-debt-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "这个仓库已经维护一段时间了，帮我做一次全仓库技术债审计，最好能跑工具就跑工具，最后告诉我最该先修什么。",
+      "expected_output": "Agent 应使用 tech-debt-audit，先做 orientation，再按工具类别收集证据，最后给出带 file:line、严重度、工作量、Top priorities、quick wins、误报排除和开放问题的报告或报告草稿。",
+      "files": [],
+      "expectations": [
+        "先读取 README、manifest、目录结构、git churn 或等价现场证据",
+        "工具结果按类别组织，而不是简单堆命令输出",
+        "每个具体 finding 有 file:line 或明确工具证据",
+        "输出包含 Top priorities、quick wins、things that look bad but are actually fine 或等价误报排除"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我想从更抽象一点的数学结构角度看这个代码库，比如群论、环论、范畴论那种，看看架构有没有隐藏债务。",
+      "expected_output": "Agent 应使用 tech-debt-audit 的 Structural / algebraic lens，但必须把数学观察翻译成具体维护风险，并要求 file:line 证据，不能输出纯术语化或无证据的玄学评价。",
+      "files": [],
+      "expectations": [
+        "包含 symmetry/algebraic/composition 或等价结构 lens",
+        "明确数学 lens 只能产生有代码证据的结构性 finding",
+        "将抽象观察翻译为可维护性风险和具体修复方向",
+        "避免把群论、环论、范畴论术语当作结论本身"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "这个 TypeScript monorepo 感觉重复代码和复杂度都上来了，帮我用 jscpd、lizard、madge、knip 之类的工具分门别类扫一下，再综合判断。",
+      "expected_output": "Agent 应使用 tech-debt-audit，将 jscpd 归入 duplication，lizard 归入 complexity hotspots，madge 归入 architecture graph，knip 归入 dependency hygiene，并强调工具缺失时记录原因、不全局安装。",
+      "files": [],
+      "expectations": [
+        "按审计类别分类 jscpd、lizard、madge、knip",
+        "说明优先运行仓库已有命令和本地可用工具",
+        "工具缺失时记录未运行原因和是否值得安装",
+        "综合工具结果与代码阅读，不把原始输出直接当报告"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我准备把这个 repo 公开发布，Scorecard 分数低，REUSE 也有报错。你帮我把开源前问题都处理一下。",
+      "expected_output": "Agent 不应把这个请求当作普通 tech-debt-audit；应优先使用 release-quality 或说明这是公开发布预检，并把 Scorecard、REUSE、license、公开时机等作为发布决策和证据处理。",
+      "files": [],
+      "expectations": [
+        "明确这是公开发布/开源前检查，应优先走 release-quality",
+        "不承诺机械修高 Scorecard 聚合分数",
+        "把许可证选择、公开时机、删历史、secret rotate 等列为用户决策",
+        "可说明 Scorecard/REUSE 也能作为技术债证据，但当前主流程不是 tech-debt-audit"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "帮我 review 这个 PR 的 diff，重点看有没有引入技术债。",
+      "expected_output": "Agent 不应启动全仓库 tech-debt-audit；应走 PR/diff review，并可借用技术债维度做审查镜头，但范围保持在 diff 和相关上下文。",
+      "files": [],
+      "expectations": [
+        "明确这是 PR/diff review，不是全仓库审计",
+        "审查范围保持在 diff 和必要相关上下文",
+        "可以使用架构、重复、测试、类型等技术债维度作为 review lens",
+        "不要求生成 TECH_DEBT_AUDIT.md"
+      ]
+    }
+  ]
+}
