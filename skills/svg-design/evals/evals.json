@@ -1,0 +1,54 @@
+{
+  "skill_name": "svg-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我画一个 24x24 的「保存」图标 SVG，要描边风格，能跟着文字颜色走。",
+      "expected_output": "Agent 应按 svg-design 的图标骨架给出带 viewBox 的 SVG，根节点使用 fill=none、stroke=currentColor、合适 stroke-width，并优先用语义清晰的形状或简洁 path。",
+      "files": [],
+      "expectations": [
+        "SVG 含 xmlns 与 viewBox（例如 0 0 24 24）",
+        "描边图标使用 currentColor 或等价继承颜色的写法",
+        "提到或与 skill 一致的 stroke-width / linecap / linejoin 惯例",
+        "未硬编码固定像素宽高而缺少 viewBox"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我要给新开源项目做一个 logo，还没有具体方向，你直接出十几个 SVG 我挑。",
+      "expected_output": "Agent 应先用结构化选项/表单或等价的定向澄清流程收敛 mood / focus / 行业相关 inspiration，再进入多方案产出；不应在未澄清前一次性抛出大量成稿。",
+      "files": [],
+      "expectations": [
+        "在批量产出前先做方向澄清（优先结构化选项/表单，或等价的定向流程）",
+        "未假设用户已给出足够具体的设计 brief",
+        "提到会覆盖多种概念类别而非同一隐喻的排版变体",
+        "支持渐进式展示或分步交付，但不把特定预览文件、插件或运行环境能力当成前提"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Optimize this exported icon: [messy SVG with sodipodi metadata and 6 decimals on every coordinate].",
+      "expected_output": "Agent should strip editor metadata, reduce excessive coordinate precision for icon scale, and follow optimization guidance; avoid breaking semantics.",
+      "files": [],
+      "expectations": [
+        "Mentions or removes editor cruft (e.g. sodipodi/inkscape) when applicable",
+        "Addresses numeric precision appropriate to small icons",
+        "References or applies SVGO / optimization concepts without blindly minifying away semantics",
+        "Keeps viewBox and meaningful structure"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "给一个开发者工具组织设计一个几何感 logo，要求同时给出图形、横向字标，以及适合 GitHub 头像的裁切思路。",
+      "expected_output": "Agent 应说明图形如何由模块构成，并显式利用或拒绝某种对称结构；完整 logo、字标和头像裁切应保持同一结构身份，而不是三套彼此无关的图形。",
+      "files": [],
+      "expectations": [
+        "说明图形 mark 的模块拆分或生成单元，而不是只给整体感性描述",
+        "提到对称、重复、旋转、镜像、网格或等价的结构化构造思路",
+        "说明 avatar 裁切如何保留主识别结构",
+        "不同变体之间保持一致的核心骨架、负空间或比例关系",
+        "不把横向 lockup 直接缩小当头像；如果使用预览工作流，应把 square mark 与 wordmark lockup 分开预览"
+      ]
+    }
+  ]
+}

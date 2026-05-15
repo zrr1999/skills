@@ -17,7 +17,7 @@ There is **no** director / work-mode role layer there.
 
 Load **`project-workflows`** when you need a consistent playbook for greenfield / maintenance / learning-from-a-repo / mixed asks, when to clarify, when to parallelize, and when to call other skills. **Requirement clarification, parallel brief splitting, and CLI-first investigation are built into `project-workflows`**—they are not separate skills in this repository. Load domain skills when the task benefits, independent of which [`roles`](https://github.com/zrr1999/roles) contract is active (`inspector` / `executor` / `verifier`).
 
-**Skills in this repository**
+**Skills in this repository (10)**
 
 | Skill | What it covers |
 |-------|----------------|
@@ -30,6 +30,7 @@ Load **`project-workflows`** when you need a consistent playbook for greenfield 
 | `spark` | Capture, refine, and plan from project ideas via SPARK.md |
 | `release-quality` | Public-release preflight for repo hygiene, Scorecard, security checks, and user decisions |
 | `tech-debt-audit` | Evidence-based codebase health and technical debt audit with categorized tool signals and structural/algebraic design lenses |
+| `svg-design` | Hand-authored SVG icons/logos: viewBox/stroke conventions, gradients/masks, optimization, animation, a11y; logo preview workflow |
 
 **Typical pairings with `roles` (examples)**
 
@@ -38,7 +39,7 @@ Load **`project-workflows`** when you need a consistent playbook for greenfield 
 - **Study another repo** — parallel `inspector` briefs per subsystem or question; synthesize in one pass or merge at orchestration; no separate “writer” role—packaging is orchestrator output unless you split a brief explicitly.
 - **Focused review** — `verifier` with `lens: security` / `performance` / `architecture` as needed.
 
-**数量说明**：下表列出本仓库内全部 skill，职责互不重叠。`project-workflows` 合并了原先分散的开坑/维护/读项目/路由与澄清、并行、CLI-first 说明；不再单独提供 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit` 作为本仓库内的 skill。
+**数量说明**：本仓库当前 **10** 个 skill，职责互不重叠。`project-workflows` 合并了原先分散的开坑/维护/读项目/路由与澄清、并行、CLI-first 说明；不再单独提供 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit` 作为本仓库内的 skill。
 
 ## Evals（skill-creator 格式）
 
@@ -93,6 +94,7 @@ pnpx skills add zrr1999/skills -g --skill compound-learnings
 pnpx skills add zrr1999/skills -g --skill spark
 pnpx skills add zrr1999/skills -g --skill release-quality
 pnpx skills add zrr1999/skills -g --skill tech-debt-audit
+pnpx skills add zrr1999/skills -g --skill svg-design
 ```
 
 ## 本地开发

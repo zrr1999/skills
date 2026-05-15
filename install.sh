@@ -104,9 +104,8 @@ install_skills() {
     --skill tech-debt-audit
 
   pnpx skills add anthropics/skills -g --skill skill-creator -y
-  pnpx skills add cloudflare/skills -g --skill cloudflare --skill wrangler -y
+  pnpx skills add cloudflare/skills -g --skill workers-best-practices --skill durable-objects --skill cloudflare --skill wrangler -y
   pnpx skills add shigurelab/gh-llm -g --skill github-conversation -y
-  pnpx skills add aviator-co/agent-plugins -g --skill av-cli -y
   pnpx skills add vibe-motion/skills -g --skill svg-assembly-animator --skill procedural-fish-render --skill ruler-progress-render -y
   pnpx skills add spore-lang/spore -g --skill spore-language -y
 }
