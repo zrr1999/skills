@@ -1,53 +1,46 @@
-# Zhan Rongrui's Agent Skills
+# Zhan Rongrui 的个人代理技能合集
 
-An Agent Skills collection for my own projects, to provide reusable workflows in tools like Cursor, Copilot, etc.
+面向个人项目的代理技能合集，用于在 Cursor、Copilot 等工具中复用工作流程。
 
-## Related: `roles` repo
+## 关联：`roles` 仓库
 
-The sibling [`zrr1999/roles`](https://github.com/zrr1999/roles) package defines **agent-first** subagent roles only:
+兄弟仓库 [`zrr1999/roles`](https://github.com/zrr1999/roles) 仅定义 **代理优先** 的子代理角色：
 
-- **`inspector`** — bounded evidence, reading, structure, tradeoffs, scoping
-- **`executor`** — focused implementation with a merge-ready diff / checks contract
-- **`verifier`** — repro, regression, and review against a named claim; set optional **`lens`** (`security`, `performance`, `architecture`) on the brief for specialized review depth
+- **`inspector`** —— 有限的取证、阅读、结构、权衡、范围划定
+- **`executor`** —— 聚焦实现，产出可合并的差异与校验契约
+- **`verifier`** —— 针对明确主张做复现、回归与审查；可在任务简报上设置可选审视角度 **`lens`**（`security`、`performance`、`architecture`）以加深专项审查
 
-There is **no** director / work-mode role layer there.
+**本仓库内的技能（共 10 个）**
 
-- **Skills** (this repo): reusable *methods*—workflows, preferences, design principles, docs, learnings.
-- **Roles**: *which responsibility contract* runs a bounded brief; orchestration picks roles and merges results.
+| 技能 | 说明 |
+|------|------|
+| `project-workflows` | 统一项目工作流：任务包契约、澄清、并行边界、命令行优先、委托给其他技能；派发子代理时 **任务简报字段与 [`zrr1999/roles` 的任务简报契约](https://github.com/zrr1999/roles/blob/main/README.md#brief-contract) 对齐** |
+| `tech-preferences` | 技术栈与工具偏好 / 取舍 |
+| `unix-software-design` | 模块边界、接口、简洁性 |
+| `modern-python` | uv、ruff、ty、Python 工程卫生 |
+| `get-api-docs` | 第三方库 / API 文档 |
+| `compound-learnings` | 结构化沉淀与检索 |
+| `spark` | 通过 SPARK.md 捕获、打磨并规划项目想法 |
+| `release-quality` | 公开发布前的仓库卫生、OpenSSF Scorecard、安全检查与用户决策预检 |
+| `tech-debt-audit` | 基于证据的代码库健康度与技术债审计，含分类工具信号与结构/代数设计视角 |
+| `svg-design` | 手写 SVG 图标/Logo：viewBox/描边约定、渐变/蒙版、优化、动效、无障碍；Logo 预览工作流 |
 
-Load **`project-workflows`** when you need a consistent playbook for greenfield / maintenance / learning-from-a-repo / mixed asks, when to clarify, when to parallelize, and when to call other skills. **Requirement clarification, parallel brief splitting, and CLI-first investigation are built into `project-workflows`**—they are not separate skills in this repository. Load domain skills when the task benefits, independent of which [`roles`](https://github.com/zrr1999/roles) contract is active (`inspector` / `executor` / `verifier`).
+**与 `roles` 的典型搭配（示例）**
 
-**Skills in this repository (10)**
+- **从零开发** —— 可行性可拆时并行多份 `inspector` 任务简报；再 `executor`；最后用 `verifier` 验证主张。
+- **维护** —— 结构审查与复现彼此独立时，`inspector` 与 `verifier` 并行；再 `executor`；最后 `verifier` 做回归。
+- **研读其他仓库** —— 按子系统或问题并行多份 `inspector` 任务简报；在一轮里综合或在编排层合并；没有单独的「写稿」角色——除非显式拆分任务简报，否则包装结果由编排输出。
+- **专项审查** —— 按需使用带 `lens: security` / `performance` / `architecture` 的 `verifier`。
 
-| Skill | What it covers |
-|-------|----------------|
-| `project-workflows` | Unified project workflow: packet contract, clarification, parallelization boundaries, CLI-first, delegation to other skills; **brief fields align with [`zrr1999/roles` Brief contract](https://github.com/zrr1999/roles/blob/main/README.md#brief-contract)** when dispatching subagents |
-| `tech-preferences` | Stack and tooling preferences / tradeoffs |
-| `unix-software-design` | Module boundaries, interfaces, simplicity |
-| `modern-python` | uv, ruff, ty, Python project hygiene |
-| `get-api-docs` | Third-party library / API documentation |
-| `compound-learnings` | Structured learnings and retrieval |
-| `spark` | Capture, refine, and plan from project ideas via SPARK.md |
-| `release-quality` | Public-release preflight for repo hygiene, Scorecard, security checks, and user decisions |
-| `tech-debt-audit` | Evidence-based codebase health and technical debt audit with categorized tool signals and structural/algebraic design lenses |
-| `svg-design` | Hand-authored SVG icons/logos: viewBox/stroke conventions, gradients/masks, optimization, animation, a11y; logo preview workflow |
+**数量说明**：本仓库当前 **10** 个技能，职责互不重叠。`project-workflows` 合并了原先分散的开坑/维护/读项目/路由与澄清、并行、命令行优先说明；不再单独提供 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit` 作为本仓库内的技能。
 
-**Typical pairings with `roles` (examples)**
+## 评测用例格式
 
-- **Greenfield** — parallel `inspector` briefs when feasibility splits; then `executor`; then `verifier` to validate the claim.
-- **Maintenance** — `inspector` + `verifier` in parallel when structure review and repro are independent; then `executor`; then `verifier` for regression.
-- **Study another repo** — parallel `inspector` briefs per subsystem or question; synthesize in one pass or merge at orchestration; no separate “writer” role—packaging is orchestrator output unless you split a brief explicitly.
-- **Focused review** — `verifier` with `lens: security` / `performance` / `architecture` as needed.
+每个技能在 `skills/<skill-name>/evals/evals.json` 下有评测用例。本地快速校验 JSON 语法：`for f in skills/*/evals/evals.json; do jq empty "$f"; done`。
 
-**数量说明**：本仓库当前 **10** 个 skill，职责互不重叠。`project-workflows` 合并了原先分散的开坑/维护/读项目/路由与澄清、并行、CLI-first 说明；不再单独提供 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit` 作为本仓库内的 skill。
+### 一键安装
 
-## Evals（skill-creator 格式）
-
-每个 skill 在 `skills/<skill-name>/evals/evals.json` 下有评测用例。本地快速校验 JSON 语法：`for f in skills/*/evals/evals.json; do jq empty "$f"; done`。
-
-### One-click install
-
-Installer 会（按需）安装 **Vite+**（[`curl -fsSL https://vite.plus | bash`](https://vite.plus)）以获得托管的 **Node.js**，再装 **pnpm**，升级或安装 **`gh-llm`** 扩展，全局安装 **`@aisuite/chub`**（`get-api-docs` 使用），最后用 **`pnpx skills add`** 安装本仓库全部 skill。默认还会从下列**外仓**再装一组可选 skill；不需要时设置 **`SKIP_EXTERNAL_SKILLS=1`**。
+安装脚本会（按需）安装 **Vite+**（[`curl -fsSL https://vite.plus | bash`](https://vite.plus)）以获得托管的 **Node.js**，再安装 **pnpm**，升级或安装 **`gh-llm`** 扩展，全局安装 **`@aisuite/chub`**（供 `get-api-docs` 使用），最后用 **`pnpx skills add`** 安装本仓库全部技能。默认还会从下列**外仓**再装一组可选技能；不需要时设置 **`SKIP_EXTERNAL_SKILLS=1`**。
 
 外仓来源（与 `install.sh` 中 `pnpx skills add …` 一致）：
 
@@ -64,25 +57,33 @@ Installer 会（按需）安装 **Vite+**（[`curl -fsSL https://vite.plus | bas
 curl -fsSL https://raw.githubusercontent.com/zrr1999/skills/main/install.sh | bash
 ```
 
-装齐本仓库全部 skill（需已有 Node/pnpm 与 `skills` CLI）：
+装齐本仓库全部技能（需已有 Node/pnpm 与 `skills` 命令行工具）：
 
 ```bash
 pnpx skills add zrr1999/skills --all -g -y
 ```
 
-### Manual install
+### 手动安装
 
-不用安装脚本时，可直接用 package-runner（与脚本一致推荐 **pnpm** / `pnpx`；若你用 Bun，可用 `bunx` 代替）：
+不用安装脚本时，可直接用包运行器（与脚本一致推荐 **pnpm** / `pnpx`；若使用 Bun，可用 `bunx` 代替）：
 
 ```bash
 pnpx skills add zrr1999/skills --all -g -y
 ```
 
-## 常用 Skills（本仓库内）
+## 常用技能（本仓库内）
 
 ```bash
-# 添加全局可用的 skill（本仓库全部）
-pnpx skills add zrr1999/skills --all -g -y
+# 添加全局可用的技能（本仓库全部）
+pnpx skills add zrr1999/skills -g --skill project-workflows \
+  --skill tech-preferences \
+  --skill unix-software-design \
+  --skill modern-python \
+  --skill get-api-docs \
+  --skill compound-learnings \
+  --skill spark \
+  --skill release-quality \
+  --skill tech-debt-audit
 
 # 或按需单独添加示例
 pnpx skills add zrr1999/skills -g --skill project-workflows
@@ -100,7 +101,7 @@ pnpx skills add zrr1999/skills -g --skill svg-design
 ## 本地开发
 
 ```bash
-# 默认安装已发布的 GitHub 仓库版本（含 Vite+ / pnpm / chub / skills）
+# 默认安装远程已发布版本（含 Vite+ / pnpm / chub / skills）
 bash install.sh
 
 # 调试本地未发布改动时，覆盖技能来源
@@ -109,8 +110,8 @@ REPO_SOURCE=./skills bash install.sh
 # 调试本地未发布改动时，直接从本地目录添加
 pnpx skills add ./skills -g --skill unix-software-design
 
-# 与 prek.toml 对齐的本地检查（需已 prek install）
+# 与 prek.toml 对齐的本地检查（需已执行 prek install）
 prek run check-json check-yaml check-executables-have-shebangs --all-files
-# 或运行全部已配置 hooks：
+# 或运行全部已配置的钩子：
 prek run --all-files
 ```
