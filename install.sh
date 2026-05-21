@@ -93,13 +93,12 @@ install_chub() {
 install_skills() {
   log "Installing skills from $REPO_SOURCE..."
   pnpx skills add "$REPO_SOURCE" --all -g -y
-  pnpx skills add "$REPO_SOURCE" -g --skill project-workflows \
+  pnpx skills add "$REPO_SOURCE" -g --skill spark \
     --skill tech-preferences \
     --skill unix-software-design \
     --skill modern-python \
     --skill get-api-docs \
     --skill compound-learnings \
-    --skill spark \
     --skill release-quality \
     --skill tech-debt-audit
 

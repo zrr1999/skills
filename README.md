@@ -10,17 +10,16 @@
 - **`executor`** —— 聚焦实现，产出可合并的差异与校验契约
 - **`verifier`** —— 针对明确主张做复现、回归与审查；可在任务简报上设置可选审视角度 **`lens`**（`security`、`performance`、`architecture`）以加深专项审查
 
-**本仓库内的技能（共 10 个）**
+**本仓库内的技能（共 9 个）**
 
 | 技能 | 说明 |
 |------|------|
-| `project-workflows` | 统一项目工作流：任务包契约、澄清、并行边界、命令行优先、委托给其他技能；派发子代理时 **任务简报字段与 [`zrr1999/roles` 的任务简报契约](https://github.com/zrr1999/roles/blob/main/README.md#brief-contract) 对齐** |
 | `tech-preferences` | 技术栈与工具偏好 / 取舍 |
 | `unix-software-design` | 模块边界、接口、简洁性 |
 | `modern-python` | uv、ruff、ty、Python 工程卫生 |
 | `get-api-docs` | 第三方库 / API 文档 |
 | `compound-learnings` | 结构化沉淀与检索 |
-| `spark` | 通过 SPARK.md 捕获、打磨并规划项目想法 |
+| `spark` | 默认项目级入口：澄清意图、检查现场、产出统一 packet、拆分任务、并在需要时创建/更新 SPARK.md |
 | `release-quality` | 公开发布前的仓库卫生、OpenSSF Scorecard、安全检查与用户决策预检 |
 | `tech-debt-audit` | 基于证据的代码库健康度与技术债审计，含分类工具信号与结构/代数设计视角 |
 | `svg-design` | 手写 SVG 图标/Logo：viewBox/描边约定、渐变/蒙版、优化、动效、无障碍；Logo 预览工作流 |
@@ -32,7 +31,7 @@
 - **研读其他仓库** —— 按子系统或问题并行多份 `inspector` 任务简报；在一轮里综合或在编排层合并；没有单独的「写稿」角色——除非显式拆分任务简报，否则包装结果由编排输出。
 - **专项审查** —— 按需使用带 `lens: security` / `performance` / `architecture` 的 `verifier`。
 
-**数量说明**：本仓库当前 **10** 个技能，职责互不重叠。`project-workflows` 合并了原先分散的开坑/维护/读项目/路由与澄清、并行、命令行优先说明；不再单独提供 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit` 作为本仓库内的技能。
+**数量说明**：本仓库当前 **9** 个技能。统一项目工作流已收敛到 `spark`；不单独提供额外的 workflow/router/toolkit 类技能，如 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit`。
 
 ## 评测用例格式
 
@@ -74,25 +73,23 @@ pnpx skills add zrr1999/skills --all -g -y
 ## 常用技能（本仓库内）
 
 ```bash
-# 添加全局可用的技能（本仓库全部）
-pnpx skills add zrr1999/skills -g --skill project-workflows \
+# 添加全局可用的技能（推荐项目级入口使用 spark）
+pnpx skills add zrr1999/skills -g --skill spark \
   --skill tech-preferences \
   --skill unix-software-design \
   --skill modern-python \
   --skill get-api-docs \
   --skill compound-learnings \
-  --skill spark \
   --skill release-quality \
   --skill tech-debt-audit
 
 # 或按需单独添加示例
-pnpx skills add zrr1999/skills -g --skill project-workflows
+pnpx skills add zrr1999/skills -g --skill spark
 pnpx skills add zrr1999/skills -g --skill tech-preferences
 pnpx skills add zrr1999/skills -g --skill unix-software-design
 pnpx skills add zrr1999/skills -g --skill modern-python
 pnpx skills add zrr1999/skills -g --skill get-api-docs
 pnpx skills add zrr1999/skills -g --skill compound-learnings
-pnpx skills add zrr1999/skills -g --skill spark
 pnpx skills add zrr1999/skills -g --skill release-quality
 pnpx skills add zrr1999/skills -g --skill tech-debt-audit
 pnpx skills add zrr1999/skills -g --skill svg-design

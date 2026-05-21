@@ -40,13 +40,57 @@
     {
       "id": 4,
       "prompt": "Given this SPARK.md, turn it into what I should do this week, not a roadmap. ---\ndescription: A tool that turns project sparks into structured decisions\nowner: zrr1999\ncreated: 2026-04-26\nupdated: 2026-04-26\ninspired_by: []\n---\n\n## Origin\nProject ideas get lost before they become repos.\n\n## Capability map (directional)\n- Capture a raw idea through conversation\n- Draft a SPARK.md in the user's language\n\n## Success signals\nA first-time user can get a useful first draft without reading docs.\n\n## Open questions\nShould this be a CLI or a chat-only workflow?",
-      "expected_output": "Agent should enter Plan mode, output English next steps with size tags, tie actions back to capabilities or success signals, and avoid producing a full roadmap.",
+      "expected_output": "Agent should enter Advance mode, output English next steps with size tags, tie actions back to capabilities or success signals, and avoid producing a full roadmap.",
       "files": [],
       "expectations": [
         "Output uses English",
         "Produces concrete next actions tagged [small], [medium], or [large]",
         "Ties actions back to capability map or success signals",
         "Does not produce a long roadmap or implementation schedule"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我想先看看这个优秀项目有哪些设计值得借鉴，然后顺手把我自己的老项目下一步怎么改也一起想一下。",
+      "expected_output": "Agent 应把这类请求视为 Spark 的 Clarify / Inspect 工作流：先澄清两个阶段的关系，再给出统一 packet，明确参考项目洞察、当前项目语境和下一步动作。",
+      "files": [],
+      "expectations": [
+        "输出包含统一 packet 或等价结构",
+        "输出明确参考项目洞察与当前项目推进点",
+        "未要求先选择新开/维护/学习模式"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "我想做一个 CLI 小工具，用来批量重命名图片，顺便看看仓库里现有脚本能不能复用，必要的话在终端里直接搜。",
+      "expected_output": "Agent 应把这类请求视为 Spark 的 Clarify / Inspect / Advance 工作流，并在需要终端证据时启用内建 CLI-first 工作法。",
+      "files": [],
+      "expectations": [
+        "输出体现 CLI-first 或终端取证思路",
+        "输出包含最小下一步与复用现有脚本的判断",
+        "未要求额外加载单独的 agent-cli-toolkit"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "我要给这个 TypeScript 服务拆模块边界，也想知道该不该换框架。你先帮我理一理下一步怎么推进，必要时告诉我该调用哪些专项 skill。",
+      "expected_output": "Agent 应把这类请求视为 Spark 的项目级工作流，同时明确把技术选型让给 tech-preferences、把边界拆分让给 unix-software-design，而自己负责推进 packet 与下一步动作。",
+      "files": [],
+      "expectations": [
+        "明确 tech-preferences 和 unix-software-design 的使用时机",
+        "输出仍以统一 packet / 下一步推进为主",
+        "未把专项 skill 的职责吞进 spark"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "这个改动我想拆成三个 brief：先查现状和 diff，再落一版改动，最后做性能审查。你按现在的 roles 帮我规划一下该怎么分给子代理。",
+      "expected_output": "Agent 应在 Spark 的 Advance 模式中按 roles 仓库当前的 inspector / executor / verifier 约定来拆 brief，并给性能审查使用 verifier 的 performance lens。",
+      "files": [],
+      "expectations": [
+        "输出使用 inspector、executor、verifier 这三个角色契约",
+        "性能审查使用 verifier 且带 performance lens 或等价说明",
+        "输出包含 brief contract 关键信息，如 goal、inputs、non_goals、expected_output、blocking"
       ]
     }
   ]
