@@ -99,8 +99,7 @@ install_skills() {
     --skill modern-python \
     --skill get-api-docs \
     --skill compound-learnings \
-    --skill release-quality \
-    --skill tech-debt-audit
+    --skill quality-audit
 
   pnpx skills add anthropics/skills -g --skill skill-creator -y
   pnpx skills add cloudflare/skills -g --skill workers-best-practices --skill durable-objects --skill cloudflare --skill wrangler -y
