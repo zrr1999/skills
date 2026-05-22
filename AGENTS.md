@@ -49,5 +49,5 @@
 
 ## Learned Workspace Facts
 
-- `spark` 现为统一项目工作流入口：内建需求澄清、与 `roles` 一致的 brief 编排（职责并行）、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`modern-python`、`unix-software-design`、`get-api-docs`、`compound-learnings`。
+- `spark` 现为统一项目工作流入口：内建需求澄清、与 `roles` 一致的 brief 编排（职责并行）、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`modern-python`、`unix-software-design`、`get-api-docs`；非平凡经验沉淀迁移到 pi-spark 的 `spark-learnings` 工具链。
 - 各 skill 的评测用例在 `skills/<skill-name>/evals/evals.json`。

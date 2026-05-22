@@ -226,7 +226,7 @@ Only parallelize low-coupled work. If tasks overlap heavily in context or code o
 - **`modern-python`** — Python project engineering work: `uv`, `ruff`, `ty`, `pyproject.toml`, CI, hooks, scaffolding
 - **`unix-software-design`** — module boundaries, interface design, decomposition strategy, complexity control
 - **`get-api-docs`** — current third-party SDK / API / platform documentation
-- **`compound-learnings`** — after a non-trivial fix or decision, or when you should first retrieve prior learnings
+- **Spark learnings tools** — in pi-spark workspaces, use `spark_learning_search` before related work and `spark_learning_record` / task-finish candidates after non-trivial fixes or decisions
 
 ## General principles
 

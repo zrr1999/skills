@@ -98,7 +98,6 @@ install_skills() {
     --skill unix-software-design \
     --skill modern-python \
     --skill get-api-docs \
-    --skill compound-learnings \
     --skill quality-audit
 
   pnpx skills add anthropics/skills -g --skill skill-creator -y
