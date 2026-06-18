@@ -98,6 +98,17 @@
         "可以使用架构、重复、测试、类型等质量维度作为 review lens",
         "不要求生成 QUALITY_AUDIT.md"
       ]
+    },
+    {
+      "id": 9,
+      "prompt": "我们这个内部服务今天要发一个 CI tag，帮我检查 release 流程有没有明显问题，不涉及开源或公开仓库。",
+      "expected_output": "Agent 不应使用 quality-audit 的 public-release preflight；应按普通项目维护或 CI/release 调试流程处理。只有涉及公开发布、开源、Scorecard、license/security/public readiness 时才触发 release preflight。",
+      "files": [],
+      "expectations": [
+        "未启动公开发布预检或 Scorecard/license 决策流程",
+        "明确范围是内部 CI/release 检查",
+        "如需项目推进，应转向普通调试/维护流程"
+      ]
     }
   ]
 }

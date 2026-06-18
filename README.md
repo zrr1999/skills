@@ -33,18 +33,17 @@
 
 ## 评测用例格式
 
-每个技能在 `skills/<skill-name>/evals/evals.json` 下有评测用例。本地快速校验 JSON 语法：`for f in skills/*/evals/evals.json; do jq empty "$f"; done`。
+每个技能在 `skills/<skill-name>/evals/evals.json` 下有评测用例。本地快速校验 JSON 语法：`for f in skills/*/evals/evals.json; do jq empty "$f"; done`。结构校验：`bash scripts/check-evals.sh`。
 
 ### 一键安装
 
-安装脚本会（按需）安装 **Vite+**（[`curl -fsSL https://vite.plus | bash`](https://vite.plus)）以获得托管的 **Node.js**，再安装 **pnpm**，升级或安装 **`gh-llm`** 扩展，全局安装 **`@aisuite/chub`**（供 `get-api-docs` 使用），最后用 **`pnpx skills add`** 安装本仓库全部技能。默认还会从下列**外仓**再装一组可选技能；不需要时设置 **`SKIP_EXTERNAL_SKILLS=1`**。
+安装脚本会（按需）安装 **Vite+**（[`curl -fsSL https://vite.plus | bash`](https://vite.plus)）以获得托管的 **Node.js**，再安装 **pnpm**，升级或安装 **`gh-llm`** 扩展，全局安装 **`@aisuite/chub`**（供 `get-api-docs` 使用），最后用 **`pnpx skills add`** 安装本仓库全部技能。默认还会安装下列外仓技能集合。
 
 外仓来源（与 `install.sh` 中 `pnpx skills add …` 一致）：
 
 - `anthropics/skills`（`skill-creator`）
-- `cloudflare/skills`（`cloudflare`、`wrangler`）
+- `cloudflare/skills`（`workers-best-practices`、`durable-objects`、`cloudflare`、`wrangler`）
 - `shigurelab/gh-llm`（`github-conversation`）
-- `aviator-co/agent-plugins`（`av-cli`）
 - `vibe-motion/skills`（`svg-assembly-animator`、`procedural-fish-render`、`ruler-progress-render`）
 - `spore-lang/spore`（`spore-language`）
 
@@ -103,6 +102,8 @@ pnpx skills add ./skills -g --skill unix-software-design
 
 # 与 prek.toml 对齐的本地检查（需已执行 prek install）
 prek run check-json check-yaml check-executables-have-shebangs --all-files
+# 校验每个 skill eval 的结构
+bash scripts/check-evals.sh
 # 或运行全部已配置的钩子：
 prek run --all-files
 ```

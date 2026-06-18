@@ -36,7 +36,7 @@ description: 用现代 Python 工具链（uv、ruff、ty）初始化或改造项
 |------|------|------|
 | 依赖解析、锁文件、`venv`、运行工具 | **uv** | 替代 `pip install` / `poetry` 的日常路径 |
 | Lint + format | **ruff** | 替代 `flake8` + `black` + 大量 isort 等拼盘 |
-| 类型检查 | **ty** | 与 ruff 同属 Astral 生态；替代多数 `p'y'ri'g'h't` 场景前先评估边界 |
+| 类型检查 | **ty** | 与 ruff 同属 Astral 生态；替代多数 `pyright` 场景前先评估边界 |
 | 测试 | **pytest** | 与仓库偏好一致；本 skill 不展开测试写法 |
 
 ---

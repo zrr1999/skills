@@ -16,6 +16,7 @@ description: 适用于技术选型、架构规划、工具推荐、重构方向�
 ### Python 生态
 - 包管理：**uv**（替代 pip/poetry/pyenv）
 - 代码质量：**ruff**（lint + format），**ty**（类型检查）
+- 测试框架：**pytest**
 - 预提交/CI 钩子：**prek**（替代 pre-commit）
 - 依赖自动升级：**Renovate**
 - 数据模型：**dataclasses**（首选，原生零依赖）；仅在需要运行时校验或序列化时才引入 **Pydantic v2**

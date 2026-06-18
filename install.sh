@@ -61,6 +61,20 @@ ensure_pnpm() {
   log "Installing pnpm..."
   curl -fsSL https://get.pnpm.io/install.sh | sh -
   export PATH="$HOME/.local/share/pnpm:$PATH"
+
+  if ! has pnpm; then
+    log "error: pnpm not found after install. Add pnpm's bin directory to PATH and retry."
+    return 1
+  fi
+}
+
+ensure_pnpx() {
+  if has pnpx; then
+    return
+  fi
+
+  log "error: pnpx not found. Ensure your pnpm installation provides pnpx and its bin directory is on PATH."
+  return 1
 }
 
 ensure_gh_extensions() {
@@ -86,19 +100,19 @@ install_chub() {
   if has chub; then
     return
   fi
+
   log "Installing chub (required by get-api-docs skill)..."
   pnpm install -g @aisuite/chub
+
+  if ! has chub; then
+    log "error: chub not found after install. Add pnpm's global bin directory to PATH and retry."
+    return 1
+  fi
 }
 
 install_skills() {
   log "Installing skills from $REPO_SOURCE..."
   pnpx skills add "$REPO_SOURCE" --all -g -y
-  pnpx skills add "$REPO_SOURCE" -g --skill spark \
-    --skill tech-preferences \
-    --skill unix-software-design \
-    --skill modern-python \
-    --skill get-api-docs \
-    --skill quality-audit
 
   pnpx skills add anthropics/skills -g --skill skill-creator -y
   pnpx skills add cloudflare/skills -g --skill workers-best-practices --skill durable-objects --skill cloudflare --skill wrangler -y
@@ -110,6 +124,7 @@ install_skills() {
 main() {
   ensure_node
   ensure_pnpm
+  ensure_pnpx
   ensure_gh_extensions
   install_chub
   install_skills

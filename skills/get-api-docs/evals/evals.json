@@ -22,6 +22,18 @@
         "检查或提及 annotation 机制",
         "基于文档和标注编写代码"
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "Stripe Python SDK 文档里 webhook 验证这块我不确定，帮我查最新文档，并把发现的 API 文档坑标注起来。",
+      "expected_output": "Agent 应使用 get-api-docs：通过 chub 获取 Stripe 文档，基于文档回答，并用 chub annotate 记录第三方 API 文档坑，而不是把主要动作转成项目级 learning 沉淀。",
+      "files": [],
+      "expectations": [
+        "使用 chub search 或 chub get 获取 Stripe 文档",
+        "基于获取的文档说明 webhook 验证注意点",
+        "使用或提及 chub annotate",
+        "没有把主要动作转成项目级 learning 沉淀"
+      ]
     }
   ]
 }

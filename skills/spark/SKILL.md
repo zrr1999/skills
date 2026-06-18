@@ -7,7 +7,7 @@ description: >
   "帮我理一理下一步", "这个项目接下来做什么", "把任务拆一下", or open-ended project/design/workflow requests.
 ---
 
-# SPARK Skill
+# Spark Skill
 
 Spark is the default **project-level workflow**:
 
@@ -228,6 +228,10 @@ Only parallelize low-coupled work. If tasks overlap heavily in context or code o
 - **`get-api-docs`** — current third-party SDK / API / platform documentation
 - **Spark learnings tools** — in pi-spark workspaces, use `spark_learning_search` before related work and `spark_learning_record` / task-finish candidates after non-trivial fixes or decisions
 
+## Product boundary
+
+This skill owns the project-idea / SPARK.md / idea-to-repo assumptions that used to be embedded in the Spark product prompt. Treat Spark itself as a generic project/task coordination runtime: do not assume Spark product examples, local `.spark/` state, or task orchestration are the expected deliverable for idea capture. If the user wants to turn a confirmed SPARK.md into implementation tasks inside an existing repo, use the host's project/task tools deliberately.
+
 ## General principles
 
 - **Conversation before document**. `SPARK.md` is a durable product of the conversation, not a replacement for it.
@@ -240,3 +244,5 @@ Only parallelize low-coupled work. If tasks overlap heavily in context or code o
 ## Reference files
 
 - `references/spark-spec.md` — complete `SPARK.md` format in 中文 and English; read it before drafting or editing
+- `examples/basic/idea.txt` — example for converting a rough SVG-logo animation extension idea into SPARK.md work
+- `references/legacy-spark-product-prompt.md` — archived prompt notes moved out of the Spark product; use only as maintenance context, not as active runtime instructions

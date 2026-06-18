@@ -1,0 +1,17 @@
+User prompt example:
+
+我想做一个用于把 SVG logo 转成装配动画的 Pi 扩展
+
+Expected skill behavior:
+
+- Stay in `spark` Capture mode.
+- Elicit only the highest-signal missing pieces; do not ask a generic intake form.
+- Draft a concrete `SPARK.md` in Chinese, marking uncertain guesses with `<!-- 待确认 -->`.
+- Ask for draft confirmation before creating files or a repo.
+- After confirmation, optionally create the repo and commit `SPARK.md` as described in the skill.
+
+Not expected from the Spark product itself:
+
+- Do not assume local `.spark/` runtime files are the deliverable.
+- Do not inspect Spark task state with legacy `task_read({ action: "status" })`.
+- Do not route this example through Spark's internal project/task orchestration unless the user explicitly asks to turn the SPARK.md into implementation work.
