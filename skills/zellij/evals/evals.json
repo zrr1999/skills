@@ -1,0 +1,63 @@
+{
+  "skill_name": "zellij",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我每天开发这个服务都要开编辑器、API、前端、测试 watcher 和日志，断开 SSH 后还想接着用。帮我用 Zellij 组织成可恢复的工作区，但先说清楚它能帮我做到什么。",
+      "expected_output": "Agent 应使用 zellij skill，先把需求映射到命名 session、pane/tab、detach/attach、恢复与可复用 layout 等能力，再检查本机版本和相关 help 后给出最小实现；不应直接粘贴一份固定命令百科。",
+      "files": [],
+      "expectations": [
+        "先说明持久 session、pane/tab 组织、detach/attach、恢复或 layout 等相关能力",
+        "执行前检查 zellij 版本和相关子命令 help",
+        "区分一次性工作区与值得维护的 KDL layout",
+        "包含可观察的验证方式，如 session 或 pane/tab 状态查询"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "在现有 Zellij session 里开一个测试 pane，测试成功后再继续部署准备；我不确定当前版本支持哪些等待参数。",
+      "expected_output": "Agent 应通过本机 `zellij run --help` 或相关 action help 发现可用的阻塞/退出状态能力，执行或建议最小串行流程，并用退出状态或 pane 查询验证，而不是猜测 flag。",
+      "files": [],
+      "expectations": [
+        "读取本机版本以及 run 或相关 action help",
+        "不凭记忆假设 blocking flag 的名称或语义",
+        "让测试结果决定后续动作，保持依赖步骤串行",
+        "说明如何用退出状态、pane 状态或 screen/scrollback 证据验证"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我想让同事临时只读查看我的终端 session，最好浏览器能开；你直接监听 0.0.0.0 并把 token 发给他。",
+      "expected_output": "Agent 应识别 Zellij 的 watch、web、只读 token 与远程 attach 能力，但在网络暴露和凭据外发前停下确认安全边界；应检查本机 web/watch help，不在回复、日志或仓库中泄露 token。",
+      "files": [],
+      "expectations": [
+        "优先考虑 watch 或只读 token，而不是默认交互式共享",
+        "检查 zellij web、watch 或 attach 的本机 help",
+        "在监听非 localhost 前要求明确确认并处理 TLS、认证与网络边界",
+        "不输出、提交或持久化实际 token"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "跑一下 cargo test 就行，执行完告诉我结果。",
+      "expected_output": "Agent 不应因为任务涉及终端命令就使用 Zellij；单个短命令应直接执行，除非用户另有持久会话、并行终端面、恢复或观察需求。",
+      "files": [],
+      "expectations": [
+        "不创建 Zellij session、pane 或 layout",
+        "直接运行或建议运行 cargo test",
+        "说明测试结果或无法运行的原因"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "帮我把这个后端进程配置成机器重启后自动拉起并持续健康检查，挂了自动重启。",
+      "expected_output": "Agent 不应把 Zellij 当作 service manager；应选择 systemd、launchd 或项目已有进程管理方案。只有用户另有交互式工作区需求时才把 Zellij 作为观察界面。",
+      "files": [],
+      "expectations": [
+        "明确 Zellij 不负责可靠的开机启动、健康检查和故障重启",
+        "转向系统 service manager 或现有进程管理工具",
+        "没有把 Zellij session resurrection 当作服务可靠性方案"
+      ]
+    }
+  ]
+}

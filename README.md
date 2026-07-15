@@ -10,7 +10,7 @@
 - **`executor`** —— 聚焦实现，产出可合并的差异与校验契约
 - **`verifier`** —— 针对明确主张做复现、回归与审查；可在任务简报上设置可选审视角度 **`lens`**（`security`、`performance`、`architecture`）以加深专项审查
 
-**本仓库内的技能（共 7 个）**
+**本仓库内的技能（共 8 个）**
 
 | 技能                   | 说明                                                                                                     |
 | ---------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -21,6 +21,7 @@
 | `spark`                | 默认项目级入口：澄清意图、检查现场、产出统一 packet、拆分任务、并在需要时创建/更新 SPARK.md              |
 | `quality-audit`        | 统一质量检查与优化：技术债/架构健康/可维护性审计，以及公开发布前的 Scorecard、安全、许可证与仓库卫生预检 |
 | `svg-design`           | 手写 SVG 图标/Logo：viewBox/描边约定、渐变/蒙版、优化、动效、无障碍；Logo 预览工作流                     |
+| `zellij`               | 持久终端工作区：session 恢复、pane/tab/layout 组织、自动化取证、只读观察与安全远程访问                   |
 
 **与 `roles` 的典型搭配（示例）**
 
@@ -29,7 +30,7 @@
 - **研读其他仓库** —— 按子系统或问题并行多份 `inspector` 任务简报；在一轮里综合或在编排层合并；没有单独的「写稿」角色——除非显式拆分任务简报，否则包装结果由编排输出。
 - **专项审查** —— 按需使用带 `lens: security` / `performance` / `architecture` 的 `verifier`。
 
-**数量说明**：本仓库当前 **7** 个技能。统一项目工作流已收敛到 `spark`；质量检查与优化已收敛到 `quality-audit`；不单独提供额外的 workflow/router/toolkit 类技能，如 `requirements-shaping`、`expert-orchestration` 或 `agent-cli-toolkit`。
+**数量说明**：本仓库当前 **8** 个技能。统一项目工作流已收敛到 `spark`；质量检查与优化已收敛到 `quality-audit`；Zellij 的持久工作区能力由 `zellij` 单独负责。
 
 ## 评测用例格式
 
@@ -76,7 +77,9 @@ pnpx skills add zrr1999/skills -g --skill spark \
   --skill unix-software-design \
   --skill modern-python \
   --skill get-api-docs \
-  --skill quality-audit
+  --skill quality-audit \
+  --skill svg-design \
+  --skill zellij
 
 # 或按需单独添加示例
 pnpx skills add zrr1999/skills -g --skill spark
@@ -86,6 +89,7 @@ pnpx skills add zrr1999/skills -g --skill modern-python
 pnpx skills add zrr1999/skills -g --skill get-api-docs
 pnpx skills add zrr1999/skills -g --skill quality-audit
 pnpx skills add zrr1999/skills -g --skill svg-design
+pnpx skills add zrr1999/skills -g --skill zellij
 ```
 
 ## 本地开发
