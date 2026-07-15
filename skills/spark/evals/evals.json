@@ -52,10 +52,10 @@
     {
       "id": 5,
       "prompt": "我想先看看这个优秀项目有哪些设计值得借鉴，然后顺手把我自己的老项目下一步怎么改也一起想一下。",
-      "expected_output": "Agent 应把这类请求视为 Spark 的 Clarify / Inspect 工作流：先澄清两个阶段的关系，再给出统一 packet，明确参考项目洞察、当前项目语境和下一步动作。",
+      "expected_output": "Agent 应把这类请求视为 Spark 的 Inspect / Advance 工作流：检查参考项目和当前项目的证据，明确二者关系并给出最小可验证下一步；输出应随任务调整，不必填满固定 packet。",
       "files": [],
       "expectations": [
-        "输出包含统一 packet 或等价结构",
+        "输出包含结论、关键证据、最小下一步和验证方式，而非机械填充固定模板",
         "输出明确参考项目洞察与当前项目推进点",
         "未要求先选择新开/维护/学习模式"
       ]
@@ -74,11 +74,11 @@
     {
       "id": 7,
       "prompt": "我要给这个 TypeScript 服务拆模块边界，也想知道该不该换框架。你先帮我理一理下一步怎么推进，必要时告诉我该调用哪些专项 skill。",
-      "expected_output": "Agent 应把这类请求视为 Spark 的项目级工作流，同时明确把技术选型让给 tech-preferences、把边界拆分让给 unix-software-design，而自己负责推进 packet 与下一步动作。",
+      "expected_output": "Agent 应把这类请求视为 Spark 的项目级工作流，同时明确把技术选型交给 tech-preferences、把边界拆分交给 unix-software-design，而自己负责整体推进、最小下一步与验证。",
       "files": [],
       "expectations": [
         "明确 tech-preferences 和 unix-software-design 的使用时机",
-        "输出仍以统一 packet / 下一步推进为主",
+        "输出仍以项目推进、最小下一步和验证方式为主",
         "未把专项 skill 的职责吞进 spark"
       ]
     },

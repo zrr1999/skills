@@ -1,248 +1,86 @@
 ---
 name: spark
 description: >
-  Use when the user wants to capture, clarify, plan, or advance a project idea or repo in Chinese or English.
-  Triggers include "I have an idea", "help me think through X", "what should I do next in this repo",
-  "split this into tasks", "write/update SPARK.md", "create a repo", "我有个想法", "帮我想清楚",
-  "帮我理一理下一步", "这个项目接下来做什么", "把任务拆一下", or open-ended project/design/workflow requests.
+  统一推进项目级任务：澄清目标、检查现有仓库或参考项目、选择最小可验证切片、拆分依赖与 agent brief，并在有长期价值时创建或更新 SPARK.md。适用于“我有个想法”“这个项目下一步做什么”“比较参考项目后规划改动”“拆任务/brief”“写或更新 SPARK.md”等中英文请求。不要用于边界明确的单点修改，也不要替代技术选型、Python 工程化、API 文档、架构设计或 Zellij 工作区等专项 skill。
 ---
 
-# Spark Skill
+# Spark
 
-Spark is the default **project-level workflow**:
+## Goal
 
-- clarify the current goal before implementation
-- inspect the current repo / docs / scripts / runtime reality instead of assuming
-- choose the smallest useful next slice
-- split work or parallelize only when boundaries are genuinely clear
-- use CLI-first evidence gathering when terminal proof matters
-- hand off narrow concerns to narrower skills
-- materialize or refine `SPARK.md` when durable intent would help
+把模糊或跨阶段的项目请求推进到一个有证据、可执行、可验证的下一步。完成时应满足：
 
-Do **not** ask the user to choose a mode up front. Infer the mode from the request and project state.
+- 当前目标、重要约束和成功标准清楚；
+- 建议基于仓库、文档、运行结果或用户输入，而非理想化假设；
+- 已选择最小有用切片，并说明依赖、风险和验证方式；
+- 需要委派时，brief 可直接交给对应 role；
+- 只有长期项目意图值得维护时，才创建或更新 `SPARK.md`。
 
-## Working language
+## Decision rules
 
-Support both 中文 and English.
+1. **先判断缺什么。** 若关键信息已足够，直接检查现场并推进；若缺口会改变范围、架构、优先级或成功标准，只问最影响决策的 1-3 个问题。
+2. **先看现实。** 在建议重写、大规模重构、并行拆分或新技术栈前，读取相关代码、文档、脚本、diff、运行结果或参考项目。
+3. **选择最小验证点。** 优先做能降低最大不确定性或验证核心价值的一步，不默认铺完整路线图。
+4. **按依赖拆分。** 仅并行低耦合、输入和输出边界清楚的工作；共享上下文重、改动区域重叠或存在前置决策时保持串行。
+5. **需要终端证据时走 CLI-first。** 优先检查并复用仓库已有命令、脚本和本地工具；多个独立读取可并行，一个结果决定下一步时保持串行。
+6. **交给更窄的 skill。** Spark 负责整体推进，不重复专项方法：
+   - 技术栈与工具取舍：`tech-preferences`
+   - Python 工程化：`modern-python`
+   - 模块边界与接口：`unix-software-design`
+   - 第三方 SDK/API：`get-api-docs`
+   - 仓库质量或公开发布预检：`quality-audit`
+   - SVG/图标/Logo：`svg-design`
+   - 持久终端工作区与会话：`zellij`
+7. **完成后验证。** 对实现建议给出相关测试、检查或可观察信号；无法验证时说明缺失证据和最小下一步。
 
-1. Choose the working language from the user's current request. If editing an existing `SPARK.md`, use the document language unless the user asks to switch.
-2. Use the working language for conversation, questions, summaries, confirmation prompts, drafted `SPARK.md` body, plans, task packets, and uncertainty comments.
-3. If the request is mixed or unclear, ask one short question: `中文还是 English?` / `Chinese or English?`
-4. Keep YAML frontmatter keys unchanged in both languages. Read `references/spark-spec.md` before drafting or editing `SPARK.md`; it contains the Chinese and English section names.
+## Entry paths
 
-Useful paired phrases:
+不要求用户选择模式；从请求和项目状态推断。
 
-| Situation | 中文 | English |
-|---|---|---|
-| Uncertainty marker | `<!-- 待确认 -->` | `<!-- to confirm -->` |
-| Draft confirmation | `有没有明显偏差的地方？` | `Anything obviously off?` |
-| Direction changed | `这个方向变了` | `the direction changed` |
+- **Inspect**：理解现有项目、参考项目或问题现场，判断下一步或是否值得重构。
+- **Capture**：把粗略想法聊清楚并起草 `SPARK.md`。
+- **Refine**：更新已有 `SPARK.md`，处理方向变化、非目标和开放问题。
+- **Advance**：从当前状态或 `SPARK.md` 产出具体行动、依赖和 brief；需要行动列表时用 `[small]`、`[medium]`、`[large]` 标注粗略工作量。
 
-## Entry modes
+这些路径可以自然衔接，但只推进当前请求需要的层级。研究或规划请求不自动进入实现；本地实现请求可直接做范围内改动和非破坏性验证；创建文件或远端仓库、发布、删除数据或其他外部/破坏性动作需要明确确认。
 
-Infer the mode; don't make the user pick one.
+## SPARK.md
 
-| Mode | When to use |
+起草或编辑前读取 `references/spark-spec.md`。
+
+- 跟随用户当前语言；编辑已有文档时优先保持文档语言。
+- Capture 时从对话中提取核心洞察、目标体验、目标用户、非目标、启发来源和成功信号；只追问真正缺失且影响方向的信息。
+- 给出具体草稿，用 `<!-- 待确认 -->` 或 `<!-- to confirm -->` 标记合理但未确认的推断。
+- 在写入文件或创建远端仓库前先让用户确认草稿和对应动作。
+- Refine 时写出实际修改，并在实质变更后更新 `updated`；重大方向变化写入修订记录。
+- Advance 时输出当前阶段的动作，不把 `SPARK.md` 变成长期任务清单。
+
+## Delegation
+
+使用 `zrr1999/roles` 时，只采用职责型角色：
+
+- `inspector`：有边界的证据收集、阅读、比较和范围判断；
+- `executor`：在明确边界内实现并报告验证；
+- `verifier`：复现、回归和声明审查；专项审查可设置 `lens: security | performance | architecture`。
+
+每个 brief 仅保留会改变执行的字段：
+
+| Field | Content |
 |---|---|
-| **Clarify / Inspect** | The user wants to understand a repo, choose the next slice, compare a reference project, or decide whether to refactor / rewrite |
-| **Capture** | The user has an idea but no `SPARK.md` yet |
-| **Refine** | The user already has a `SPARK.md` and wants to sharpen or change it |
-| **Advance** | The user wants concrete next actions, task splits, or agent briefs from the current project state or from `SPARK.md` |
+| `goal` | 要产出或判定什么 |
+| `inputs` | 路径、commit、日志、链接或已有证据 |
+| `non_goals` | 明确不做的范围 |
+| `expected_output` | 交付物与验证证据 |
+| `blocking` | 是否阻塞其他工作 |
+| `lens` | 仅在 verifier 需要专项审视时使用 |
 
-These modes often chain: Clarify / Inspect → Capture or Refine → Advance.
+## Output and stop rules
 
-## Unified project workflow
+输出结构随任务调整，不强制填满固定模板。对话与交付语言跟随用户当前请求；编辑已有文档时优先保持文档语言。至少保留：结论或建议、关键证据、最小下一步、验证方式，以及仍会影响推进的 blocker。
 
-For most project-level requests, follow this sequence:
+获得足够证据回答核心请求后停止继续搜索或扩写。若关键证据仍缺失，尝试最小有意义的补充检查；仍无法取得时，明确缺什么、为什么重要，以及用户或下一工具调用需要提供什么。
 
-1. **Restate the objective** — summarize the current goal in one sentence.
-2. **Fill the highest-signal gap** — if scope, boundary, constraints, or success criteria are unclear, ask only the most decision-changing question first. Ask at most 2–3 questions at a time.
-3. **Inspect reality** — read the current code, docs, scripts, repo structure, reference project, or runtime evidence before proposing major moves.
-4. **Name constraints and success criteria** — make explicit what must stay true, what “done” means, and what should *not* be broadened yet.
-5. **Choose the smallest next slice** — prefer the smallest step that reduces uncertainty or creates a meaningful validation point.
-6. **Decide whether to split work** — only split into subproblems or parallel workstreams when the boundaries, dependencies, and outputs are clear.
-7. **Call narrower skills when needed** — use specialized skills for preferences, design, APIs, Python engineering, or learnings rather than swallowing those concerns whole.
-8. **Deliver a unified packet** — give the user an actionable, mergeable next-step packet rather than vague advice.
+## References
 
-## Unified packet
-
-Unless the user asks for a different format, the project-level response should include at least:
-
-- **Objective** — what the current step is trying to achieve
-- **Current context** — repo facts, evidence, reference inputs, or observed constraints
-- **Constraints** — boundaries and non-goals that matter right now
-- **Success criteria** — how to tell whether this step worked
-- **Recommended approach** — the suggested path and why
-- **Smallest next slice** — the minimum useful next deliverable
-- **Subproblems / dependencies** — if applicable, what can be separated and what cannot
-- **Parallelization** — what can run in parallel vs. what must stay serial
-- **Risks / open questions** — the unresolved points that still matter
-- **Next 3 actions** — the next three concrete actions
-
-## Mode 1 — Clarify / Inspect
-
-Use this for most "project work" requests, including:
-
-- maintaining an existing repo
-- reading a reference project and translating lessons back
-- choosing the next worthwhile slice in a messy project
-- judging whether a rewrite is justified
-- planning how to split work among agents
-
-### Rules
-
-1. **Inspect before prescribing**. Do not endorse a rewrite, big refactor, or parallel split without evidence from the current repo or reference inputs.
-2. **Do not force a fake mode choice**. The user should not have to choose “new / maintain / learn” first.
-3. **Let reference reading and project planning coexist**. If the user wants to inspect a great repo *and* decide the next step for their own repo, keep both stages in one packet.
-4. **Prefer the smallest credible move**. In a messy project, pick the most leverageful next slice instead of proposing a reset.
-
-### CLI-first evidence gathering
-
-When terminal proof matters, use CLI-first working inside Spark instead of inventing a separate toolkit.
-
-Default tools to prefer:
-
-- search code: `rg`
-- find files by name: `fd`
-- inspect files quickly: `bat`
-- simple replacements: `sd`
-- inspect diffs: `delta` / `difft`
-- GitHub context: `gh` / `gh llm`
-- HTTP + JSON: `http` + `jq`
-- benchmarking: `hyperfine`
-- disk / process inspection: `dust` / `duf` / `procs` / `btm`
-- multi-pane / named sessions: `zellij`
-
-Principles: terminal evidence first, structured output first, automate repeated steps when useful.
-
-## Mode 2 — Capture
-
-### Step 1 — Elicit
-
-Don't ask for a form. Have a conversation in the working language. Extract enough signal to write a first draft. Use these concepts, translated into the working language:
-
-- **核心洞察 / Core insight**: what problem or opportunity sparked this?
-- **目标体验 / Target experience**: what does it feel like to use the thing?
-- **目标用户 / Who it's for**: even roughly ("myself", "other developers", "small teams")
-- **排除方向 / What it's NOT**: what would be an obvious wrong turn?
-- **启发来源 / Inspirations**: what tools, papers, projects, or conversations influenced this?
-
-Ask at most 2–3 questions at a time. If the user gives a long description upfront, extract what you can and only ask about genuine gaps.
-If the user only provides a one-sentence idea, stay in Elicit and ask the highest-signal gaps before drafting.
-
-One useful question to always ask if not answered:
-
-- 中文：`什么现象出现时，会让你觉得这个项目方向是对的？`
-- English: `What would make you feel like this project is going in the right direction?`
-
-This seeds the `成功信号` / `Success signals` section.
-
-### Step 2 — Draft `SPARK.md`
-
-Read `references/spark-spec.md` for the exact format before writing.
-
-Write a complete draft in the working language. Don't leave placeholder lorem ipsum — make real guesses based on the conversation and mark uncertainty with the localized inline comment from Working language. It's easier for the user to correct a concrete wrong answer than to fill a blank.
-
-Present the draft inline in conversation first. Ask the localized draft-confirmation question before creating any files.
-
-### Step 3 — Create repo + commit
-
-Once the user confirms the draft (or says "looks good enough, let's go"):
-
-```bash
-# 1. Create repo (gh CLI)
-gh repo create <name> --private --clone
-cd <name>
-
-# 2. Write SPARK.md
-cat > SPARK.md << 'EOF'
-<draft content>
-EOF
-
-# 3. Initial commit
-git add SPARK.md
-git commit -m "docs: add SPARK.md"
-git push
-```
-
-If the repo name isn't decided yet, ask — but don't block on a perfect name. A working name is fine; `SPARK.md`'s `description` field carries the real meaning.
-
-After creating, print the repo URL and confirm with the user.
-
-## Mode 3 — Refine
-
-Read the existing `SPARK.md` first. Then:
-
-1. Summarize what you understand the idea to be (2–3 sentences). Ask if that's right.
-2. Identify the weakest sections — usually `开放问题` / `Open questions`, `什么不是本项目要做的（Non-goals）` / `Non-goals`, or missing `成功信号` / `Success signals`.
-3. Propose specific edits, not just "you should add X". Write the actual text.
-4. Update the file and bump `updated` in frontmatter.
-
-When the user says the direction changed or a major assumption gets invalidated, add an entry to `## 修订记录` / `## Revision log` explaining why.
-
-## Mode 4 — Advance
-
-Turn the current repo state or `SPARK.md` into actionable next steps. This is not a roadmap — it's the smallest useful move that should happen next.
-
-### What to produce
-
-- concrete actions, not vague themes
-- subproblem boundaries and dependencies when relevant
-- clear serial vs. parallel guidance
-- brief-ready task packets when the user wants delegation
-- explicit mention of blockers or missing evidence
-
-When useful, tag actions with rough size:
-- `[small]` — less than 2 hours
-- `[medium]` — about half a day
-- `[large]` — needs breakdown
-
-If no `SPARK.md` exists yet, you may still work directly from the repo reality. Only write or update `SPARK.md` when durable project intent would materially help.
-
-### Delegation / agent briefs
-
-If the user wants subagent planning, align with [`zrr1999/roles`](https://github.com/zrr1999/roles/blob/main/README.md#brief-contract):
-
-| Field | Meaning |
-|---|---|
-| `goal` | What should be produced or decided |
-| `inputs` | Repo, paths, commits, logs, links, or evidence |
-| `non_goals` | What this brief explicitly should not do |
-| `expected_output` | The expected artifact or result shape |
-| `blocking` | Whether this work blocks other work |
-| `lens` (optional) | Only for `verifier`: `security`, `performance`, or `architecture` |
-
-Use the current agent-first role split:
-
-- **`inspector`** — evidence gathering, reading unfamiliar code/docs, surfacing options, summarizing current state
-- **`executor`** — bounded implementation with concrete deliverables and validation notes
-- **`verifier`** — reproduction, regression checks, and claim review; deepen with `lens: security | performance | architecture` when needed
-
-Only parallelize low-coupled work. If tasks overlap heavily in context or code ownership, keep them serial.
-
-## When to call other skills
-
-- **`tech-preferences`** — choosing languages, frameworks, tools, data formats, or deciding whether to deviate from an existing baseline
-- **`modern-python`** — Python project engineering work: `uv`, `ruff`, `ty`, `pyproject.toml`, CI, hooks, scaffolding
-- **`unix-software-design`** — module boundaries, interface design, decomposition strategy, complexity control
-- **`get-api-docs`** — current third-party SDK / API / platform documentation
-- **Spark learnings tools** — in pi-spark workspaces, use `spark_learning_search` before related work and `spark_learning_record` / task-finish candidates after non-trivial fixes or decisions
-
-## Product boundary
-
-This skill owns the project-idea / SPARK.md / idea-to-repo assumptions that used to be embedded in the Spark product prompt. Treat Spark itself as a generic project/task coordination runtime: do not assume Spark product examples, local `.spark/` state, or task orchestration are the expected deliverable for idea capture. If the user wants to turn a confirmed SPARK.md into implementation tasks inside an existing repo, use the host's project/task tools deliberately.
-
-## General principles
-
-- **Conversation before document**. `SPARK.md` is a durable product of the conversation, not a replacement for it.
-- **Don't wait for perfect clarity**. A concrete draft or packet is easier to correct than a blank page.
-- **Don't fake certainty**. If scope or constraints are genuinely missing, ask the most decision-changing question first.
-- **Don't endorse rewrites without evidence**. Large resets need repo evidence, not frustration alone.
-- **Keep plans short**. Spark produces the next useful slice, not a giant roadmap unless the user explicitly asks for one.
-- **Update `updated` on every substantive `SPARK.md` edit**. It is the only manually maintained date field.
-
-## Reference files
-
-- `references/spark-spec.md` — complete `SPARK.md` format in 中文 and English; read it before drafting or editing
-- `examples/basic/idea.txt` — example for converting a rough SVG-logo animation extension idea into SPARK.md work
-- `references/legacy-spark-product-prompt.md` — archived prompt notes moved out of the Spark product; use only as maintenance context, not as active runtime instructions
+- `references/spark-spec.md` - `SPARK.md` 的中英文格式；起草或编辑时读取
+- `examples/basic/idea.txt` - 简短的 Capture 行为示例
