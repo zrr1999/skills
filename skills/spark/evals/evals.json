@@ -85,7 +85,7 @@
     {
       "id": 8,
       "prompt": "这个改动我想拆成三个 brief：先查现状和 diff，再落一版改动，最后做性能审查。你按现在的 roles 帮我规划一下该怎么分给子代理。",
-      "expected_output": "Agent 应在 Spark 的 Advance 模式中按 roles 仓库当前的 inspector / executor / verifier 约定来拆 brief，并给性能审查使用 verifier 的 performance lens。",
+      "expected_output": "Agent 应在 Spark 的 Advance 模式中按 roles skill 的 inspector / executor / verifier 约定来拆 brief，并给性能审查使用 verifier 的 performance lens。",
       "files": [],
       "expectations": [
         "输出使用 inspector、executor、verifier 这三个角色契约",

@@ -1,0 +1,38 @@
+{
+  "skill_name": "roles",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "这个改动我想拆成三个 brief：先查现状和 diff，再落一版改动，最后做性能审查。该怎么分给子代理？",
+      "expected_output": "Agent 应按 inspector / executor / verifier 职责契约拆 brief；性能审查使用 verifier 且带 performance lens；输出包含 brief contract 关键字段。",
+      "files": [],
+      "expectations": [
+        "输出使用 inspector、executor、verifier 这三个角色契约",
+        "性能审查使用 verifier 且带 performance lens 或等价说明",
+        "输出包含 brief contract 关键信息，如 goal、inputs、non_goals、expected_output、blocking"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我设一个 security reviewer 角色专门盯安全，再设一个 architecture reviewer。",
+      "expected_output": "Agent 应拒绝另开顶层安全/架构角色，改为 verifier + lens: security / architecture，并说明专项审查挂在 brief 的 lens 上。",
+      "files": [],
+      "expectations": [
+        "不创建独立的 security reviewer 或 architecture reviewer 顶层角色",
+        "说明使用 verifier 配合 lens",
+        "明确 security 与 architecture 是 lens 而非新角色"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "维护这个老仓库：一边摸清模块边界，一边复现登录失败。这两件事互相不依赖。",
+      "expected_output": "Agent 应建议 inspector（结构/边界）与 verifier（复现）并行，并说明无依赖时默认并行。",
+      "files": [],
+      "expectations": [
+        "结构/范围用 inspector",
+        "复现用 verifier",
+        "明确二者可并行"
+      ]
+    }
+  ]
+}

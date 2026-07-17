@@ -2,18 +2,11 @@
 
 面向个人项目的代理技能合集，用于在 Cursor、Copilot 等工具中复用工作流程。
 
-## 关联：`roles` 仓库
-
-兄弟仓库 [`zrr1999/roles`](https://github.com/zrr1999/roles) 仅定义 **代理优先** 的子代理角色：
-
-- **`inspector`** —— 有限的取证、阅读、结构、权衡、范围划定
-- **`executor`** —— 聚焦实现，产出可合并的差异与校验契约
-- **`verifier`** —— 针对明确主张做复现、回归与审查；可在任务简报上设置可选审视角度 **`lens`**（`security`、`performance`、`architecture`）以加深专项审查
-
-**本仓库内的技能（共 8 个）**
+## 本仓库内的技能（共 9 个）
 
 | 技能                   | 说明                                                                                                     |
 | ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| `roles`                | 代理优先职责契约：`inspector` / `executor` / `verifier` 的 brief 分工与提示词；专项审查用 `lens`          |
 | `tech-preferences`     | 技术栈与工具偏好 / 取舍                                                                                  |
 | `unix-software-design` | 模块边界、接口、简洁性                                                                                   |
 | `modern-python`        | uv、ruff、ty、Python 工程卫生                                                                            |
@@ -23,14 +16,20 @@
 | `svg-design`           | 手写 SVG 图标/Logo：viewBox/描边约定、渐变/蒙版、优化、动效、无障碍；Logo 预览工作流                     |
 | `zellij`               | 持久终端工作区：session 恢复、pane/tab/layout 组织、自动化取证、只读观察与安全远程访问                   |
 
-**与 `roles` 的典型搭配（示例）**
+### `roles` 职责一览
+
+- **`inspector`** —— 有限的取证、阅读、结构、权衡、范围划定
+- **`executor`** —— 聚焦实现，产出可合并的差异与校验契约
+- **`verifier`** —— 针对明确主张做复现、回归与审查；可在 brief 上设置 **`lens`**（`security`、`performance`、`architecture`）
+
+**典型搭配（示例）**
 
 - **从零开发** —— 可行性可拆时并行多份 `inspector` 任务简报；再 `executor`；最后用 `verifier` 验证主张。
 - **维护** —— 结构审查与复现彼此独立时，`inspector` 与 `verifier` 并行；再 `executor`；最后 `verifier` 做回归。
-- **研读其他仓库** —— 按子系统或问题并行多份 `inspector` 任务简报；在一轮里综合或在编排层合并；没有单独的「写稿」角色——除非显式拆分任务简报，否则包装结果由编排输出。
+- **研读其他仓库** —— 按子系统或问题并行多份 `inspector` 任务简报；在一轮里综合或在编排层合并。
 - **专项审查** —— 按需使用带 `lens: security` / `performance` / `architecture` 的 `verifier`。
 
-**数量说明**：本仓库当前 **8** 个技能。统一项目工作流已收敛到 `spark`；质量检查与优化已收敛到 `quality-audit`；Zellij 的持久工作区能力由 `zellij` 单独负责。
+**数量说明**：本仓库当前 **9** 个技能。角色契约在 `roles`；统一项目工作流在 `spark`；质量检查与优化在 `quality-audit`；Zellij 持久工作区由 `zellij` 负责。原独立仓库 `zrr1999/roles` 已归档，内容收敛为本 skill。
 
 ## 评测用例格式
 
@@ -71,8 +70,9 @@ pnpx skills add zrr1999/skills --all -g -y
 ## 常用技能（本仓库内）
 
 ```bash
-# 添加全局可用的技能（推荐项目级入口使用 spark）
+# 添加全局可用的技能（推荐项目级入口使用 spark；委派子代理时加载 roles）
 pnpx skills add zrr1999/skills -g --skill spark \
+  --skill roles \
   --skill tech-preferences \
   --skill unix-software-design \
   --skill modern-python \
@@ -83,6 +83,7 @@ pnpx skills add zrr1999/skills -g --skill spark \
 
 # 或按需单独添加示例
 pnpx skills add zrr1999/skills -g --skill spark
+pnpx skills add zrr1999/skills -g --skill roles
 pnpx skills add zrr1999/skills -g --skill tech-preferences
 pnpx skills add zrr1999/skills -g --skill unix-software-design
 pnpx skills add zrr1999/skills -g --skill modern-python

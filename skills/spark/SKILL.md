@@ -31,6 +31,7 @@ description: >
    - 仓库质量或公开发布预检：`quality-audit`
    - SVG/图标/Logo：`svg-design`
    - 持久终端工作区与会话：`zellij`
+   - 子代理职责契约与 brief 分工：`roles`
 7. **完成后验证。** 对实现建议给出相关测试、检查或可观察信号；无法验证时说明缺失证据和最小下一步。
 
 ## Entry paths
@@ -57,22 +58,7 @@ description: >
 
 ## Delegation
 
-使用 `zrr1999/roles` 时，只采用职责型角色：
-
-- `inspector`：有边界的证据收集、阅读、比较和范围判断；
-- `executor`：在明确边界内实现并报告验证；
-- `verifier`：复现、回归和声明审查；专项审查可设置 `lens: security | performance | architecture`。
-
-每个 brief 仅保留会改变执行的字段：
-
-| Field | Content |
-|---|---|
-| `goal` | 要产出或判定什么 |
-| `inputs` | 路径、commit、日志、链接或已有证据 |
-| `non_goals` | 明确不做的范围 |
-| `expected_output` | 交付物与验证证据 |
-| `blocking` | 是否阻塞其他工作 |
-| `lens` | 仅在 verifier 需要专项审视时使用 |
+需要委派子代理时加载 `roles`：只采用职责型角色 `inspector` / `executor` / `verifier`，brief 字段与 `lens` 约定以该 skill 为准。专项审查用 `verifier` 的 `lens`，不另开顶层角色。
 
 ## Output and stop rules
 
