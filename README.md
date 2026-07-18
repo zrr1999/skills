@@ -2,14 +2,13 @@
 
 面向个人项目的代理技能合集，用于在 Cursor、Copilot 等工具中复用工作流程。
 
-## 本仓库内的技能（共 9 个）
+## 本仓库内的技能（共 8 个）
 
 | 技能                   | 说明                                                                                                     |
 | ---------------------- | -------------------------------------------------------------------------------------------------------- |
 | `roles`                | 代理优先职责契约：`inspector` / `executor` / `verifier` 的 brief 分工与提示词；专项审查用 `lens`          |
-| `tech-preferences`     | 技术栈与工具偏好 / 取舍                                                                                  |
+| `tech-preferences`     | 技术栈与工具偏好 / 取舍；含 Python 工程化落地（uv、ruff、ty、pyproject、prek/CI）                        |
 | `unix-software-design` | 模块边界、接口、简洁性                                                                                   |
-| `modern-python`        | uv、ruff、ty、Python 工程卫生                                                                            |
 | `get-api-docs`         | 第三方库 / API 文档                                                                                      |
 | `spark`                | 默认项目级入口：澄清意图、检查现场、产出统一 packet、拆分任务、并在需要时创建/更新 SPARK.md              |
 | `quality-audit`        | 统一质量检查与优化：技术债/架构健康/可维护性审计，以及公开发布前的 Scorecard、安全、许可证与仓库卫生预检 |
@@ -29,7 +28,7 @@
 - **研读其他仓库** —— 按子系统或问题并行多份 `inspector` 任务简报；在一轮里综合或在编排层合并。
 - **专项审查** —— 按需使用带 `lens: security` / `performance` / `architecture` 的 `verifier`。
 
-**数量说明**：本仓库当前 **9** 个技能。角色契约在 `roles`；统一项目工作流在 `spark`；质量检查与优化在 `quality-audit`；Zellij 持久工作区由 `zellij` 负责。原独立仓库 `zrr1999/roles` 已归档，内容收敛为本 skill。
+**数量说明**：本仓库当前 **8** 个技能。角色契约在 `roles`；选型与 Python 工具链落地在 `tech-preferences`；统一项目工作流在 `spark`；质量检查与优化在 `quality-audit`；Zellij 持久工作区由 `zellij` 负责。原独立仓库 `zrr1999/roles` 与原 skill `modern-python` 已归档/合入。
 
 ## 评测用例格式
 
@@ -75,7 +74,6 @@ pnpx skills add zrr1999/skills -g --skill spark \
   --skill roles \
   --skill tech-preferences \
   --skill unix-software-design \
-  --skill modern-python \
   --skill get-api-docs \
   --skill quality-audit \
   --skill svg-design \
@@ -86,7 +84,6 @@ pnpx skills add zrr1999/skills -g --skill spark
 pnpx skills add zrr1999/skills -g --skill roles
 pnpx skills add zrr1999/skills -g --skill tech-preferences
 pnpx skills add zrr1999/skills -g --skill unix-software-design
-pnpx skills add zrr1999/skills -g --skill modern-python
 pnpx skills add zrr1999/skills -g --skill get-api-docs
 pnpx skills add zrr1999/skills -g --skill quality-audit
 pnpx skills add zrr1999/skills -g --skill svg-design

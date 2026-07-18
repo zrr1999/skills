@@ -60,5 +60,4 @@ chub annotate <id> "Webhook 验证需要 raw body，不要在验证前解析 JSO
 
 ## 与其他 skill 的关系
 
-- 与 `tech-preferences` 正交：本 skill 解决「如何正确使用某库」，后者解决「该选哪个库」
-- 与 `modern-python` 互补：当 Python 项目需要某个库的文档时，先用本 skill 获取
+- 与 `tech-preferences` 正交：本 skill 解决「如何正确使用某库」，后者解决「该选哪个库」以及 Python 工具链落地；当 Python 项目需要某个库的文档时，先用本 skill 获取

@@ -24,8 +24,7 @@ description: >
 4. **按依赖拆分。** 仅并行低耦合、输入和输出边界清楚的工作；共享上下文重、改动区域重叠或存在前置决策时保持串行。
 5. **需要终端证据时走 CLI-first。** 优先检查并复用仓库已有命令、脚本和本地工具；多个独立读取可并行，一个结果决定下一步时保持串行。
 6. **交给更窄的 skill。** Spark 负责整体推进，不重复专项方法：
-   - 技术栈与工具取舍：`tech-preferences`
-   - Python 工程化：`modern-python`
+   - 技术栈与工具取舍、Python 工程化落地：`tech-preferences`
    - 模块边界与接口：`unix-software-design`
    - 第三方 SDK/API：`get-api-docs`
    - 仓库质量或公开发布预检：`quality-audit`

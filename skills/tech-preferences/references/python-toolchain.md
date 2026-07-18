@@ -1,22 +1,13 @@
----
-name: modern-python
-description: 用现代 Python 工具链（uv、ruff、ty）初始化或改造项目：生成/调整 pyproject.toml、本地检查命令、预提交与 CI 模板；按项目最低版本（默认 >=3.12，尽量用最新稳定小版本）从 3.12 起叠读各版 What's New 以利用新特性。应在「新建 Python 项目」「写独立脚本要可维护」「统一 lint/format/类型检查」或用户提到 uv/ruff/ty/Python 工程化时加载；与 tech-preferences 的 Python 基线一致，本 skill 负责落地步骤与文件内容。
----
-
-## 目的
+# Python 工具链落地
 
 把 Python 仓库收敛到 **单一配置源（`pyproject.toml`）**、**快的 lint/format（ruff）**、**快的类型检查（ty）**、**统一的依赖与虚拟环境（uv）**，并把同样命令接到本地钩子与 CI，减少「每人一套命令」的摩擦。
+
+与基线一致：**uv**、**ruff**、**ty**、**prek**、**pytest**。若与用户当次指令冲突，以当次指令为准。
 
 ## 不适用
 
 - 仅改一两个文件且无意动工具链。
 - 主要任务是业务/产品设计而非工程化（除非用户点名要工程化）。
-
-## 与 `tech-preferences` 的关系
-
-本仓库的横切偏好已约定：**uv**（包与虚拟环境）、**ruff**（lint + format）、**ty**（类型检查）、**prek**（预提交钩子，替代 pre-commit 的常见选型）。本 skill 给出**可执行的落地步骤**；若与 `tech-preferences` 冲突，以用户当次指令为准。
-
----
 
 ## Python 版本与新特性
 
@@ -28,8 +19,6 @@ description: 用现代 Python 工具链（uv、ruff、ty）初始化或改造项
   - 例：最低 **3.14** → 依次读 3.12、3.13、3.14（依此类推）。
 - **与工具对齐**：`[tool.ruff]` 的 `target-version`（及 ty 的 Python 目标）应与**实际检查的版本**一致，通常取 `requires-python` 的下界或团队统一的目标特性版本，避免 lint/类型与运行时假设脱节。
 
----
-
 ## 工具分工（简表）
 
 | 能力 | 工具 | 备注 |
@@ -37,9 +26,7 @@ description: 用现代 Python 工具链（uv、ruff、ty）初始化或改造项
 | 依赖解析、锁文件、`venv`、运行工具 | **uv** | 替代 `pip install` / `poetry` 的日常路径 |
 | Lint + format | **ruff** | 替代 `flake8` + `black` + 大量 isort 等拼盘 |
 | 类型检查 | **ty** | 与 ruff 同属 Astral 生态；替代多数 `pyright` 场景前先评估边界 |
-| 测试 | **pytest** | 与仓库偏好一致；本 skill 不展开测试写法 |
-
----
+| 测试 | **pytest** | 与仓库偏好一致；本参考不展开测试写法 |
 
 ## 新项目 / 空目录脚手架
 
@@ -70,15 +57,11 @@ description: 用现代 Python 工具链（uv、ruff、ty）初始化或改造项
    uvx pytest
    ```
 
----
-
 ## 独立脚本（单文件或小型目录）
 
 - 用 `uv init` 在脚本目录生成最小 `pyproject.toml`，或手写 `[project]` + `[dependency-groups]` / dev deps。
 - 用 `uv run script.py` 保证使用项目解释器与依赖；避免「系统 python + 随手 pip」。
 - 需要可复现时：提交 `uv.lock`（团队/CI 场景），并在 README 写 `uv sync` + `uv run …`。
-
----
 
 ## 配置片段（放入 `pyproject.toml`）
 
@@ -156,13 +139,11 @@ uvx ty check .
 
 若 ty 与项目布局不兼容，在响应中**明确写出**保留 pyright 的原因与配置位置。
 
----
-
 ## 预提交与 CI
 
 ### 预提交（本仓库偏好：prek）
 
-与 `tech-preferences` 对齐时：用 **prek** 配置在提交前跑 `ruff`、`ty`、`pytest` 中与团队约定的子集。若用户环境无 prek，可暂用 **pre-commit** 或直接依赖 CI，并在文档中说明差异。
+用 **prek** 配置在提交前跑 `ruff`、`ty`、`pytest` 中与团队约定的子集。若用户环境无 prek，可暂用 **pre-commit** 或直接依赖 CI，并在文档中说明差异。
 
 最小思路：**同一组命令**在本地钩子与 GitHub Actions 中各跑一遍，避免「本地绿、CI 红」。
 
@@ -191,8 +172,6 @@ jobs:
 
 按项目替换分支名、是否 `--all-groups`、是否缓存 uv 等。
 
----
-
 ## Agent 执行清单
 
 接到相关任务时，按顺序完成并能在回复中**逐条对应**：
@@ -204,8 +183,6 @@ jobs:
 5. 给出本地验证命令（`uv sync`、`ruff`、`ty`、`pytest`）。
 6. 若需 CI：添加或更新 workflow；若需钩子：prek 或等价方案。
 7. 若存在类型检查迁移或双工具并行，说明**临时双跑**策略及退出条件。
-
----
 
 ## 参考链接
 
