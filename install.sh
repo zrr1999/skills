@@ -110,15 +110,20 @@ install_chub() {
   fi
 }
 
-install_skills() {
-  log "Installing skills from $REPO_SOURCE..."
-  pnpx skills add "$REPO_SOURCE" --all -g -y
+# Pin installs to ~/.agents/skills only. `cline` (also warp/zed/dexto) uses that
+# globalSkillsDir. Do NOT use `--all`: it expands to `--agent '*'`, which fans
+# out symlinks into dozens of agent dirs.
+SKILLS_AGENT="${SKILLS_AGENT:-cline}"
 
-  pnpx skills add anthropics/skills -g --skill skill-creator -y
-  pnpx skills add cloudflare/skills -g --skill workers-best-practices --skill durable-objects --skill cloudflare --skill wrangler -y
-  pnpx skills add shigurelab/gh-llm -g --skill github-conversation -y
-  pnpx skills add vibe-motion/skills -g --skill svg-assembly-animator --skill procedural-fish-render --skill ruler-progress-render -y
-  pnpx skills add spore-lang/spore -g --skill spore-language -y
+install_skills() {
+  log "Installing skills from $REPO_SOURCE into ~/.agents/skills (--agent $SKILLS_AGENT)..."
+  pnpx skills add "$REPO_SOURCE" -g -y --agent "$SKILLS_AGENT" --skill '*'
+
+  pnpx skills add anthropics/skills -g -y --agent "$SKILLS_AGENT" --skill skill-creator
+  pnpx skills add cloudflare/skills -g -y --agent "$SKILLS_AGENT" --skill workers-best-practices --skill durable-objects --skill cloudflare --skill wrangler
+  pnpx skills add shigurelab/gh-llm -g -y --agent "$SKILLS_AGENT" --skill github-conversation
+  pnpx skills add vibe-motion/skills -g -y --agent "$SKILLS_AGENT" --skill svg-assembly-animator --skill procedural-fish-render --skill ruler-progress-render
+  pnpx skills add spore-lang/spore -g -y --agent "$SKILLS_AGENT" --skill spore-language
 }
 
 main() {

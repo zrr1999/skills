@@ -52,10 +52,10 @@
 curl -fsSL https://raw.githubusercontent.com/zrr1999/skills/main/install.sh | bash
 ```
 
-装齐本仓库全部技能（需已有 Node/pnpm 与 `skills` 命令行工具）：
+装齐本仓库全部技能（需已有 Node/pnpm 与 `skills` 命令行工具）。**不要用 `--all`**：它会展开成 `--agent '*'`，把 symlink 扇出到各 agent 目录。用 `--skill '*'` + `--agent cline` 只写入 `~/.agents/skills`：
 
 ```bash
-pnpx skills add zrr1999/skills --all -g -y
+pnpx skills add zrr1999/skills -g -y --agent cline --skill '*'
 ```
 
 ### 手动安装
@@ -63,14 +63,14 @@ pnpx skills add zrr1999/skills --all -g -y
 不用安装脚本时，可直接用包运行器（与脚本一致推荐 **pnpm** / `pnpx`；若使用 Bun，可用 `bunx` 代替）：
 
 ```bash
-pnpx skills add zrr1999/skills --all -g -y
+pnpx skills add zrr1999/skills -g -y --agent cline --skill '*'
 ```
 
 ## 常用技能（本仓库内）
 
 ```bash
-# 添加全局可用的技能（推荐项目级入口使用 spark；委派子代理时加载 roles）
-pnpx skills add zrr1999/skills -g --skill spark \
+# 添加全局可用的技能（只装到 ~/.agents/skills；推荐项目级入口使用 spark；委派子代理时加载 roles）
+pnpx skills add zrr1999/skills -g --agent cline --skill spark \
   --skill roles \
   --skill tech-preferences \
   --skill unix-software-design \
@@ -80,14 +80,14 @@ pnpx skills add zrr1999/skills -g --skill spark \
   --skill zellij
 
 # 或按需单独添加示例
-pnpx skills add zrr1999/skills -g --skill spark
-pnpx skills add zrr1999/skills -g --skill roles
-pnpx skills add zrr1999/skills -g --skill tech-preferences
-pnpx skills add zrr1999/skills -g --skill unix-software-design
-pnpx skills add zrr1999/skills -g --skill get-api-docs
-pnpx skills add zrr1999/skills -g --skill quality-audit
-pnpx skills add zrr1999/skills -g --skill svg-design
-pnpx skills add zrr1999/skills -g --skill zellij
+pnpx skills add zrr1999/skills -g --agent cline --skill spark
+pnpx skills add zrr1999/skills -g --agent cline --skill roles
+pnpx skills add zrr1999/skills -g --agent cline --skill tech-preferences
+pnpx skills add zrr1999/skills -g --agent cline --skill unix-software-design
+pnpx skills add zrr1999/skills -g --agent cline --skill get-api-docs
+pnpx skills add zrr1999/skills -g --agent cline --skill quality-audit
+pnpx skills add zrr1999/skills -g --agent cline --skill svg-design
+pnpx skills add zrr1999/skills -g --agent cline --skill zellij
 ```
 
 ## 本地开发
@@ -99,8 +99,8 @@ bash install.sh
 # 调试本地未发布改动时，覆盖技能来源
 REPO_SOURCE=./skills bash install.sh
 
-# 调试本地未发布改动时，直接从本地目录添加
-pnpx skills add ./skills -g --skill unix-software-design
+# 调试本地未发布改动时，直接从本地目录添加（同样只写入 ~/.agents/skills）
+pnpx skills add ./skills -g --agent cline --skill unix-software-design
 
 # 与 prek.toml 对齐的本地检查（需已执行 prek install）
 prek run check-json check-yaml check-executables-have-shebangs --all-files
