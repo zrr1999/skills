@@ -10,6 +10,7 @@
 - skill `roles` 提供 **agent-first** 职责型角色：`inspector`（证据与阅读、现状与范围）、`executor`（有边界的实现与改动契约）、`verifier`（复现、回归、审查；专项审查在 brief 上使用 `lens: security | performance | architecture`）。不再通过 `new-project` / `maintain-project` / `learn-project` 等中间层路由；原独立仓库 `zrr1999/roles` 已归档。
 - 需要统一「如何推进一个项目级任务、何时澄清、何时并行、何时调用其他 skill」时，加载 skill `spark`；它是统一入口，不再先分 new-project / maintain-project / learn-project 三种模式。委派子代理时加载 `roles`。
 - 需要横切技术选型、偏好基线或 Python 工程化落地（uv、ruff、ty、CI 等）时加载 `tech-preferences`；需要持久终端工作区、会话恢复、pane/tab/layout 或 Zellij 远程观察时加载 `zellij`；与当前激活的 **role** 正交。
+- 需要为独立工作流选择 worktree、为依赖改动组织 branch/PR stack，或持续跟进 PR 冲突与 CI 时加载 `git-workstreams`；worktree 必须由用户明确选择启用，未选择时使用当前 checkout。PR follow-up 请求授权范围内修复、小步 commit 并及时 push 到确认过的 head branch，但不自动授权 force-push、retarget 或 merge。
 
 ## Commit message 规范
 
@@ -51,8 +52,9 @@
 
 ## Learned Workspace Facts
 
-- `spark` 现为统一项目工作流入口：内建需求澄清、与 `roles` skill 一致的 brief 编排（职责并行）、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`unix-software-design`、`get-api-docs`；非平凡经验沉淀迁移到 pi-spark 的 `spark-learnings` 工具链。
+- `spark` 现为统一项目工作流与软件设计入口：内建需求澄清、简化的软件设计判断、与 `roles` skill 一致的 brief 编排（职责并行）、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`get-api-docs`；非平凡经验沉淀迁移到 pi-spark 的 `spark-learnings` 工具链。
 - `tech-preferences` 同时承载选型基线与 Python 工具链落地（原独立 `modern-python` 已合入）。
 - `roles` 承载 inspector / executor / verifier 的提示词与分工契约；不把 role-forge / roles.toml 等独立仓结构迁入本仓库。
+- `git-workstreams` 由 `git-worktrees` 更名并扩展而来：worktree 是显式 opt-in；启用后独立任务使用独立 worktree，同一依赖 review stack 在一个 owning worktree 内形成线性 branch chain。未启用时 PR stack 仍可在当前 checkout 使用标准 Git/GitHub 完成；PR follow-up 负责冲突、范围内 CI、及时 commit/push 和重新检查。
 - 各 skill 的评测用例在 `skills/<skill-name>/evals/evals.json`。
 - `zellij` 以能力与边界为主：精确命令从当前安装版本的 `zellij --help` 和子命令 help 获取，不维护易过期的 flags 清单。

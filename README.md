@@ -2,19 +2,18 @@
 
 面向个人项目的代理技能合集，用于在 Cursor、Copilot 等工具中复用工作流程。
 
-## 本仓库内的技能（共 10 个）
+## 本仓库内的技能（共 9 个）
 
 | 技能                   | 说明                                                                                                     |
 | ---------------------- | -------------------------------------------------------------------------------------------------------- |
 | `roles`                | 代理优先职责契约：`inspector` / `executor` / `verifier` 的 brief 分工与提示词；专项审查用 `lens`          |
 | `tech-preferences`     | 技术栈与工具偏好 / 取舍；含 Python 工程化落地（uv、ruff、ty、pyproject、prek/CI）                        |
-| `unix-software-design` | 模块边界、接口、简洁性                                                                                   |
 | `get-api-docs`         | 第三方库 / API 文档                                                                                      |
-| `spark`                | 默认项目级入口：澄清意图、检查现场、产出统一 packet、拆分任务、并在需要时创建/更新 SPARK.md              |
+| `spark`                | 默认项目级入口：澄清意图、检查现场、软件设计取舍、拆分任务，并在需要时创建/更新 SPARK.md                 |
 | `quality-audit`        | 统一质量检查与优化：技术债/架构健康/可维护性审计，以及公开发布前的 Scorecard、安全、许可证与仓库卫生预检 |
 | `svg-design`           | 手写 SVG 图标/Logo：viewBox/描边约定、渐变/蒙版、优化、动效、无障碍；Logo 预览工作流                     |
 | `zellij`               | 持久终端工作区：session 恢复、pane/tab/layout 组织、自动化取证、只读观察与安全远程访问                   |
-| `git-worktrees`        | Git 隔离工作区：统一用户级目录、平台托管边界、并行 agent 的创建/盘点/迁移/安全清理                       |
+| `git-workstreams`      | Git change workstream：显式启用的 worktree、原生 PR stack、冲突/CI 跟进与及时 commit/push                 |
 | `ssh-fleet`            | 私有 SSH 设备事实源：新增/修改/退役、host key 信任、严格校验、render/apply 与授权边界                    |
 
 ### `roles` 职责一览
@@ -30,7 +29,9 @@
 - **研读其他仓库** —— 按子系统或问题并行多份 `inspector` 任务简报；在一轮里综合或在编排层合并。
 - **专项审查** —— 按需使用带 `lens: security` / `performance` / `architecture` 的 `verifier`。
 
-**数量说明**：本仓库当前 **10** 个技能。角色契约在 `roles`；选型与 Python 工具链落地在 `tech-preferences`；统一项目工作流在 `spark`；质量检查与优化在 `quality-audit`；Zellij 持久工作区由 `zellij` 负责；Git 隔离工作区由 `git-worktrees` 负责；私有设备与 SSH 信任更新由 `ssh-fleet` 负责。原独立仓库 `zrr1999/roles` 与原 skill `modern-python` 已归档/合入。
+**数量说明**：本仓库当前 **9** 个技能。角色契约在 `roles`；选型与 Python 工具链落地在 `tech-preferences`；项目推进和内置软件设计判断在 `spark`；质量检查与优化在 `quality-audit`；Zellij 持久工作区由 `zellij` 负责；独立 worktree 与依赖 PR stack 由 `git-workstreams` 负责；私有设备与 SSH 信任更新由 `ssh-fleet` 负责。原 `unix-software-design` 已简化并内置进 `spark`，原 `git-worktrees` 已更名为 `git-workstreams`。
+
+> 升级提示：重新安装后若本机仍残留旧 `git-worktrees` skill，请先用当前 skill manager 检查来源，再移除旧条目，避免两个 description 同时触发。安装流程不会自动删除用户级旧 skill。
 
 ## 评测用例格式
 
@@ -75,24 +76,22 @@ pnpx skills add zrr1999/skills -g -y --agent cline --skill '*'
 pnpx skills add zrr1999/skills -g --agent cline --skill spark \
   --skill roles \
   --skill tech-preferences \
-  --skill unix-software-design \
   --skill get-api-docs \
   --skill quality-audit \
   --skill svg-design \
   --skill zellij \
-  --skill git-worktrees \
+  --skill git-workstreams \
   --skill ssh-fleet
 
 # 或按需单独添加示例
 pnpx skills add zrr1999/skills -g --agent cline --skill spark
 pnpx skills add zrr1999/skills -g --agent cline --skill roles
 pnpx skills add zrr1999/skills -g --agent cline --skill tech-preferences
-pnpx skills add zrr1999/skills -g --agent cline --skill unix-software-design
 pnpx skills add zrr1999/skills -g --agent cline --skill get-api-docs
 pnpx skills add zrr1999/skills -g --agent cline --skill quality-audit
 pnpx skills add zrr1999/skills -g --agent cline --skill svg-design
 pnpx skills add zrr1999/skills -g --agent cline --skill zellij
-pnpx skills add zrr1999/skills -g --agent cline --skill git-worktrees
+pnpx skills add zrr1999/skills -g --agent cline --skill git-workstreams
 pnpx skills add zrr1999/skills -g --agent cline --skill ssh-fleet
 ```
 
@@ -106,7 +105,7 @@ bash install.sh
 REPO_SOURCE=./skills bash install.sh
 
 # 调试本地未发布改动时，直接从本地目录添加（同样只写入 ~/.agents/skills）
-pnpx skills add ./skills -g --agent cline --skill unix-software-design
+pnpx skills add ./skills -g --agent cline --skill spark
 
 # 与 prek.toml 对齐的本地检查（需已执行 prek install）
 prek run check-json check-yaml check-executables-have-shebangs --all-files
