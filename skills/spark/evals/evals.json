@@ -74,12 +74,12 @@
     {
       "id": 7,
       "prompt": "我要给这个 TypeScript 服务拆模块边界，也想知道该不该换框架。你先帮我理一理下一步怎么推进，必要时告诉我该调用哪些专项 skill。",
-      "expected_output": "Agent 应把这类请求视为 Spark 的项目级工作流，同时明确把技术选型交给 tech-preferences、把边界拆分交给 unix-software-design，而自己负责整体推进、最小下一步与验证。",
+      "expected_output": "Agent 应把这类请求视为 Spark 的项目级工作流：使用内置设计判断处理模块边界，把框架选型交给 tech-preferences，并由 Spark 统一给出最小下一步与验证。",
       "files": [],
       "expectations": [
-        "明确 tech-preferences 和 unix-software-design 的使用时机",
+        "明确框架选型使用 tech-preferences，而模块边界由 Spark 的内置设计判断处理",
         "输出仍以项目推进、最小下一步和验证方式为主",
-        "未把专项 skill 的职责吞进 spark"
+        "设计建议包含边界、数据流或状态归属以及反悔成本"
       ]
     },
     {
@@ -91,6 +91,19 @@
         "输出使用 inspector、executor、verifier 这三个角色契约",
         "性能审查使用 verifier 且带 performance lens 或等价说明",
         "输出包含 brief contract 关键信息，如 goal、inputs、non_goals、expected_output、blocking"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "我要重新想一下这个工具的模块边界和接口设计，怎样拆才能更简单透明？先给设计建议，不要直接改代码。",
+      "expected_output": "Agent 应使用 Spark 的 Inspect 路径和内置设计判断，先核对当前代码和约束，再围绕模块、接口、状态或数据流给出最小设计；保持在设计层，不进入实现。",
+      "files": [],
+      "expectations": [
+        "先要求或检查当前代码、文档、数据流等现场证据",
+        "设计建议覆盖模块边界、接口、状态归属或数据表示中的相关项",
+        "只选择少量相关原则并给出推荐方案与反悔成本",
+        "明确现在做什么、暂不做什么、扩展信号和验证方式",
+        "不直接实现代码"
       ]
     }
   ]
