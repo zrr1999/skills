@@ -49,6 +49,18 @@
         "不同变体之间保持一致的核心骨架、负空间或比例关系",
         "不把横向 lockup 直接缩小当头像；如果使用预览工作流，应把 square mark 与 wordmark lockup 分开预览"
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "直接做一个极简几何山峰 logo：单色深蓝、正方形图形，不要字标，输出 SVG。方向已经定了，不需要再问我。",
+      "expected_output": "Agent 应识别视觉风格、imagery、颜色和交付物已经足够具体，直接创建并渲染验证 SVG；不应强制进行 mood/focus/inspiration 澄清，也不应额外生成字标或 dark variant。",
+      "files": [],
+      "expectations": [
+        "不重复询问 mood、focus 或 inspiration",
+        "输出正方形、极简几何山峰、单色深蓝 SVG",
+        "包含 xmlns、viewBox 与渲染验证",
+        "不额外生成字标、批量概念或未请求的 dark variant"
+      ]
     }
   ]
 }

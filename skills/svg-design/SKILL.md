@@ -9,176 +9,50 @@ description: >
 
 # SVG Creation and Editing
 
-**Core principle:** SVGs are code. Write them by hand like you'd write any markup: clean, minimal, semantically meaningful. Every element and attribute should earn its place.
+## Goal
 
-## Topic Routing
+交付结构清楚、可缩放、可渲染验证并适合目标环境的 SVG。编辑现有资产时保留其设计系统和用途；创建新资产时只引入完成请求需要的结构、变体与预览。
+
+## Topic routing
+
+只读取当前任务需要的 reference：
 
 | Task | Load reference |
-|------|---------------|
-| Arc flag combinations, common path shapes | [references/path-patterns.md](references/path-patterns.md) |
-| Logo design, typography, negative space | [references/logo-techniques.md](references/logo-techniques.md) |
-| Icon design, grid systems, pixel alignment | [references/icon-design.md](references/icon-design.md) |
-| Gradients, masks, clips, filters, transforms (design decisions) | [references/advanced-techniques.md](references/advanced-techniques.md) |
-| Animation (CSS keyframes, stagger, GPU, easing, SVG-specific) | [references/animation.md](references/animation.md) |
-| Optimization, sprites, SVGO config | [references/optimization.md](references/optimization.md) |
-| Accessibility, browser pitfalls | [references/accessibility-and-pitfalls.md](references/accessibility-and-pitfalls.md) |
-| Editing workflow, boolean operations, combining SVGs | [references/editing-workflow.md](references/editing-workflow.md) |
-
-## SVG Skeleton
-
-Always start from this structure:
-
-```xml
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- content -->
-</svg>
-```
-
-Adjust `viewBox` to match the design canvas. Omit `width`/`height` attributes to let the SVG scale with its container (add them only when a fixed size is needed).
-
-## Canvas Size Conventions
-
-| Size | Use case | Notes |
-|------|----------|-------|
-| `0 0 16 16` | Micro icons, favicons | Heroicons micro, GitHub Octicons |
-| `0 0 20 20` | Small UI icons, form elements | Heroicons mini |
-| `0 0 24 24` | Standard icons (most common) | Lucide, Heroicons outline, Material |
-| `0 0 32 32` | Medium icons, navigation | Phosphor uses 256x256 internally |
-| `0 0 48 48` | Large display icons | App icons, illustrations |
-| Custom | Logos, illustrations | Match the natural aspect ratio |
-
-**Default to 24x24** unless there's a reason not to. It's the industry standard.
-
-## Shape vs Path Decision
-
-| Use shape primitive when... | Use `<path>` when... |
 |---|---|
-| The shape is a basic geometric form | The shape has curves, complex outlines |
-| Readability matters (a circle should look like `<circle>`) | You need to minimize element count |
-| You need to animate individual properties (r, cx, cy) | Combining multiple shapes into one element |
-| The shape will be programmatically modified | Exporting from design tools (paths are universal) |
+| SVG 骨架、viewBox、stroke、shape/path、fill rule、常见反模式 | `references/svg-basics.md` |
+| Arc flags 与常用 path | `references/path-patterns.md` |
+| Logo、字标、负空间与概念多样性 | `references/logo-techniques.md` |
+| 图标网格与像素对齐 | `references/icon-design.md` |
+| 渐变、mask、clip、filter、transform | `references/advanced-techniques.md` |
+| CSS/SVG 动效 | `references/animation.md` |
+| SVGO、sprite 与发布优化 | `references/optimization.md` |
+| 无障碍与浏览器兼容 | `references/accessibility-and-pitfalls.md` |
+| 编辑、布尔操作、组合与预览 | `references/editing-workflow.md` |
 
-## Styling Defaults
+## Workflow
 
-Set these on the root `<svg>` element to avoid repetition on children:
+1. **确认交付物**：区分单个图标、Logo/字标、图标系统、现有 SVG 编辑、动画或优化；确认目标尺寸、主题、使用环境和必须保留的结构。
+2. **只补关键缺口**：若缺失信息会改变图形语言、具体 imagery、变体或文件结构，提出最少的定向问题。用户已给出具体视觉风格和 imagery 时直接推进，不为流程而重复澄清。
+3. **检查现场**：编辑项目资产时先读已有 token、图标、命名、viewBox、stroke/fill 和构建方式。不要把个人默认覆盖到现有系统。
+4. **创建最小结构**：选择语义清楚的 shape 或 path，保持稳定 viewBox；需要主题继承时使用 `currentColor`。只在交付环境需要时生成 dark、filled、responsive 或其他变体。
+5. **验证后再交付**：解析 XML，渲染并检查裁切、留白、对齐、stroke、主题背景和目标尺寸；优化不能破坏语义、可访问性或动画 target。
 
-| Attribute | Icon default | Logo default | Why |
-|-----------|-------------|--------------|-----|
-| `fill` | `none` | varies | Icons are typically stroked, logos are filled |
-| `stroke` | `currentColor` | `none` or `currentColor` | Inherits text color from parent |
-| `stroke-width` | `2` (on 24x24) | varies | Consistent weight across icons |
-| `stroke-linecap` | `round` | `round` or `butt` | Rounded ends look cleaner at small sizes |
-| `stroke-linejoin` | `round` | `round` or `miter` | Prevents sharp spikes at joins |
+## Logo decisions
 
-**`currentColor` is your friend.** It lets the SVG inherit whatever color the parent element has, making icons themeable with zero extra CSS.
+- 当用户只有模糊方向且请求多方案时，用少量结构化选择收敛 mood、focus 和行业相关 inspiration；不要先生成十几个同质成稿。
+- 多方案应覆盖不同 metaphor 和结构类别，而不是同一图形的排版变体。需要五个以上概念时，至少覆盖字标、具象符号、抽象几何和字母混合方向。
+- 技术或系统型品牌优先从生成单元、网格、重复、镜像或旋转关系解释结构；有意打破对称时说明识别目的。
+- 完整 lockup、横向字标和头像裁切应共享同一识别骨架。头像使用独立 square mark，不直接缩小横向 lockup。
+- 用户需要比较多个方案或视觉 QA 时，复用 `assets/preview.html` 和 editing reference 的数据格式。使用当前环境允许的文件操作；只有预览有助于任务时才打开浏览器，并在新增方案后更新同一预览。
 
-## Stroke-Width Relative to ViewBox
+## Quality and safety
 
-`stroke-width` is in viewBox units, not pixels. Always set relative to your canvas dimensions:
+- 独立 SVG 必须有 `xmlns` 和 `viewBox`；不要只写固定像素宽高而失去缩放语义。
+- 分发用字标不要依赖目标机器字体；需要可移植时将最终文字转换为 path，同时保留可编辑源或说明字体。
+- 删除编辑器 metadata、无效节点和多余精度，但保留有意义的 ID、title/desc、animation target 和引用关系。
+- 外部图片、字体、filter 或脚本会改变可移植性和安全面，只在需求明确且目标环境支持时使用。
+- 不把未知 SVG 当作可信代码直接执行或嵌入页面；先检查脚本、事件属性、外链和 data URL。
 
-| viewBox | Typical stroke-width | Visual result |
-|---------|---------------------|---------------|
-| 16x16 | 1.5 | ~9.4% of canvas |
-| 24x24 | 2 | ~8.3% of canvas |
-| 32x32 | 2-2.5 | ~6.3-7.8% of canvas |
-| 48x48 | 3 | ~6.3% of canvas |
-| 256x256 | 16 | ~6.3% of canvas |
+## Output and stop rules
 
-## When to Convert Shapes to Paths
-
-**Convert when:**
-- Combining multiple shapes into a single compound path (boolean operations)
-- You need the shape as part of a larger path composition
-- Distributing to environments that only support `<path>`
-- Optimizing for minimal DOM elements
-
-**Keep as shapes when:**
-- Code readability matters (a `<circle>` is self-documenting)
-- You need to animate specific properties (animating `r` on a circle is cleaner than animating path data)
-- The SVG will be programmatically modified
-
-### Rounded rect-to-path template
-
-The arc parameters here are error-prone to derive. Use this as a reference:
-
-```xml
-<!-- <rect x="2" y="2" width="20" height="20" rx="3" /> becomes: -->
-<path d="M 5 2 h 14 a 3 3 0 0 1 3 3 v 14 a 3 3 0 0 1 -3 3 h -14 a 3 3 0 0 1 -3 -3 v -14 a 3 3 0 0 1 3 -3 Z" />
-```
-
-## fill-rule: evenodd vs nonzero
-
-Use `evenodd` when you have compound shapes with holes. It's simpler because you don't need to worry about winding direction:
-
-```xml
-<!-- Donut using evenodd (direction doesn't matter) -->
-<path fill-rule="evenodd" d="
-  M 12 2 A 10 10 0 1 1 12 22 A 10 10 0 1 1 12 2 Z
-  M 12 7 A 5 5 0 1 1 12 17 A 5 5 0 1 1 12 7 Z
-" fill="black" />
-```
-
-With `nonzero` (default), the inner circle must wind in the opposite direction to create the hole.
-
-## Logo Design Process
-
-When creating logos (not icons), follow this process:
-
-0. **Always clarify design direction before creating logos.** Prefer structured clarification (forms, pick-lists, or equivalent structured question UI) before writing any SVG code. If the environment does not support structured input, ask the same questions in concise, choice-based plain text rather than open-ended brainstorming. This step is mandatory for all logo projects. Even when the user provides some direction (like "modern" or "YC style"), those are vibes, not design briefs. A designer would still present options to narrow the direction before investing in 5-15 concepts.
-
-    Present choices like a designer showing mood boards. Don't ask open-ended questions. Tailor options to the user's domain:
-
-    ```text
-    Mood:
-    - Bold & geometric — Clean shapes, strong lines, confident. Think Stripe, Figma.
-    - Organic & crafted — Hand-drawn feel, natural curves, warmth. Think Mailchimp, Basecamp.
-    - Minimal & typographic — Wordmark-driven, restrained, sophisticated. Think Glossier, Everlane.
-    - Playful & dynamic — Energetic, colorful, movement. Think Slack, Discord.
-
-    Focus:
-    - What we do — Visual metaphor tied to the product's core function.
-    - How it feels — Abstract mark that conveys emotion or energy.
-    - Who we are — Letterform or wordmark built from the brand name.
-
-    Inspiration:
-    - Populate with 3-4 real, well-known brands in or adjacent to the user's domain.
-    - Replace the examples entirely for each industry.
-    - Example AI/startup set: Linear, Stripe, Notion, Vercel.
-    ```
-
-    **Tailoring the questions to the domain is critical.** The mood options, focus options, and especially the inspiration logos must be specific to the user's industry. A coffee brand gets Blue Bottle, Stumptown, Intelligentsia, Counter Culture as inspiration options. A fintech startup gets Stripe, Plaid, Mercury, Ramp. A fitness app gets Peloton, Strava, Nike Run Club, Whoop. Pick brands the user will immediately recognize and have an opinion about. The inspiration question does the most work here because it anchors the entire aesthetic direction to something concrete.
-
-    The only exception: skip if the user has specified both a concrete visual style AND specific imagery (e.g., "minimalist geometric logo using a mountain silhouette in navy blue").
-
-1. **Explore multiple metaphors, not multiple layouts of one metaphor.** Conceptual diversity matters more than layout variations. Follow the full ideation process in [references/logo-techniques.md](references/logo-techniques.md), which covers domain-specific brainstorming, category diversity requirements, and cliche avoidance.
-2. **Guarantee structural variety.** Every logo set must span multiple *categories* of approach, not just multiple metaphors within the same style. Include at least one from each column when presenting 5+ options: a typographic/wordmark approach, a symbolic icon, an abstract geometric mark, and a letterform-meets-metaphor hybrid. See the category diversity table in [references/logo-techniques.md](references/logo-techniques.md).
-3. **Use symmetry and modules deliberately.** For technical or system-oriented brands, start from a base unit and decide whether the mark benefits from reflection, rotation, or translation before adding detail. Think in terms of one generator plus transformations, not a pile of unrelated parts. Break symmetry only on purpose to create focus, direction, or a memorable quirk.
-4. **Set up the preview immediately, then populate it progressively.** Don't design all logos first and then show them. The user should see results as they're created:
-    1. Copy this skill's `assets/preview.html` to the project directory using `cp` with the absolute path from where this skill was loaded (do not read or modify the file).
-    2. Design the first logo and write its SVG file.
-    3. Write `variants.js` with just that first variant (format in [references/editing-workflow.md](references/editing-workflow.md)).
-    4. Open the preview with `open preview.html` (macOS) or `xdg-open preview.html` (Linux). The user now sees the first logo while you keep working.
-    5. For each subsequent logo: write the SVG file, then update `variants.js` to add it. The preview auto-reloads both every 3 seconds, so new logos appear in the browser as they're completed.
-
-    This gives the user visual feedback within seconds of the first logo being ready, rather than waiting for all logos to be designed before seeing anything.
-5. **For colored logos, always create a `-dark.svg` variant.** Dark navy edges (#1E3A5F) that look great on white disappear on dark backgrounds. Dark variants need lighter edges (#4B8BBE), lighter rings (#3B6B8A), and off-white centers (#E2E8F0).
-6. **Plan your vertical budget before drawing.** On a 32x32 canvas with 3 stacked elements, you have ~30 usable units. Sketch the vertical distribution first (e.g., box=12, gap=2, layer=5, gap=2, layer=5) to avoid clipping at viewBox edges.
-
-## Anti-Patterns
-
-| Don't | Do instead |
-|-------|-----------|
-| Hardcode `width="24" height="24"` without `viewBox` | Use `viewBox` always; add width/height only if needed |
-| Set `fill="none"` on a `<g>` group | Set fill on individual elements or the root `<svg>` |
-| Use `px` units inside SVG | SVG coordinates are unitless; they map to viewBox |
-| Include editor metadata (`<sodipodi:*>`, `<inkscape:*>`) | Strip all editor cruft |
-| Use `<text>` for logo wordmarks in distributed SVGs | Convert text to paths for portability |
-| Nest transforms three levels deep | Flatten transforms into path coordinates |
-| Use `xlink:href` | Use `href` (xlink is deprecated) |
-| Forget `xmlns` on standalone SVG files | Always include `xmlns="http://www.w3.org/2000/svg"` |
-| Use decimal precision beyond 2-3 places for icons | Round to 2 decimals for icons, 3 max for complex art |
-
-## Cross-References
-
-- **Design aesthetics**: If the environment has a broader visual design skill or workflow, use it for brand positioning, visual language, and non-SVG-specific art direction
-- **Mermaid diagrams**: Use a Mermaid- or diagram-specific skill/workflow for node-edge diagrams; this skill focuses on SVG assets rather than diagram authoring
+执行类请求交付 SVG 文件、必要变体、预览或集成说明，并报告渲染/优化验证。规划类请求给出视觉方向、结构和最小下一步。产物满足目标尺寸、背景、可访问性与结构要求后停止；不要额外扩展品牌系统或生成未请求的变体。
