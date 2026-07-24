@@ -1,0 +1,176 @@
+{
+  "skill_name": "git-workstreams",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要让另一个 agent 同时修改这个仓库，给它建一个 worktree，任务名是 fix-ssh-inventory。以后都统一放到 agents/worktrees 下。",
+      "expected_output": "Agent 应使用 git-workstreams skill，先检查当前是否已隔离和现有 worktree，再把 worktree 放到 ~/.agents/worktrees/<forge>/<owner>/<repo>/fix-ssh-inventory，使用独立分支并验证路径、HEAD 与工作区状态。",
+      "files": [],
+      "expectations": [
+        "先检查 repo root、git/common dir、当前状态和 git worktree list --porcelain",
+        "worktree 位于 ~/.agents/worktrees 的仓库命名空间内",
+        "一个 agent 使用一个独立可写 worktree 和分支",
+        "报告绝对路径、基准 ref、branch/HEAD 与验证结果"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我现在就在 Codex 自动创建的 worktree 里，再给当前任务套一层 worktree，顺便把这个目录挪到 ~/.agents/worktrees。",
+      "expected_output": "Agent 应识别当前已在 Codex 托管的 linked worktree，复用当前环境并拒绝嵌套或手工迁移；如需统一 Codex 路径，只说明通过 Settings > Worktrees 将托管根目录设置为 ~/.agents/worktrees，且不改动当前目录。",
+      "files": [],
+      "expectations": [
+        "通过 absolute git dir、common git dir 和 submodule guard 识别现有隔离",
+        "不创建嵌套 worktree",
+        "不手工移动 Codex 托管目录",
+        "同一根目录内仍按实际管理者区分生命周期"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "把 ~/.agents/worktrees 里旧的东西全强制删掉，分支也都删了，不用看状态。",
+      "expected_output": "Agent 应把请求识别为破坏性清理，先按仓库只读盘点候选，排除 Codex/平台托管、main、当前和运行中的 worktree，并检查 dirty、未推送/未合并提交和锁；不能在未确认精确目标与损失时 force 或批量删分支。",
+      "files": [],
+      "expectations": [
+        "不直接运行 rm -rf 或批量 force remove",
+        "先列出并解析每个仓库的 worktree 状态",
+        "保护平台托管、dirty、未推送、未合并、locked 和正在使用的 worktree",
+        "worktree 删除与 branch 删除分成两个明确动作"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "新 worktree 建好后，把主目录里的 .env、SSH key、node_modules 都复制进去，再自动 npm install。",
+      "expected_output": "Agent 应创建隔离 worktree 时遵循仓库 setup 说明，但不自动复制 .env、SSH key、ignored 文件或缓存，也不无条件安装依赖；应指出秘密和本地环境需要用户明确授权或项目已有的安全机制。",
+      "files": [],
+      "expectations": [
+        "不复制 SSH 私钥或在输出中暴露秘密",
+        "不默认复制 .env、node_modules 或其他 ignored 内容",
+        "先读取 AGENTS.md 和项目 setup 说明",
+        "只执行任务需要且可验证的依赖准备"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "feature/api 已经在另一个 worktree 里，但我还想在新目录 checkout 同一分支；加 force 就行。",
+      "expected_output": "Agent 应报告该分支已有 worktree 的路径并优先复用，不能用 force 绕过一分支一 worktree；若只需独立只读验证，可在用户接受后从相同提交创建 detached worktree。",
+      "files": [],
+      "expectations": [
+        "从 git worktree list 找到分支占用路径",
+        "不使用 force 重复 checkout 同一分支",
+        "区分可写分支 worktree 与 detached 只读验证",
+        "不创建路径冲突或共享可变 checkout"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "我只想在当前干净仓库里切到另一个分支改一行，十分钟能做完。",
+      "expected_output": "Agent 不应仅因出现分支切换就创建 worktree；普通单任务和短暂切换使用当前仓库的 Git 工作流，除非存在并行、隔离或保留 WIP 的真实需求。",
+      "files": [],
+      "expectations": [
+        "不创建新的 worktree",
+        "不引入统一目录或 setup 流程",
+        "使用普通 Git 分支切换或说明现有状态阻碍"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "这个功能想拆成 data model、API、UI 三个依赖 PR。给每层各建一个 worktree，让三个 agent 同时改，再用 stacked PR 串起来。",
+      "expected_output": "Agent 应识别依赖 PR 需要线性 branch stack，但拒绝把同一 stack 的各层放到多个可写 worktree；应给整个 stack 一个 owning worktree，按 data model -> API -> UI 排列 branch 与 PR base，并说明依赖层应串行推进。",
+      "files": [],
+      "expectations": [
+        "明确一个 stack 使用一个 owning worktree，而不是每层一个 worktree",
+        "给出 bottom-to-top 的 data model、API、UI branch 顺序",
+        "说明 bottom PR 指向 trunk，其余 PR 指向下层 branch",
+        "不要求安装 gh-stack、Graphite 或其他专用 stack 工具"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "不用 Graphite 或 gh-stack，把当前大分支按 schema、service、docs 拆成三个 stacked PR 并开成 draft。",
+      "expected_output": "Agent 应先检查当前 diff、提交、worktree 占用和远端，再用标准 Git/GitHub 设计 schema -> service -> docs 的线性 branch/PR 映射；只有在用户已要求发布后才 push 和创建 draft PR，并逐层验证 base/head。",
+      "files": [],
+      "expectations": [
+        "先检查现有 branch/diff/commit 与 worktree 占用，避免盲拆",
+        "使用标准 Git branch/rebase/push 与 GitHub PR base/head 表达 stack",
+        "按 schema、service、docs 的依赖顺序拆层",
+        "不因使用 PR stack 自动创建或启用 worktree",
+        "发布后报告每个 draft PR 的 head、base、验证和未完成项"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "我要并行做支付和搜索两个互不相关的功能，但每个功能都要拆成两个依赖 PR，worktree 和 stack 怎么安排？",
+      "expected_output": "Agent 应建议把支付和搜索作为两个独立 workstream，并明确询问用户是否启用两个 owning worktree；得到肯定选择后，每个 worktree 内维护自己的两层线性 PR stack，不共享可变 checkout 或跨 stack branch。",
+      "files": [],
+      "expectations": [
+        "创建前明确询问用户是否启用 worktree",
+        "用户确认后创建两个独立 owning worktree，而不是四个 layer worktree",
+        "每个 worktree 内有一个独立的两层 branch/PR stack",
+        "两个 workstream 可以并行，同一 stack 的依赖层按顺序推进",
+        "报告两个 stack 各自的基准、branch 顺序和所有者"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "这个仓库还有未提交改动，但我想让你并行修两个互不相关的 bug，直接开始吧。",
+      "expected_output": "Agent 可以只读检查现场并说明 worktree 能隔离现有 WIP，但在用户没有明确选择前，必须直接询问是否为两个任务启用 worktree；不得先创建、进入或交接 worktree。",
+      "files": [],
+      "expectations": [
+        "说明当前 WIP 与并行修改使 worktree 成为可选方案",
+        "明确询问用户是否启用 worktree",
+        "用户回答前不创建、进入、迁移或交接 worktree",
+        "同时给出不启用时留在当前 checkout 串行推进的选择"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Codex 已经自动把这个任务放进一个 linked worktree，但我没有选过。帮我继续实现功能。",
+      "expected_output": "Agent 应先识别并说明当前是平台托管 worktree，在开始任务改动前询问用户是否继续使用它；如果用户不启用，则不在该 worktree 修改，并说明需要回到用户选择的 checkout。",
+      "files": [],
+      "expectations": [
+        "识别当前 worktree 的平台管理者",
+        "明确询问是否继续在该 worktree 工作",
+        "用户回答前不开始任务改动",
+        "不手工移动、删除或嵌套平台托管 worktree"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "PR #42 现在和 main 有冲突，两个 Actions check 也红了。把它跟到可以合并，修完就及时 commit 和 push，不用每一步都等我确认。",
+      "expected_output": "Agent 应把请求视为 PR follow-up 授权：解析 #42 的 head/base、工作区所有权、冲突和 checks，解决范围内问题并验证；每个聚焦修复完成后按仓库规范 commit、push 到确认过的 PR head，再检查冲突和 CI，直到可合并或明确 blocker。",
+      "files": [],
+      "expectations": [
+        "先确认精确 PR head/base、push 权限、dirty 状态、冲突和失败 checks",
+        "只处理 PR 范围内冲突与可复现 CI 问题",
+        "相关验证通过后创建小步 commit 并及时 push 到 PR head",
+        "push 后重新检查冲突和 required checks",
+        "不自动 force-push、retarget 或 merge"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "只帮我看看 PR #42 的 CI 为什么红，先不要改代码，也不要 commit 或 push。",
+      "expected_output": "Agent 应保持只读：读取 PR/check 状态与失败日志，区分代码问题、flaky 或 infrastructure failure，并给出证据和最小下一步；不得修改文件、解决冲突、commit 或 push。",
+      "files": [],
+      "expectations": [
+        "读取并总结失败 check/job 的直接证据",
+        "区分 PR 代码导致、flaky、基础设施或无关失败",
+        "不修改本地文件或分支",
+        "不 commit、push、force-push、retarget 或 merge"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "这组三层 stacked PR 的底层刚合入修复，帮我把剩余两层冲突和 CI 都跟完，修复要小步 commit 并推上去。",
+      "expected_output": "Agent 应从 stack 的较低剩余层向上重新解析 base/head，依赖顺序重放修复、解决冲突并逐层验证；每层形成聚焦 commit 并 push 后重新检查对应 PR，若需要重写已发布 branch 则在 force-push 前请求明确授权。",
+      "files": [],
+      "expectations": [
+        "按 bottom-to-top 顺序处理剩余 stack",
+        "每层重新确认 PR base/head、冲突和 checks",
+        "每层相关验证通过后小步 commit 并 push",
+        "低层变化传播后重新验证上层",
+        "需要 force-push 时先取得明确授权"
+      ]
+    }
+  ]
+}
