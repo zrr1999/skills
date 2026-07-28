@@ -11,6 +11,7 @@
 
 - skill `roles` 提供 **agent-first** 职责型角色：`inspector`（证据与阅读、现状与范围）、`executor`（有边界的实现与改动契约）、`verifier`（复现、回归、审查；专项审查在 brief 上使用 `lens: security | performance | architecture`）。不再通过 `new-project` / `maintain-project` / `learn-project` 等中间层路由；原独立仓库 `zrr1999/roles` 已归档。
 - 需要统一「如何推进一个项目级任务、何时澄清、何时并行、何时调用其他 skill」时，加载 skill `spark`；它是统一入口，不再先分 new-project / maintain-project / learn-project 三种模式。委派子代理时加载 `roles`。
+- `unix-software-design` 已退役；通用的软件设计判断由 `spark` 内建并继任，不重新添加独立 skill。Spark 负责结合项目现场判断模块、接口、数据、状态、失败恢复和复杂度边界；单一技术或工具取舍仍交给 `tech-preferences`。
 - 需要横切技术选型、偏好基线或 Python 工程化落地（uv、ruff、ty、CI 等）时加载 `tech-preferences`；需要持久终端工作区、会话恢复、pane/tab/layout 或 Zellij 远程观察时加载 `zellij`；与当前激活的 **role** 正交。
 - 需要从默认分支发布本地改动、为独立工作流选择 worktree、为依赖改动组织 branch/PR stack，或持续跟进 PR 冲突与 CI 时加载 `git-workstreams`；worktree 必须由用户明确选择启用，未选择时使用当前 checkout。`commit+push` 或“提 PR”不自动授权切换主工作区分支；用户明确选择当前 checkout 时，发布后应在安全条件满足时回到起始分支。PR follow-up 请求授权范围内修复、小步 commit 并及时 push 到确认过的 head branch，但不自动授权 force-push、retarget 或 merge。
 

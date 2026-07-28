@@ -4,24 +4,26 @@
     {
       "id": 1,
       "prompt": "我有个想法，想做一个把零散项目灵感整理成 SPARK.md 的工具，帮我先聊清楚，不要一上来让我填表。",
-      "expected_output": "Agent 应使用 spark 的 Capture 模式，用中文对话式提问，最多一次问 2-3 个问题，并明确后续会按中文 SPARK.md 结构起草。",
+      "expected_output": "Agent 应使用 spark 的 Capture 模式，用中文按批次提出 2-3 个互不依赖的问题，等待整批反馈后再继续，并明确后续会按中文 SPARK.md 结构起草。",
       "files": [],
       "expectations": [
         "输出使用中文作为工作语言",
         "没有要求用户填写表单式字段清单",
-        "问题覆盖核心洞察、目标体验、目标用户、Non-goals、启发来源或成功信号中的关键缺口",
+        "同一批问题互不依赖，并覆盖核心洞察、目标体验、目标用户、Non-goals、启发来源或成功信号中的关键缺口",
+        "说明或体现会等待当前批次反馈后再继续",
         "提到会使用中文 SPARK.md 结构或等价说明"
       ]
     },
     {
       "id": 2,
       "prompt": "I have an idea for a developer tool that turns messy terminal history into reusable runbooks. Help me write a SPARK.md and ask whatever is missing.",
-      "expected_output": "Agent should use spark Capture mode in English, ask conversational questions, and preserve English for confirmation phrasing and the future SPARK.md draft.",
+      "expected_output": "Agent should use spark Capture mode in English, ask a batch of 2-3 mutually independent conversational questions, wait for the batch response, and preserve English for the future SPARK.md draft.",
       "files": [],
       "expectations": [
         "Output uses English as the working language",
         "Does not include Chinese-only confirmation text such as 有没有明显偏差的地方",
-        "Asks no more than 2-3 questions at once",
+        "Asks 2-3 mutually independent questions in the current batch",
+        "Waits for the current batch response before asking dependent follow-ups or acting",
         "Mentions or implies the English SPARK.md structure"
       ]
     },
@@ -115,6 +117,32 @@
         "明确使用 tech-preferences 或等价的个人技术偏好基线做选择",
         "围绕兼容性、现有项目证据和迁移成本给出推荐",
         "没有扩写 SPARK.md、项目路线或模块设计"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "我想做一个团队内部的 AI code review 工具，但需求还很模糊。仓库就在当前目录，你先自己查能查到的事实，再分批问我需要做决定的事情。部署形态会影响鉴权，是否保留历史会影响存储；在我们聊清楚前不要改代码、提交或创建云资源。",
+      "expected_output": "Agent 应先做只读仓库调研，再把当前互不依赖的根决策组成一批问题；不得把依赖部署形态的鉴权方案或依赖历史保留策略的数据库选择塞进同一批，也不得执行高风险事项。",
+      "files": [],
+      "expectations": [
+        "先检查仓库、文档或现有运行入口等可安全取得的事实，而不是把事实问题转给用户",
+        "当前批次通常包含 2-3 个互不依赖的根决策，并为每题给出推荐与影响",
+        "没有在部署形态确定前追问具体鉴权方案，也没有在历史保留策略确定前追问具体数据库",
+        "发出当前批次后等待反馈，不继续提出依赖性下游问题",
+        "没有改代码、提交、推送、创建云资源或执行其他高风险事项"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Grill this plan before we act: migrate our local-only CLI into a hosted multi-tenant service, add billing, and invite beta customers. You may inspect the repo and current docs first. Ask in efficient batches, recommend an answer for every decision, and do nothing consequential until we agree.",
+      "expected_output": "Agent should safely research discoverable facts, then ask a batch of independent root decisions with recommendations. It should wait for the batch response and avoid implementation, deployment, publishing, billing setup, invitations, or other consequential actions until shared understanding is confirmed.",
+      "files": [],
+      "expectations": [
+        "Inspects or requests access to inspect discoverable repository and documentation facts before asking the user factual questions",
+        "Asks 2-3 mutually independent root decisions in the first batch",
+        "Provides a recommendation and key consequence for each decision",
+        "Does not mix downstream billing, tenancy, or rollout questions whose answers depend on an unresolved root decision into the same batch",
+        "Explicitly waits for the batch response and performs no consequential action before shared understanding"
       ]
     }
   ]
