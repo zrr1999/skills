@@ -171,6 +171,43 @@
         "低层变化传播后重新验证上层",
         "需要 force-push 时先取得明确授权"
       ]
+    },
+    {
+      "id": 15,
+      "prompt": "我在仓库主目录的 main 上有一批已经验证的未提交改动。commit+push，然后提个 PR。",
+      "expected_output": "Agent 应先识别当前是主工作区默认分支并记录 dirty 状态；commit+push/提 PR 不构成隐式切分支授权，因此不得直接 git switch -c。Agent 应询问是启用 owning worktree 并明确迁移方案，还是允许当前 checkout 的临时分支流程；回答前不 stash、reset、复制或提交改动。",
+      "files": [],
+      "expectations": [
+        "解析主工作区路径、起始 branch/HEAD、dirty 状态和远端默认分支",
+        "没有因为 commit+push 或提 PR 直接在主工作区执行 git switch -c 或 checkout -b",
+        "明确询问 owning worktree 或当前 checkout 临时分支的选择",
+        "用户选择前不自动 stash、reset、复制或提交现有 WIP"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "不用 worktree；就用当前主工作区把这些改动切到新分支、commit、push、提 PR，完成后回 main。",
+      "expected_output": "Agent 已获得当前 checkout 分支流程的明确授权；应记录 main 返回点，创建并发布范围内分支，确认工作树干净后切回原 main，再核对 HEAD、upstream 和未混入的改动。",
+      "files": [],
+      "expectations": [
+        "把用户的明确选择与普通 commit+push 授权区分开",
+        "分支创建前记录主工作区起始 branch/HEAD 和 dirty 范围",
+        "只 stage、commit 和 push 已确认范围",
+        "PR 创建后在安全条件满足时回到起始 main 并验证状态",
+        "无法安全返回时停止报告而不是 stash、reset 或覆盖文件"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "我已经在 Codex 管理的 linked worktree 和 feature/session-recovery 分支里，改动也都验证好了。请 commit、push 并开 draft PR。",
+      "expected_output": "Agent 应复用已确认的 linked worktree 和 feature/session-recovery，不切换主工作区，也不为了命名规范创建第二个分支；完成发布后报告 owning checkout、commit、push、PR 和主工作区未变化。",
+      "files": [],
+      "expectations": [
+        "识别当前 linked worktree、管理者和 feature/session-recovery 分支",
+        "不切换主工作区或创建替代分支",
+        "按确认范围 stage、commit、push 并创建 draft PR",
+        "报告主工作区起始与结束 branch 未变化"
+      ]
     }
   ]
 }

@@ -2,7 +2,9 @@
 
 - 小步提交，确保每个提交聚焦单一主题
 - 优先保持 skill 职责单一；不要把 role 路由逻辑塞进 skill
+- `skills/<name>/` 保持平铺以兼容发现和安装；在 README 中按「通用入口 / 横切工程能力 / 领域专用能力」说明职责，不用目录层级或非标准 YAML 字段表达分类
 - Skill instruction 以结果、成功标准、权限边界、工具路由和停止条件为主；删除重复规则、静态命令百科和不改变行为的示例
+- YAML `description` 说明主要结果、具体触发场景和最容易混淆的边界；混合请求允许组合 skill，但只指定一个结果所有者
 - 对版本演进快的 CLI，说明它能完成什么，并要求从本机 `--help` 发现精确语法；只固化真正稳定的概念和安全边界
 
 ## 与 `roles` skill 的配合
@@ -10,7 +12,7 @@
 - skill `roles` 提供 **agent-first** 职责型角色：`inspector`（证据与阅读、现状与范围）、`executor`（有边界的实现与改动契约）、`verifier`（复现、回归、审查；专项审查在 brief 上使用 `lens: security | performance | architecture`）。不再通过 `new-project` / `maintain-project` / `learn-project` 等中间层路由；原独立仓库 `zrr1999/roles` 已归档。
 - 需要统一「如何推进一个项目级任务、何时澄清、何时并行、何时调用其他 skill」时，加载 skill `spark`；它是统一入口，不再先分 new-project / maintain-project / learn-project 三种模式。委派子代理时加载 `roles`。
 - 需要横切技术选型、偏好基线或 Python 工程化落地（uv、ruff、ty、CI 等）时加载 `tech-preferences`；需要持久终端工作区、会话恢复、pane/tab/layout 或 Zellij 远程观察时加载 `zellij`；与当前激活的 **role** 正交。
-- 需要为独立工作流选择 worktree、为依赖改动组织 branch/PR stack，或持续跟进 PR 冲突与 CI 时加载 `git-workstreams`；worktree 必须由用户明确选择启用，未选择时使用当前 checkout。PR follow-up 请求授权范围内修复、小步 commit 并及时 push 到确认过的 head branch，但不自动授权 force-push、retarget 或 merge。
+- 需要从默认分支发布本地改动、为独立工作流选择 worktree、为依赖改动组织 branch/PR stack，或持续跟进 PR 冲突与 CI 时加载 `git-workstreams`；worktree 必须由用户明确选择启用，未选择时使用当前 checkout。`commit+push` 或“提 PR”不自动授权切换主工作区分支；用户明确选择当前 checkout 时，发布后应在安全条件满足时回到起始分支。PR follow-up 请求授权范围内修复、小步 commit 并及时 push 到确认过的 head branch，但不自动授权 force-push、retarget 或 merge。
 
 ## Commit message 规范
 

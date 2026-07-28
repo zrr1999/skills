@@ -1,18 +1,19 @@
 ---
 name: git-workstreams
 description: >
-  使用标准 Git/GitHub 组织 change workstream：经用户明确选择后创建和管理隔离 worktree；设计、发布和同步线性 branch/PR stack；跟进已有 PR 的冲突、CI 与本地 commit/push。适用于 worktree 创建、迁移、安全清理、“branch already checked out”，stacked PR、依赖 PR、分层 review、PR merge conflict、checks failed、修到可合并、未提交或未推送修复等请求。worktree 是显式 opt-in，未获选择时使用当前 checkout；默认不要求 gh-stack、Graphite 等专用工具。不要用于普通短暂分支切换、只读 PR 摘要、纯 review comment 处理、release 编排，或未经确认丢弃/重写已发布工作。
+  使用标准 Git/GitHub 组织 change workstream：经用户明确选择后创建和管理隔离 worktree；安全地从默认分支发布本地改动；设计、发布和同步线性 branch/PR stack；跟进已有 PR 的冲突、CI 与本地 commit/push。适用于 worktree 创建、迁移、安全清理、“branch already checked out”，从 main/master 执行 commit+push 或创建 PR，stacked PR、依赖 PR、分层 review、PR merge conflict、checks failed、修到可合并、未提交或未推送修复等请求。worktree 是显式 opt-in；发布授权不等于允许隐式切换主工作区分支。默认不要求 gh-stack、Graphite 等专用工具。不要用于用户明确要求的普通短暂分支切换、只读 PR 摘要、纯 review comment 处理、release 编排，或未经确认丢弃/重写已发布工作。
 ---
 
 # Git Workstreams
 
 ## Goal
 
-在用户明确选择后为独立工作流启用隔离 worktree，为依赖改动选择线性 branch/PR stack，并把已有 PR 的冲突与 CI 跟到可合并或明确 blocker。完成时应能给出实际拓扑、基准、验证结果、commit/push 状态和未获授权的动作。
+在用户明确选择后为独立工作流启用隔离 worktree，为依赖改动选择线性 branch/PR stack，并把已有 PR 的冲突与 CI 跟到可合并或明确 blocker。发布过程中保持主工作区分支可预测；完成时应能给出实际拓扑、基准、验证结果、commit/push 状态和未获授权的动作。
 
 ## Choose the topology
 
 - **当前 checkout**：默认选择；用户未明确启用 worktree 时在这里工作。
+- **主工作区**：`git worktree list --porcelain` 的主 working tree。发布请求不得把它从默认分支隐式切到临时分支。
 - **独立 workstream**：能独立修改、验证和交付的并行任务；用户启用后，每个 workstream 使用一个可写 worktree 和 branch。
 - **依赖 stack**：后续改动依赖前一层、但每层都值得独立 review 时，在一个 owning checkout 内维护线性 branch chain；每个 PR 的 base 是下一层靠近 trunk 的 branch。stack 本身不要求 worktree。
 - **多个独立 stacks**：用户启用后，每个 stack 使用不同 owning worktree；不要把同一 stack 的各层拆到多个可写 worktree。若用户不启用，保持当前 checkout 并串行推进。
@@ -43,10 +44,10 @@ gh pr --help  # 仅当任务需要 GitHub PR 且 gh 可用
 ## Workflow
 
 1. **确认结果**：区分普通单线任务、独立 worktree、依赖 stack、PR follow-up、只读诊断、迁移或清理。
-2. **检查现场**：解析 repo root、absolute/common git dir、superproject、branch/HEAD、dirty 状态、remote、`git worktree list --porcelain`，以及任务相关 PR 的 head/base、冲突、checks 和可写权限。普通本地任务不隐式 fetch；PR follow-up 本身依赖当前远端状态，可更新相关 refs 并读取 PR/check 状态。
+2. **检查现场**：解析 repo root、absolute/common git dir、superproject、主工作区路径及起始 branch/HEAD、当前 branch/HEAD、dirty 状态、remote、远端默认分支、`git worktree list --porcelain`，以及任务相关 PR 的 head/base、冲突、checks 和可写权限。普通本地任务不隐式 fetch；PR follow-up 本身依赖当前远端状态，可更新相关 refs 并读取 PR/check 状态。
 3. **取得启用选择**：只读盘点不需要确认；创建 worktree、把它作为可写工作区复用、把任务迁入其中或交给另一个 agent 前，必须得到用户明确 opt-in。若当前请求已经明确要求创建或使用 worktree，视为已选择；否则简要说明收益、成本和拟议范围，并直接询问是否启用。在答案到来前保持当前 checkout，不执行 worktree 动作。
 4. **选择并画出拓扑**：启用后将独立任务按 worktree 分开；依赖改动无论是否启用 worktree，都按 reviewable concern 从 trunk 向上排列。一个结果会改变上层设计时保持串行。
-5. **执行最小动作**：按用户选择复用当前 checkout 或已有隔离环境；新实现从明确基准创建 branch，只有已 opt-in 才创建、进入或交接 worktree。临时只读检查需要新 detached worktree 时也先取得选择。不要用 force 绕过 branch 占用或目标路径保护。
+5. **执行最小动作**：按用户选择复用当前 checkout 或已有隔离环境；新实现从明确基准创建 branch，只有已 opt-in 才创建、进入或交接 worktree。发布前应用下方主工作区保护；不要把 `commit+push`、`提 PR` 或 `github:yeet` 当成隐式切换主工作区的授权。临时只读检查需要新 detached worktree 时也先取得选择。不要用 force 绕过 branch 占用或目标路径保护。
 6. **准备和验证**：读取 `AGENTS.md` 和项目 setup，只运行相关检查；不自动复制 `.env`、凭据、ignored 文件或缓存，也不无条件安装依赖。
 7. **处理 PR follow-up**：当前 workstream 已有确认过的 PR，且用户要求实现、修复、跟进或保持可合并时，按下方闭环处理范围内冲突与 CI，并把验证过的本地修复小步 commit、及时 push 到已解析的 PR head。只读诊断不获得这些写权限。
 8. **处理其他远端动作**：只有用户要求发布、同步或落地 stack 时才 push、创建/修改 PR。force-push、retarget 和 merge 仍需明确授权；先解析精确 refs、PR base 和受影响层。
@@ -61,6 +62,17 @@ gh pr --help  # 仅当任务需要 GitHub PR 且 gh 可用
 - 如果目标分支已在另一个 worktree，先返回其路径；用户明确选择后再复用为可写环境。确需独立只读验证时可从同一提交创建 detached worktree，但创建前同样先询问是否启用，不强制重复 checkout 该分支。
 - 主工作区的未提交和 ignored 文件不会由原生 Git 自动进入新 worktree。若任务依赖这些内容，先说明缺口并取得明确处理方式；不自动 stash、复制秘密或伪装成相同环境。
 - 创建失败且隔离是任务前提时停止并报告 blocker；不要悄悄退回用户当前 checkout 开始修改。
+
+## Primary checkout publish guard
+
+发布授权只覆盖已确认范围内的 stage、commit、push 和 PR；它不自动授权改变主工作区当前分支。
+
+1. 发布前记录主工作区绝对路径、起始 branch/HEAD、dirty 状态和远端默认分支。不要根据目录名猜主工作区或默认分支。
+2. 如果当前位于主工作区的默认分支，且用户没有明确选择“在当前 checkout 切分支”，不得执行 `git switch -c`、`git checkout -b` 或等价 branch-changing 命令。说明现有 WIP 不能安全地隐式迁移，并询问是启用 owning worktree，还是明确允许当前 checkout 的临时分支流程。
+3. 如果用户明确选择当前 checkout，可以从确认过的基准创建分支，但必须记录返回点；发布完成且工作树干净后，默认回到起始分支并核对 HEAD/upstream。无法安全返回时停止并报告，不 stash、reset 或覆盖文件。
+4. 如果主工作区已经位于目标非默认分支，或当前是已确认的 linked worktree，留在原 branch 完成发布；不要为了符合命名约定再次切分支。
+5. `github:yeet` 等发布 workflow 可以负责 stage/commit/push/PR，但 checkout/worktree 拓扑先由本 skill 解析；发布 workflow 不得覆盖这里的主工作区保护。
+6. 最终报告主工作区的起始与结束 branch、当前 dirty 状态，以及创建或复用的 owning checkout。主工作区分支变化若未经明确选择，任务不得标记完成。
 
 ## Branch and PR stacks
 
@@ -113,4 +125,4 @@ ui         -> api
 
 ## Output
 
-worktree 请求先报告用户是否已 opt-in；启用后报告管理者、绝对路径、基准 ref、branch/HEAD、setup 与验证。stack 请求报告 owning checkout、worktree 启用状态、trunk、bottom-to-top branch 顺序和每层 PR base/head。PR follow-up 报告冲突状态、失败 checks 与判断、创建的 commit、push 目标、重新检查结果和 blocker。清理请求报告保留与可安全移除的精确目标。
+worktree 请求先报告用户是否已 opt-in；启用后报告管理者、绝对路径、基准 ref、branch/HEAD、setup 与验证。发布请求报告主工作区起始/结束 branch、owning checkout、commit、push 和 PR。stack 请求报告 owning checkout、worktree 启用状态、trunk、bottom-to-top branch 顺序和每层 PR base/head。PR follow-up 报告冲突状态、失败 checks 与判断、创建的 commit、push 目标、重新检查结果和 blocker。清理请求报告保留与可安全移除的精确目标。

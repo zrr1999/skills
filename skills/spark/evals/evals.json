@@ -105,6 +105,17 @@
         "明确现在做什么、暂不做什么、扩展信号和验证方式",
         "不直接实现代码"
       ]
+    },
+    {
+      "id": 10,
+      "prompt": "这个前端项目只想决定继续用 pnpm 还是换 Bun。帮我结合我的技术偏好做选择，不需要规划整个项目。",
+      "expected_output": "Agent 应把主要结果识别为技术/工具选择并路由到 tech-preferences；不应启动 Spark 的项目级 Inspect/Advance 或扩写项目路线。",
+      "files": [],
+      "expectations": [
+        "明确使用 tech-preferences 或等价的个人技术偏好基线做选择",
+        "围绕兼容性、现有项目证据和迁移成本给出推荐",
+        "没有扩写 SPARK.md、项目路线或模块设计"
+      ]
     }
   ]
 }
