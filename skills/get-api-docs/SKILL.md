@@ -1,63 +1,49 @@
 ---
 name: get-api-docs
-description: 应在需要第三方库、SDK 或 API 文档时使用——例如「用 OpenAI API」「调 Stripe 接口」「查 Anthropic SDK」等场景。先用 chub 获取策划文档再作答，不要依赖训练数据中的 API 知识。
+description: >
+  获取非 OpenAI 第三方库、SDK 或 API 的当前文档，并据此解释用法、核对签名或实现集成。当用户要求查询供应商 API、使用指定版本 SDK、验证参数/错误行为，或记录文档相关坑时使用。优先使用可用的官方或专用文档连接器；否则用 chub 获取社区整理文档，并在时效性重要时回查供应商官方来源。OpenAI 产品/API 文档不触发本 skill，使用官方 openai-docs；项目内部文档直接读取仓库；“该选哪个库”由 tech-preferences 负责。
 ---
 
-## 目的
+# API Documentation
 
-通过 `chub` CLI 获取社区维护的 API 文档，避免 agent 幻觉出错误的 API 用法。chub 提供 605+ 库的策划文档，支持多语言变体。
+## Goal
 
-## 工作流程
+用已检索的当前文档回答或实现，而不是凭训练记忆猜 API。完成时应满足：
 
-### 查找文档
+- 已确认库、语言、版本和实际问题；
+- 关键签名、参数、返回值或错误行为有检索证据；
+- 实现与当前项目约束一致，并完成可行的最小验证；
+- 文档缺失、版本冲突或时效性不确定时明确说明。
 
-```bash
-chub search "<库名>"            # 模糊搜索
-chub search "<库名>" --json     # 机器可读格式
-```
+## Source routing
 
-### 获取文档
+选择能直接回答问题的最窄权威来源：
 
-```bash
-chub get <id> --lang py         # Python 变体
-chub get <id> --lang js         # JavaScript 变体
-chub get <id>                   # 单语言自动选择
-chub get <id> --full            # 含所有参考文件
-```
+1. OpenAI 产品、API、SDK 或 Codex：退出本 skill，使用官方 `openai-docs` skill / Developer Docs connector；官方能力不可用时才把 chub 作为明确标注的 fallback。
+2. 其他供应商若有官方或专用文档 connector：优先使用，并读取支持当前主张的具体页面。
+3. 没有专用来源时使用 `chub` 的社区整理文档；时效性、未发布版本或精确 schema 很重要时，再用供应商官方文档核验。
+4. 项目内部 API、README、AGENTS.md 或源码契约：直接读取仓库，不经 chub。
+5. 主要问题是“选哪个库/框架”时交给 `tech-preferences`；选定后再用本 skill 查正确用法。
 
-### 使用文档
+社区文档可能滞后。不要把“未检索到”写成“API 不存在”，也不要混用不同版本的示例。
 
-阅读获取的内容，基于文档编写代码。**不要依赖记忆中的 API 签名**——以文档为准。
+## Workflow
 
-### 标注经验
+1. 从请求和项目 manifest/lockfile 提取库名、语言、版本、运行环境及待确认事实。缺失信息只有在会改变答案时才询问。
+2. 使用 2-6 个有区分度的关键词搜索。已知具体页面时直接读取；结果为空、过窄或版本不符时，最多尝试一两个有意义的替代查询或官方来源。
+3. 使用 `chub` 前先检查 `chub --help` 和相关子命令 help，从本机版本发现精确语法。若命令不可用，改用可用的官方来源并说明无法读取本地 annotation。
+4. 读取支持结论的具体内容，区分文档事实、项目现场和推断。实现类请求把文档用法适配到当前代码，不机械复制示例。
+5. 运行与改动最相关的检查，例如导入/类型检查、目标测试或最小 API 客户端 smoke；无法运行时说明缺口。
+6. 已获得 annotation 写入授权时，先从本机 help 确认相关能力，再只写可复用的供应商/版本注意点。
 
-完成任务后，如果发现文档未覆盖的坑（环境特定、版本差异、项目特定细节），保存标注：
+## Authorization and boundaries
 
-```bash
-chub annotate <id> "Webhook 验证需要 raw body，不要在验证前解析 JSON"
-```
+- 查阅文档和本地 annotation 是只读；用户要求“标注、记录、保存”才授权写 annotation。
+- 实现请求授权范围内本地代码修改与非破坏性验证；纯查阅或解释请求不自动修改项目。
+- 实现请求可按项目现有机制修改范围内项目依赖；未经明确要求不做全局 CLI/SDK 安装，不发送真实生产请求，也不把文档示例中的占位凭据当成可用配置。
+- annotation 不得包含 secret、客户数据或仅属于当前项目的临时状态。
+- 官方文档与当前 SDK/运行结果冲突时，同时报告两者，不用其中一个静默覆盖另一个。
 
-标注持久化在本地（`~/.chub/annotations/`），下次 `chub get` 同一文档时自动附带。
+## Output and stop rules
 
-## 快速参考
-
-| 目标 | 命令 |
-|------|------|
-| 列出所有文档 | `chub search` |
-| 搜索文档 | `chub search "stripe"` |
-| 获取 Python 文档 | `chub get stripe/api --lang py` |
-| 获取 JS 文档 | `chub get openai/chat --lang js` |
-| 保存到文件 | `chub get anthropic/sdk --lang py -o docs.md` |
-| 批量获取 | `chub get openai/chat stripe/api --lang py` |
-| 标注经验 | `chub annotate stripe/api "需要 raw body"` |
-| 查看所有标注 | `chub annotate --list` |
-
-## 不适用
-
-- 自己开发的项目文档——直接在项目内维护 `AGENTS.md` / `README.md` 更直接
-- 需要最新未发布版本的文档——chub 内容由社区维护，可能滞后
-- 纯内部 API——除非自己构建本地 chub content（参见 `chub build`）
-
-## 与其他 skill 的关系
-
-- 与 `tech-preferences` 正交：本 skill 解决「如何正确使用某库」，后者解决「该选哪个库」以及 Python 工具链落地；当 Python 项目需要某个库的文档时，先用本 skill 获取
+先给基于文档的结论或实现，再列关键来源、版本、验证和仍缺失的证据。核心问题已有足够支持时停止；不要为补充非必要背景反复检索。

@@ -4,35 +4,49 @@
     {
       "id": 1,
       "prompt": "帮我用 OpenAI 的 chat completion API 写一个 Python 调用，要用最新的 SDK。",
-      "expected_output": "Agent 应先用 chub search/get 获取 OpenAI 文档，再基于文档编写代码，而非依赖训练知识。",
+      "expected_output": "Agent 不应把 chub 作为 OpenAI 文档的主要来源；应路由到可用的官方 openai-docs / Developer Docs 来源，获取当前 SDK 文档后再实现和验证。",
       "files": [],
       "expectations": [
-        "使用 chub search 或 chub get 查找/获取文档",
-        "基于获取的文档内容编写代码",
+        "优先使用或明确要求 OpenAI 官方文档来源",
+        "基于检索到的当前 SDK 文档编写代码",
+        "没有把 chub 社区文档当作 OpenAI API 的首选权威来源",
         "不直接从记忆中输出 API 调用"
       ]
     },
     {
       "id": 2,
       "prompt": "用 Stripe 的 Python SDK 实现一个支付接口，另外上次踩过 webhook 验证的坑，帮我查一下之前的标注。",
-      "expected_output": "Agent 应用 chub get 获取文档，且检查 chub annotate --list 或直接 get 时查看已有标注。",
+      "expected_output": "Agent 应先确认本机 chub 能力并读取 Stripe 文档与已有 annotation；若 chub 不可用，则使用 Stripe 官方文档完成可验证部分，并明确本地 annotation 无法读取。",
       "files": [],
       "expectations": [
-        "使用 chub get stripe 相关文档",
-        "检查或提及 annotation 机制",
-        "基于文档和标注编写代码"
+        "使用 chub 前检查本机 help 或可用性，不凭记忆猜精确语法",
+        "读取 Stripe 文档和已有 annotation，或在 chub 不可用时明确该缺口",
+        "基于检索文档和可取得的标注编写代码",
+        "不自动全局安装 chub"
       ]
     },
     {
       "id": 3,
       "prompt": "Stripe Python SDK 文档里 webhook 验证这块我不确定，帮我查最新文档，并把发现的 API 文档坑标注起来。",
-      "expected_output": "Agent 应使用 get-api-docs：通过 chub 获取 Stripe 文档，基于文档回答，并用 chub annotate 记录第三方 API 文档坑，而不是把主要动作转成项目级 learning 沉淀。",
+      "expected_output": "Agent 应使用 Stripe 官方当前文档核对 webhook 验证，并在本机 chub 支持 annotation 时按用户明确授权记录可复用注意点；不得把社区文档的未命中当作 API 不存在。",
       "files": [],
       "expectations": [
-        "使用 chub search 或 chub get 获取 Stripe 文档",
+        "使用 Stripe 官方当前文档或专用官方来源核对关键行为",
         "基于获取的文档说明 webhook 验证注意点",
-        "使用或提及 chub annotate",
+        "从本机 help 确认并使用或说明 chub annotation 能力",
+        "annotation 不包含 secret、客户数据或仅属于当前项目的临时状态",
         "没有把主要动作转成项目级 learning 沉淀"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "这个仓库自己的内部 RPC 方法有哪些参数？直接看当前代码和 AGENTS.md 回答，不要查外网。",
+      "expected_output": "Agent 不应使用 get-api-docs 或 chub；应直接读取仓库中的代码、类型、测试和 AGENTS.md，以当前内部契约为准。",
+      "files": [],
+      "expectations": [
+        "直接读取仓库内代码、类型、测试或 AGENTS.md",
+        "没有调用 chub 或外部文档搜索",
+        "明确内部 API 以当前仓库契约为准"
       ]
     }
   ]

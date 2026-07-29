@@ -55,6 +55,30 @@
         "输出提及 mypy/插件或复杂配置时保留或并行检查的风险",
         "输出提及 requirements.txt 与 uv.lock 的单源化方向"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "这次选型让我觉得以后 Rust CLI 都应该优先 clap。你帮我分析一下是不是值得变成长期偏好，但先别改仓库或发 Issue。",
+      "expected_output": "Agent 应分析这条偏好是否值得固化，并可在回复中给出偏好提案；不得修改 tech-preferences、创建 Issue/PR、commit 或 push。",
+      "files": [],
+      "expectations": [
+        "比较适用范围、已有基线和可能偏离的条件",
+        "可输出结构化偏好提案，但保持在回复中",
+        "不执行本地文件修改",
+        "不创建或评论远端 Issue/PR，不 commit 或 push"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "技术栈不变。我想基于现有仓库重新梳理模块、接口和状态所有者，再决定最小重构切片；先做设计，不要改代码。",
+      "expected_output": "Agent 不应仅因出现架构/重构词就让 tech-preferences 接管；应以 spark 的项目现场和内置设计判断为主，tech-preferences 只有出现真实技术选择时才参与。",
+      "files": [],
+      "expectations": [
+        "明确主要工作应由 spark 或等价的项目级设计流程负责",
+        "先检查现有仓库、数据流或状态归属证据",
+        "没有虚构新的框架或工具选型问题",
+        "保持在设计层，不直接修改代码"
+      ]
     }
   ]
 }

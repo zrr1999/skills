@@ -2,39 +2,52 @@
 
 面向个人项目的代理技能合集，用于在 Cursor、Copilot 等工具中复用工作流程。
 
-## 本仓库内的技能（共 10 个）
+## 技能分层（共 9 个）
 
-| 技能                   | 说明                                                                                                     |
-| ---------------------- | -------------------------------------------------------------------------------------------------------- |
-| `roles`                | 代理优先职责契约：`inspector` / `executor` / `verifier` 的 brief 分工与提示词；专项审查用 `lens`          |
-| `tech-preferences`     | 技术栈与工具偏好 / 取舍；含 Python 工程化落地（uv、ruff、ty、pyproject、prek/CI）                        |
-| `unix-software-design` | 模块边界、接口、简洁性                                                                                   |
-| `get-api-docs`         | 第三方库 / API 文档                                                                                      |
-| `spark`                | 默认项目级入口：澄清意图、检查现场、产出统一 packet、拆分任务、并在需要时创建/更新 SPARK.md              |
-| `quality-audit`        | 统一质量检查与优化：技术债/架构健康/可维护性审计，以及公开发布前的 Scorecard、安全、许可证与仓库卫生预检 |
-| `svg-design`           | 手写 SVG 图标/Logo：viewBox/描边约定、渐变/蒙版、优化、动效、无障碍；Logo 预览工作流                     |
-| `zellij`               | 持久终端工作区：session 恢复、pane/tab/layout 组织、自动化取证、只读观察与安全远程访问                   |
-| `git-worktrees`        | Git 隔离工作区：统一用户级目录、平台托管边界、并行 agent 的创建/盘点/迁移/安全清理                       |
-| `ssh-fleet`            | 私有 SSH 设备事实源：新增/修改/退役、host key 信任、严格校验、render/apply 与授权边界                    |
+`skills/<name>/` 保持平铺，兼容现有 skill manager 的发现与安装；下面的分层用于选 skill，不改变目录或安装 ID。
 
-### `roles` 职责一览
+### 通用入口
 
-- **`inspector`** —— 有限的取证、阅读、结构、权衡、范围划定
-- **`executor`** —— 聚焦实现，产出可合并的差异与校验契约
-- **`verifier`** —— 针对明确主张做复现、回归与审查；可在 brief 上设置 **`lens`**（`security`、`performance`、`architecture`）
+先决定任务是否需要一个总入口。只有项目级推进或实际委派需要这一层。
 
-**典型搭配（示例）**
+| 技能 | 主要结果 | 不负责 |
+| --- | --- | --- |
+| `spark` | 基于项目现场澄清目标、做软件设计取舍、选择最小可验证切片并推进下一步 | 单一技术选型、单点实现、领域工具细节 |
+| `roles` | 把已决定委派的工作写成 `inspector` / `executor` / `verifier` brief | 项目路线、技术方法或独立协调者角色 |
 
-- **从零开发** —— 可行性可拆时并行多份 `inspector` 任务简报；再 `executor`；最后用 `verifier` 验证主张。
-- **维护** —— 结构审查与复现彼此独立时，`inspector` 与 `verifier` 并行；再 `executor`；最后 `verifier` 做回归。
-- **研读其他仓库** —— 按子系统或问题并行多份 `inspector` 任务简报；在一轮里综合或在编排层合并。
-- **专项审查** —— 按需使用带 `lens: security` / `performance` / `architecture` 的 `verifier`。
+### 横切工程能力
 
-**数量说明**：本仓库当前 **10** 个技能。角色契约在 `roles`；选型与 Python 工具链落地在 `tech-preferences`；统一项目工作流在 `spark`；质量检查与优化在 `quality-audit`；Zellij 持久工作区由 `zellij` 负责；Git 隔离工作区由 `git-worktrees` 负责；私有设备与 SSH 信任更新由 `ssh-fleet` 负责。原独立仓库 `zrr1999/roles` 与原 skill `modern-python` 已归档/合入。
+这些 skill 可附着在许多项目上，但各自只拥有一种结果。
 
-## 评测用例格式
+| 技能 | 主要结果 | 典型边界 |
+| --- | --- | --- |
+| `tech-preferences` | 技术栈/工具取舍与 Python 工具链落地 | 项目级模块、接口和状态边界仍由 `spark` 统筹 |
+| `quality-audit` | 有证据的维护质量或公开发布就绪审计 | 不替代普通 PR review、单点调试或纯安全渗透测试 |
+| `git-workstreams` | 安全发布本地改动、worktree、GitHub 原生 stack 与目标 PR 跟进 | 原生 stack 默认启用、明确不支持时回退；worktree 显式 opt-in |
 
-每个技能在 `skills/<skill-name>/evals/evals.json` 下有评测用例。本地快速校验 JSON 语法：`for f in skills/*/evals/evals.json; do jq empty "$f"; done`。结构校验：`bash scripts/check-evals.sh`。
+### 领域专用能力
+
+任务目标已经明确落在某个领域时，可直接使用对应 skill，不必先经过 `spark`。
+
+| 技能 | 主要结果 |
+| --- | --- |
+| `get-api-docs` | 从当前第三方 SDK/API 文档取得可靠用法；OpenAI 文档走官方专用来源 |
+| `svg-design` | 创建、编辑、优化并渲染验证 SVG、图标或 Logo |
+| `zellij` | 组织、恢复、观察或分享持久终端工作区 |
+| `ssh-fleet` | 管理私有 SSH 设备事实源、host key 信任和生成配置 |
+
+### 选择规则
+
+1. 请求横跨目标、现场证据、设计和下一步时，以 `spark` 为主；遇到明确专项再加载更窄的 skill。
+2. 主要交付只是技术选择、审计、Git workstream 或领域产物时，直接使用对应 skill。
+3. `roles` 只在实际委派或编写 agent brief 时加载；它与当前方法型 skill 正交。
+4. 混合请求可以加载多个 skill，但只指定一个结果所有者，避免两个 skill 同时规划整项工作。
+
+原 `unix-software-design` 已简化并内置进 `spark`，原 `git-worktrees` 已更名为 `git-workstreams`。
+
+> 升级提示：重新安装后若本机仍残留旧 `git-worktrees` skill，请先用当前 skill manager 检查来源，再移除旧条目，避免两个 description 同时触发。安装流程不会自动删除用户级旧 skill。
+
+## 安装
 
 ### 一键安装
 
@@ -68,35 +81,33 @@ pnpx skills add zrr1999/skills -g -y --agent cline --skill '*'
 pnpx skills add zrr1999/skills -g -y --agent cline --skill '*'
 ```
 
-## 常用技能（本仓库内）
+## 按层安装（本仓库内）
 
 ```bash
-# 添加全局可用的技能（只装到 ~/.agents/skills；推荐项目级入口使用 spark；委派子代理时加载 roles）
+# 通用入口
 pnpx skills add zrr1999/skills -g --agent cline --skill spark \
-  --skill roles \
+  --skill roles
+
+# 横切工程能力
+pnpx skills add zrr1999/skills -g --agent cline \
   --skill tech-preferences \
-  --skill unix-software-design \
-  --skill get-api-docs \
   --skill quality-audit \
+  --skill git-workstreams
+
+# 领域专用能力，按需选择
+pnpx skills add zrr1999/skills -g --agent cline \
+  --skill get-api-docs \
   --skill svg-design \
   --skill zellij \
-  --skill git-worktrees \
   --skill ssh-fleet
 
-# 或按需单独添加示例
-pnpx skills add zrr1999/skills -g --agent cline --skill spark
-pnpx skills add zrr1999/skills -g --agent cline --skill roles
-pnpx skills add zrr1999/skills -g --agent cline --skill tech-preferences
-pnpx skills add zrr1999/skills -g --agent cline --skill unix-software-design
-pnpx skills add zrr1999/skills -g --agent cline --skill get-api-docs
-pnpx skills add zrr1999/skills -g --agent cline --skill quality-audit
-pnpx skills add zrr1999/skills -g --agent cline --skill svg-design
-pnpx skills add zrr1999/skills -g --agent cline --skill zellij
-pnpx skills add zrr1999/skills -g --agent cline --skill git-worktrees
-pnpx skills add zrr1999/skills -g --agent cline --skill ssh-fleet
+# 全量安装仍可使用：
+pnpx skills add zrr1999/skills -g -y --agent cline --skill '*'
 ```
 
 ## 本地开发
+
+每个技能在 `skills/<skill-name>/evals/evals.json` 下有评测用例。本地快速校验 JSON 语法：`for f in skills/*/evals/evals.json; do jq empty "$f"; done`。结构校验：`bash scripts/check-evals.sh`。
 
 ```bash
 # 默认安装远程已发布版本（含 Vite+ / pnpm / chub / skills）
@@ -106,7 +117,7 @@ bash install.sh
 REPO_SOURCE=./skills bash install.sh
 
 # 调试本地未发布改动时，直接从本地目录添加（同样只写入 ~/.agents/skills）
-pnpx skills add ./skills -g --agent cline --skill unix-software-design
+pnpx skills add ./skills -g --agent cline --skill spark
 
 # 与 prek.toml 对齐的本地检查（需已执行 prek install）
 prek run check-json check-yaml check-executables-have-shebangs --all-files

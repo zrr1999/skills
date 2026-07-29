@@ -5,10 +5,11 @@ User prompt example:
 Expected skill behavior:
 
 - Stay in `spark` Capture mode.
-- Elicit only the highest-signal missing pieces; do not ask a generic intake form.
+- Safely inspect any existing repository or reference the user supplied before asking for discoverable facts.
+- Ask one batch of 2-3 mutually independent, high-signal decisions; include a recommendation for each and wait for the whole batch before asking dependent follow-ups.
 - Draft a concrete `SPARK.md` in Chinese, marking uncertain guesses with `<!-- 待确认 -->`.
-- Ask for draft confirmation before creating files or a repo.
-- After confirmation, optionally create the repo and commit `SPARK.md` as described in the skill.
+- Keep the first draft in the conversation unless the user asked to write the file.
+- Do not create a repo, commit, publish, or take another consequential action until the user confirms the shared understanding and authorizes that action.
 
 Not expected from the Spark product itself:
 
