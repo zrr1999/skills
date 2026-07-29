@@ -58,6 +58,6 @@
 - `spark` 现为统一项目工作流与软件设计入口：内建需求澄清、简化的软件设计判断、与 `roles` skill 一致的 brief 编排（职责并行）、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`get-api-docs`；非平凡经验沉淀迁移到 pi-spark 的 `spark-learnings` 工具链。
 - `tech-preferences` 同时承载选型基线与 Python 工具链落地（原独立 `modern-python` 已合入）。
 - `roles` 承载 inspector / executor / verifier 的提示词与分工契约；不把 role-forge / roles.toml 等独立仓结构迁入本仓库。
-- `git-workstreams` 由 `git-worktrees` 更名并扩展而来：worktree 是显式 opt-in；启用后独立任务使用独立 worktree，同一依赖 review stack 在一个 owning worktree 内形成线性 branch chain。未启用时 PR stack 仍可在当前 checkout 使用标准 Git/GitHub 完成；PR follow-up 负责冲突、范围内 CI、及时 commit/push 和重新检查。
+- `git-workstreams` 由 `git-worktrees` 更名并扩展而来：worktree 是显式 opt-in；启用后独立任务使用独立 worktree，同一依赖 review stack 在一个 owning worktree 内形成线性 branch chain。GitHub 仓库默认使用原生 Stacked PRs，本地 `gh stack` 不可用时仍可走 GitHub UI/API；只有 GitHub 明确不支持、非 GitHub 仓库或用户明确退出时才回退普通 chained PR。PR follow-up 负责冲突、范围内 CI、及时 commit/push 和重新检查。
 - 各 skill 的评测用例在 `skills/<skill-name>/evals/evals.json`。
 - `zellij` 以能力与边界为主：精确命令从当前安装版本的 `zellij --help` 和子命令 help 获取，不维护易过期的 flags 清单。

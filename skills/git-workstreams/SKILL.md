@@ -1,21 +1,21 @@
 ---
 name: git-workstreams
 description: >
-  使用标准 Git/GitHub 组织 change workstream：经用户明确选择后创建和管理隔离 worktree；安全地从默认分支发布本地改动；设计、发布和同步线性 branch/PR stack；跟进已有 PR 的冲突、CI 与本地 commit/push。适用于 worktree 创建、迁移、安全清理、“branch already checked out”，从 main/master 执行 commit+push 或创建 PR，stacked PR、依赖 PR、分层 review、PR merge conflict、checks failed、修到可合并、未提交或未推送修复等请求。worktree 是显式 opt-in；发布授权不等于允许隐式切换主工作区分支。默认不要求 gh-stack、Graphite 等专用工具。不要用于用户明确要求的普通短暂分支切换、只读 PR 摘要、纯 review comment 处理、release 编排，或未经确认丢弃/重写已发布工作。
+  使用 Git/GitHub 组织 change workstream：经用户明确选择后管理隔离 worktree；安全地从默认分支发布本地改动；设计、发布和同步线性 branch/PR stack；跟进已有 PR 的冲突、CI 与本地 commit/push。适用于 worktree 创建、迁移、安全清理、“branch already checked out”，从 main/master 执行 commit+push 或创建 PR，stacked PR、依赖 PR、分层 review、PR merge conflict、checks failed、修到可合并、未提交或未推送修复等请求。GitHub stack 默认使用原生 Stacked PRs，并在本地可用时优先 gh-stack；仅在仓库明确不支持、非 GitHub 仓库或用户明确退出时回退到普通 chained PR。worktree 是显式 opt-in；发布授权不等于允许隐式切换主工作区分支。
 ---
 
 # Git Workstreams
 
 ## Goal
 
-在用户明确选择后为独立工作流启用隔离 worktree，为依赖改动选择线性 branch/PR stack，并把已有 PR 的冲突与 CI 跟到可合并或明确 blocker。发布过程中保持主工作区分支可预测；完成时应能给出实际拓扑、基准、验证结果、commit/push 状态和未获授权的动作。
+在用户明确选择后为独立工作流启用隔离 worktree，为依赖改动优先使用 GitHub 原生 Stacked PRs，并把已有 PR 的冲突与 CI 跟到可合并或明确 blocker。发布过程中保持主工作区分支可预测；完成时应能给出实际拓扑、基准、验证结果、commit/push 状态和未获授权的动作。
 
 ## Choose the topology
 
 - **当前 checkout**：默认选择；用户未明确启用 worktree 时在这里工作。
 - **主工作区**：`git worktree list --porcelain` 的主 working tree。发布请求不得把它从默认分支隐式切到临时分支。
 - **独立 workstream**：能独立修改、验证和交付的并行任务；用户启用后，每个 workstream 使用一个可写 worktree 和 branch。
-- **依赖 stack**：后续改动依赖前一层、但每层都值得独立 review 时，在一个 owning checkout 内维护线性 branch chain；每个 PR 的 base 是下一层靠近 trunk 的 branch。stack 本身不要求 worktree。
+- **依赖 stack**：后续改动依赖前一层、但每层都值得独立 review 时，在一个 owning checkout 内维护线性 branch chain；每个 PR 的 base 是下一层靠近 trunk 的 branch。GitHub 仓库默认使用原生 Stacked PRs；stack 本身不要求 worktree 或本地 `gh stack` CLI。
 - **多个独立 stacks**：用户启用后，每个 stack 使用不同 owning worktree；不要把同一 stack 的各层拆到多个可写 worktree。若用户不启用，保持当前 checkout 并串行推进。
 
 ## Directory policy
@@ -37,16 +37,17 @@ git worktree list --porcelain
 git branch --help
 git rebase --help
 gh pr --help  # 仅当任务需要 GitHub PR 且 gh 可用
+gh stack --help  # GitHub stack 请求；用于发现本地扩展是否可用
 ```
 
-只读取目标需要的 help 分支；不要凭记忆猜快速演进的 flags。若仓库已经使用专用 stack 工具，读取其本机 help 并遵守仓库约定；否则使用标准 Git branch/rebase/push 与 GitHub PR base/head，不为 stack 引入新工具。
+只读取目标需要的 help 分支；不要凭记忆猜快速演进的 flags。GitHub stack 请求默认走下方原生路径，不要求先从仓库配置证明支持。若 `gh stack` 可用，读取本机 help 并遵守仓库约定；若 CLI 不可用，仍可用标准 Git 管分支并通过 GitHub UI/API 建立原生 stack。未经用户要求不安装或升级扩展。
 
 ## Workflow
 
 1. **确认结果**：区分普通单线任务、独立 worktree、依赖 stack、PR follow-up、只读诊断、迁移或清理。
-2. **检查现场**：解析 repo root、absolute/common git dir、superproject、主工作区路径及起始 branch/HEAD、当前 branch/HEAD、dirty 状态、remote、远端默认分支、`git worktree list --porcelain`，以及任务相关 PR 的 head/base、冲突、checks 和可写权限。普通本地任务不隐式 fetch；PR follow-up 本身依赖当前远端状态，可更新相关 refs 并读取 PR/check 状态。
+2. **检查现场**：解析 repo root、absolute/common git dir、superproject、主工作区路径及起始 branch/HEAD、当前 branch/HEAD、dirty 状态、remote、远端默认分支、`git worktree list --porcelain`，以及任务相关 PR 的 head/base、冲突、checks 和可写权限。GitHub stack 请求同时检查 `gh stack` 本地能力和仓库返回的 feature 状态，但不因 CLI 缺失直接判定仓库不支持。普通本地任务不隐式 fetch；PR follow-up 本身依赖当前远端状态，可更新相关 refs 并读取 PR/check 状态。
 3. **取得启用选择**：只读盘点不需要确认；创建 worktree、把它作为可写工作区复用、把任务迁入其中或交给另一个 agent 前，必须得到用户明确 opt-in。若当前请求已经明确要求创建或使用 worktree，视为已选择；否则简要说明收益、成本和拟议范围，并直接询问是否启用。在答案到来前保持当前 checkout，不执行 worktree 动作。
-4. **选择并画出拓扑**：启用后将独立任务按 worktree 分开；依赖改动无论是否启用 worktree，都按 reviewable concern 从 trunk 向上排列。一个结果会改变上层设计时保持串行。
+4. **选择并画出拓扑**：启用后将独立任务按 worktree 分开；依赖改动无论是否启用 worktree，都按 reviewable concern 从 trunk 向上排列。GitHub 仓库默认保留原生 stack 元数据；只有 GitHub 明确返回未启用/不支持、仓库不在 GitHub，或用户明确退出时才使用普通 chained PR fallback。一个结果会改变上层设计时保持串行。
 5. **执行最小动作**：按用户选择复用当前 checkout 或已有隔离环境；新实现从明确基准创建 branch，只有已 opt-in 才创建、进入或交接 worktree。发布前应用下方主工作区保护；不要把 `commit+push`、`提 PR` 或 `github:yeet` 当成隐式切换主工作区的授权。临时只读检查需要新 detached worktree 时也先取得选择。不要用 force 绕过 branch 占用或目标路径保护。
 6. **准备和验证**：读取 `AGENTS.md` 和项目 setup，只运行相关检查；不自动复制 `.env`、凭据、ignored 文件或缓存，也不无条件安装依赖。
 7. **处理 PR follow-up**：当前 workstream 已有确认过的 PR，且用户要求实现、修复、跟进或保持可合并时，按下方闭环处理范围内冲突与 CI，并把验证过的本地修复小步 commit、及时 push 到已解析的 PR head。只读诊断不获得这些写权限。
@@ -92,7 +93,23 @@ ui         -> api
 - 从 bottom 到 top 创建和提交 branch；发布时先确保对应 base branch 已在远端，再逐层核对 PR `head -> base`，bottom 指向 trunk，其余指向下层 branch。
 - 修改较低层后，从该层向上按依赖顺序重放后继 branch，并在每层运行相关验证。若 branch 已发布，重写和 force-push 前必须明确受影响的 refs/PR；用户明确要求同步该远端 stack 时才执行。
 - 落地顺序是 bottom-up。下层合并后，重新解析剩余 branch 的 base、trunk 差异和 PR 状态，再决定 retarget/rebase；不要假设托管平台会自动修复。
-- 不要求专用 stack CLI。若 `gh` 不可用，可用标准 Git 管 branch，并在 GitHub UI 创建或调整 PR；报告仍需保留 branch、base、PR 的映射。
+
+### GitHub native stack route
+
+- 默认假定 GitHub 仓库已启用 Stacked PRs。优先复用本地 `gh stack`；CLI 不可用时，用标准 Git 管 branch，并通过 GitHub UI/API 创建或连接原生 stack。
+- `gh stack` 的能力包括初始化/扩展 stack、推送、提交或更新 PR、查看、同步、重排和级联 rebase。精确命令与 flags 必须从本机 `gh stack --help` 及相关子命令 help 获取。
+- `sync`、`rebase`、`push`、`submit` 或重排可能 fetch、改写 branch、push、更新 PR 或清理本地分支；按实际 help 和用户授权拆开，不把组合命令当成只读操作。
+- 只有 GitHub 明确返回 feature 未启用/不支持、仓库不在 GitHub，或用户明确要求不用原生 stack 时，才回退到标准 Git branch/rebase/push 与普通 PR `head -> base` 链。fallback 仍需报告完整映射。
+
+按任务读取官方资料：
+
+- [Overview](https://github.github.com/gh-stack/introduction/overview/)：stack 语义、CI/rules、merge 与 rebase。
+- [Quick Start](https://github.github.com/gh-stack/getting-started/quick-start/)：前置条件、CLI/agent setup 与首个 stack。
+- [Working with Stacked PRs](https://github.github.com/gh-stack/guides/stacked-prs/)：push、submit、review、merge 与 sync。
+- [Typical Workflows](https://github.github.com/gh-stack/guides/workflows/)：日常提交、review feedback、sync、rebase 与既有 branch。
+- [Restructuring Stacks](https://github.github.com/gh-stack/guides/modify/)：重排、fold、drop、insert 与 rename。
+- [CLI reference](https://github.github.com/gh-stack/reference/cli/)：命令能力；实际执行仍以本机 help 为准。
+- [GitHub UI](https://github.github.com/gh-stack/guides/ui/) 与 [FAQ](https://github.github.com/gh-stack/faq/)：UI 操作、限制和故障判断。
 
 ## PR follow-up loop
 
@@ -119,7 +136,7 @@ ui         -> api
 ## Boundaries
 
 - 本 skill 管 worktree 生命周期、依赖 branch/PR 拓扑，以及目标 PR 的冲突、范围内 CI 修复和 head branch 连续交付；不接管纯 review comment 处理、无关 CI、merge 决策或 release 编排。
-- PR metadata、GitHub Actions logs 和 review threads 可路由到 GitHub 专项 workflow；标准 branch/PR stack 与本地 commit/push 不依赖专用 stack 工具。
+- PR metadata、GitHub Actions logs 和 review threads 可路由到 GitHub 专项 workflow；GitHub 原生 stack 不依赖本地 `gh stack` CLI，明确不支持时才退回普通 chained PR。
 - 依赖、端口、数据库和容器隔离属于项目环境。只有仓库已有明确 setup 机制时才复用，不在通用 worktree skill 中发明一套。
 - Codex 托管 worktree 的 ignored 文件复制与快照由 Codex 处理；手工 Git worktree 不假设具有同样能力。
 

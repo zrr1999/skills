@@ -75,13 +75,14 @@
     {
       "id": 7,
       "prompt": "这个功能想拆成 data model、API、UI 三个依赖 PR。给每层各建一个 worktree，让三个 agent 同时改，再用 stacked PR 串起来。",
-      "expected_output": "Agent 应识别依赖 PR 需要线性 branch stack，但拒绝把同一 stack 的各层放到多个可写 worktree；应给整个 stack 一个 owning worktree，按 data model -> API -> UI 排列 branch 与 PR base，并说明依赖层应串行推进。",
+      "expected_output": "Agent 应拒绝把同一 stack 的各层放到多个可写 worktree；给整个 stack 一个 owning worktree，按 data model -> API -> UI 排列，并默认使用 GitHub 原生 Stacked PRs。只有仓库明确不支持时才回退普通 chained PR。",
       "files": [],
       "expectations": [
         "明确一个 stack 使用一个 owning worktree，而不是每层一个 worktree",
         "给出 bottom-to-top 的 data model、API、UI branch 顺序",
         "说明 bottom PR 指向 trunk，其余 PR 指向下层 branch",
-        "不要求安装 gh-stack、Graphite 或其他专用 stack 工具"
+        "默认保留 GitHub 原生 stack 元数据，不因本地 gh-stack CLI 缺失直接判定仓库不支持",
+        "不未经用户要求安装 gh-stack、Graphite 或其他专用 stack 工具"
       ]
     },
     {
@@ -207,6 +208,18 @@
         "不切换主工作区或创建替代分支",
         "按确认范围 stage、commit、push 并创建 draft PR",
         "报告主工作区起始与结束 branch 未变化"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "按 GitHub stack 发这三层 PR。当前 gh stack 命令返回 repository does not have Stacked PRs enabled，别卡住，继续用可审阅的回退方案。",
+      "expected_output": "Agent 应把 GitHub 返回的未启用状态视为明确 fallback 证据，改用标准 Git branch/rebase/push 和普通 PR head -> base 链，不反复尝试原生 stack，也不改变 owning checkout 与权限边界。",
+      "files": [],
+      "expectations": [
+        "把 GitHub 明确返回 feature 未启用识别为 fallback 条件",
+        "使用标准 Git 和普通 chained PR 保留 bottom-to-top 拓扑",
+        "报告每层 PR 的 head、base 和原生 stack 未启用的证据",
+        "不反复安装或重试 gh-stack，不擅自改变 worktree 或 branch 所有权"
       ]
     }
   ]

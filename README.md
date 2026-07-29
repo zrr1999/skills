@@ -23,7 +23,7 @@
 | --- | --- | --- |
 | `tech-preferences` | 技术栈/工具取舍与 Python 工具链落地 | 项目级模块、接口和状态边界仍由 `spark` 统筹 |
 | `quality-audit` | 有证据的维护质量或公开发布就绪审计 | 不替代普通 PR review、单点调试或纯安全渗透测试 |
-| `git-workstreams` | 安全发布本地改动、worktree、线性 branch/PR stack 与目标 PR 跟进 | worktree 显式 opt-in；发布不得隐式切换主工作区 |
+| `git-workstreams` | 安全发布本地改动、worktree、GitHub 原生 stack 与目标 PR 跟进 | 原生 stack 默认启用、明确不支持时回退；worktree 显式 opt-in |
 
 ### 领域专用能力
 
