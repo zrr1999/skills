@@ -221,6 +221,19 @@
         "报告每层 PR 的 head、base 和原生 stack 未启用的证据",
         "不反复安装或重试 gh-stack，不擅自改变 worktree 或 branch 所有权"
       ]
+    },
+    {
+      "id": 19,
+      "prompt": "PR #59 已经合并。这个原生 Git worktree 是干净的，分支已推送，也没有进程或 session 占用。以后别让 ~/.agents/worktrees 一直膨胀，现在按长期策略处理。",
+      "expected_output": "Agent 应把 PR 合并识别为 owning worktree 的常规清理检查点；核对目标不是 main、当前或平台托管 worktree，且没有未保存改动、未推送/未合并提交或活动占用后，使用 Git worktree remove 清理。长期策略应按周做只读盘点和 prune dry-run，而不是调度无条件自动删除。",
+      "files": [],
+      "expectations": [
+        "把 PR 或完整 stack 落地而不是 PR 创建识别为清理检查点",
+        "清理前核对 worktree 所有权、dirty 状态、提交可达性和活动进程或 session",
+        "使用 git worktree remove，不使用 rm -rf、默认 force 或顺带删除分支",
+        "按周的周期动作默认只读报告候选，并在 prune 前 dry-run",
+        "区分已合并 PR 与未合并关闭的 PR；后者仍需保留证明或丢弃授权"
+      ]
     }
   ]
 }

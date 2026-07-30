@@ -123,6 +123,12 @@ ui         -> api
 
 ## Cleanup and migration
 
+### Lifecycle timing
+
+- 提交或创建 PR 不是清理时机；只要 PR 仍开放、required checks/review 未结束、还有 follow-up，或同一 owning worktree 中的 stack 仍有未落地层，就保留该 worktree。
+- PR 合并或整个 stack 落地后是常规清理检查点：先只读核对所有权和下方安全条件。当前请求或用户已建立的长期策略明确授权清理时，在同一流程移除符合条件的原生 Git worktree；否则只报告精确候选。PR 未合并而关闭不能单独证明分支可丢弃，仍需确认改动已保留或取得丢弃授权。
+- 为避免统一根目录长期膨胀，可按周或在目录数量、空间异常增长时做只读盘点。周期任务默认只报告候选并 dry-run prune；未经明确授权不调度自动删除，不把 prune 当作活跃 worktree 的清理器。
+
 清理和迁移是独立的破坏性流程，先只读盘点，再执行单个明确目标：
 
 1. 确认目标不是 main worktree、当前工作目录、平台托管目录或仍被运行中任务使用的目录。
@@ -142,4 +148,4 @@ ui         -> api
 
 ## Output
 
-worktree 请求先报告用户是否已 opt-in；启用后报告管理者、绝对路径、基准 ref、branch/HEAD、setup 与验证。发布请求报告主工作区起始/结束 branch、owning checkout、commit、push 和 PR。stack 请求报告 owning checkout、worktree 启用状态、trunk、bottom-to-top branch 顺序和每层 PR base/head。PR follow-up 报告冲突状态、失败 checks 与判断、创建的 commit、push 目标、重新检查结果和 blocker。清理请求报告保留与可安全移除的精确目标。
+worktree 请求先报告用户是否已 opt-in；启用后报告管理者、绝对路径、基准 ref、branch/HEAD、setup 与验证。发布请求报告主工作区起始/结束 branch、owning checkout、commit、push 和 PR。stack 请求报告 owning checkout、worktree 启用状态、trunk、bottom-to-top branch 顺序和每层 PR base/head。PR follow-up 报告冲突状态、失败 checks 与判断、创建的 commit、push 目标、重新检查结果和 blocker。PR 或 stack 落地后的 follow-up 还要报告 owning worktree 的清理资格，以及已执行的移除或仍需授权的原因。清理请求报告保留与可安全移除的精确目标。
