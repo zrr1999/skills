@@ -20,9 +20,9 @@ description: >
 
 ## Directory policy
 
-本 skill 创建的 worktree 统一放在 `~/.agents/worktrees/<forge>/<owner>/<repo>/<task>`。优先从规范化远端 URL 得到仓库命名空间；没有远端时使用 `local/<repo>-<common-dir-short-hash>`。目标必须解析到统一根目录内且不得覆盖现有路径。
+本 skill 创建的 worktree 统一放在当前仓库根目录下的 `./.spark/worktrees/<forge>/<owner>/<repo>/<task>`。优先从规范化远端 URL 得到仓库命名空间；没有远端时使用 `local/<repo>-<common-dir-short-hash>`。目标必须解析到该仓库的 `.spark/worktrees` 根目录内且不得覆盖现有路径。
 
-Codex 等平台托管的 worktree 也可以使用这个根目录，不再按 app 划分子目录。管理权不能只靠路径判断：先结合当前平台能力、Git worktree 元数据和任务上下文识别所有者。平台托管 worktree 由平台负责快照和自动清理，skill 不手工移动、删除或 prune；原生 Git 创建的 worktree 则没有平台快照或自动清理保证。需要统一 Codex 路径时，通过 Codex 的 **Settings > Worktrees > Worktree root** 指向 `~/.agents/worktrees`。
+Codex 等平台托管的 worktree 也可以使用这个根目录，不再按 app 划分子目录。管理权不能只靠路径判断：先结合当前平台能力、Git worktree 元数据和任务上下文识别所有者。平台托管 worktree 由平台负责快照和自动清理，skill 不手工移动、删除或 prune；原生 Git 创建的 worktree 则没有平台快照或自动清理保证。需要统一 Codex 路径时，通过 Codex 的 **Settings > Worktrees > Worktree root** 指向当前仓库的 `./.spark/worktrees`。
 
 这个目录是本机运行状态，不是配置事实源。不要把它纳入 Git、云盘或跨机器同步；每台机器独立创建。Git 自身的 `git worktree list --porcelain` 是单个仓库的权威状态，不另建全局 registry。
 

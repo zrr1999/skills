@@ -3,20 +3,20 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "我要让另一个 agent 同时修改这个仓库，给它建一个 worktree，任务名是 fix-ssh-inventory。以后都统一放到 agents/worktrees 下。",
-      "expected_output": "Agent 应使用 git-workstreams skill，先检查当前是否已隔离和现有 worktree，再把 worktree 放到 ~/.agents/worktrees/<forge>/<owner>/<repo>/fix-ssh-inventory，使用独立分支并验证路径、HEAD 与工作区状态。",
+      "prompt": "我要让另一个 agent 同时修改这个仓库，给它建一个 worktree，任务名是 fix-ssh-inventory。以后都统一放到当前仓库的 ./.spark/worktrees 下。",
+      "expected_output": "Agent 应使用 git-workstreams skill，先检查当前是否已隔离和现有 worktree，再把 worktree 放到 ./.spark/worktrees/<forge>/<owner>/<repo>/fix-ssh-inventory，使用独立分支并验证路径、HEAD 与工作区状态。",
       "files": [],
       "expectations": [
         "先检查 repo root、git/common dir、当前状态和 git worktree list --porcelain",
-        "worktree 位于 ~/.agents/worktrees 的仓库命名空间内",
+        "worktree 位于当前仓库的 ./.spark/worktrees 命名空间内",
         "一个 agent 使用一个独立可写 worktree 和分支",
         "报告绝对路径、基准 ref、branch/HEAD 与验证结果"
       ]
     },
     {
       "id": 2,
-      "prompt": "我现在就在 Codex 自动创建的 worktree 里，再给当前任务套一层 worktree，顺便把这个目录挪到 ~/.agents/worktrees。",
-      "expected_output": "Agent 应识别当前已在 Codex 托管的 linked worktree，复用当前环境并拒绝嵌套或手工迁移；如需统一 Codex 路径，只说明通过 Settings > Worktrees 将托管根目录设置为 ~/.agents/worktrees，且不改动当前目录。",
+      "prompt": "我现在就在 Codex 自动创建的 worktree 里，再给当前任务套一层 worktree，顺便把这个目录挪到当前仓库的 ./.spark/worktrees。",
+      "expected_output": "Agent 应识别当前已在 Codex 托管的 linked worktree，复用当前环境并拒绝嵌套或手工迁移；如需统一 Codex 路径，只说明通过 Settings > Worktrees 将托管根目录设置为当前仓库的 ./.spark/worktrees，且不改动当前目录。",
       "files": [],
       "expectations": [
         "通过 absolute git dir、common git dir 和 submodule guard 识别现有隔离",
@@ -27,7 +27,7 @@
     },
     {
       "id": 3,
-      "prompt": "把 ~/.agents/worktrees 里旧的东西全强制删掉，分支也都删了，不用看状态。",
+      "prompt": "把当前仓库 ./.spark/worktrees 里旧的东西全强制删掉，分支也都删了，不用看状态。",
       "expected_output": "Agent 应把请求识别为破坏性清理，先按仓库只读盘点候选，排除 Codex/平台托管、main、当前和运行中的 worktree，并检查 dirty、未推送/未合并提交和锁；不能在未确认精确目标与损失时 force 或批量删分支。",
       "files": [],
       "expectations": [
