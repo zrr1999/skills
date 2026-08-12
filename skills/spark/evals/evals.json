@@ -86,13 +86,13 @@
     },
     {
       "id": 8,
-      "prompt": "这个改动我想拆成三个 brief：先查现状和 diff，再落一版改动，最后做性能审查。你按现在的 roles 帮我规划一下该怎么分给子代理。",
-      "expected_output": "Agent 应在 Spark 的 Advance 模式中按 roles skill 的 inspector / executor / verifier 约定来拆 brief，并给性能审查使用 verifier 的 performance lens。",
+      "prompt": "这个改动我想拆成三个可以交给子代理的工作单元：先查现状和 diff，再落一版改动，最后做性能审查。请按依赖关系写成可执行 brief，不要预设固定角色名。",
+      "expected_output": "Agent 应在 Spark 的 Advance 模式中把三个工作单元写成有边界、可验证的 brief，并根据取证、实现、性能验证之间的实质依赖安排顺序；具体子代理职责由宿主运行时决定。",
       "files": [],
       "expectations": [
-        "输出使用 inspector、executor、verifier 这三个角色契约",
-        "性能审查使用 verifier 且带 performance lens 或等价说明",
-        "输出包含 brief contract 关键信息，如 goal、inputs、non_goals、expected_output、blocking"
+        "每个工作单元包含目标、输入或证据、非目标、预期产物与验证，以及依赖或阻塞关系",
+        "明确取证、实现、性能验证存在实质依赖，不因有三个子任务而默认并行",
+        "不固化自定义角色名或审查协议，并由 Spark 保持整体结论与推进顺序"
       ]
     },
     {
@@ -143,6 +143,18 @@
         "Provides a recommendation and key consequence for each decision",
         "Does not mix downstream billing, tenancy, or rollout questions whose answers depend on an unresolved root decision into the same batch",
         "Explicitly waits for the batch response and performs no consequential action before shared understanding"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "这个改动边界已经清楚，不用重新规划项目。请把它拆成查现状、实现、回归三个可交给子代理的 brief，并标明依赖和可以并行的部分。",
+      "expected_output": "Agent 应识别主要交付是委派编排并直接使用 Spark：产出有边界、可验证的 brief，按实质依赖判断串并行，同时把实际调度留给宿主运行时。",
+      "files": [],
+      "expectations": [
+        "不因改动边界明确而拒绝委派编排，也不重新规划整个项目",
+        "每个 brief 包含目标、输入或证据、非目标、预期产物与验证，以及依赖或阻塞关系",
+        "根据实质依赖说明串行和可并行部分，不固化自定义角色体系",
+        "明确实际调度由宿主运行时或编排层完成"
       ]
     }
   ]

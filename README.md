@@ -2,18 +2,17 @@
 
 面向个人项目的代理技能合集，用于在 Cursor、Copilot 等工具中复用工作流程。
 
-## 技能分层（共 9 个）
+## 技能分层（共 8 个）
 
 `skills/<name>/` 保持平铺，兼容现有 skill manager 的发现与安装；下面的分层用于选 skill，不改变目录或安装 ID。
 
 ### 通用入口
 
-先决定任务是否需要一个总入口。只有项目级推进或实际委派需要这一层。
+先决定任务是否需要一个总入口。只有项目级推进或委派编排需要这一层。
 
 | 技能 | 主要结果 | 不负责 |
 | --- | --- | --- |
-| `spark` | 基于项目现场澄清目标、做软件设计取舍、选择最小可验证切片并推进下一步 | 单一技术选型、单点实现、领域工具细节 |
-| `roles` | 把已决定委派的工作写成 `inspector` / `executor` / `verifier` brief | 项目路线、技术方法或独立协调者角色 |
+| `spark` | 基于项目现场澄清目标、做软件设计取舍、组织有边界的委派 brief 并推进下一步 | 单一技术选型、单点实现、领域工具细节 |
 
 ### 横切工程能力
 
@@ -38,14 +37,14 @@
 
 ### 选择规则
 
-1. 请求横跨目标、现场证据、设计和下一步时，以 `spark` 为主；遇到明确专项再加载更窄的 skill。
+1. 请求横跨目标、现场证据、设计和下一步，或主要结果是组织子代理 brief 与依赖时，以 `spark` 为主；遇到明确专项再加载更窄的 skill。
 2. 主要交付只是技术选择、审计、Git workstream 或领域产物时，直接使用对应 skill。
-3. `roles` 只在实际委派或编写 agent brief 时加载；它与当前方法型 skill 正交。
+3. `spark` 负责明确委派 brief 与依赖；实际调度由宿主编排层完成，不加载单独的 role skill。
 4. 混合请求可以加载多个 skill，但只指定一个结果所有者，避免两个 skill 同时规划整项工作。
 
-原 `unix-software-design` 已简化并内置进 `spark`，原 `git-worktrees` 已更名为 `git-workstreams`。
+原 `unix-software-design` 已简化并内置进 `spark`，原 `git-worktrees` 已更名为 `git-workstreams`，原 `roles` 已退役。
 
-> 升级提示：重新安装后若本机仍残留旧 `git-worktrees` skill，请先用当前 skill manager 检查来源，再移除旧条目，避免两个 description 同时触发。安装流程不会自动删除用户级旧 skill。
+> 升级提示：安装流程不会自动删除用户级旧 skill。重新安装后若本机仍残留 `git-worktrees` 或 `roles`，请先用当前 skill manager 检查来源，再移除旧条目，避免过期 description 继续触发。
 
 ## 安装
 
@@ -85,8 +84,7 @@ pnpx skills add zrr1999/skills -g -y --agent cline --skill '*'
 
 ```bash
 # 通用入口
-pnpx skills add zrr1999/skills -g --agent cline --skill spark \
-  --skill roles
+pnpx skills add zrr1999/skills -g --agent cline --skill spark
 
 # 横切工程能力
 pnpx skills add zrr1999/skills -g --agent cline \
