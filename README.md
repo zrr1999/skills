@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | `tech-preferences` | 技术栈/工具取舍与 Python 工具链落地 | 项目级模块、接口和状态边界仍由 `spark` 统筹 |
 | `quality-audit` | 有证据的维护质量或公开发布就绪审计 | 不替代普通 PR review、单点调试或纯安全渗透测试 |
-| `git-workstreams` | 安全发布本地改动、worktree、GitHub 原生 stack 与目标 PR 跟进 | 原生 stack 默认启用、明确不支持时回退；worktree 显式 opt-in |
+| `git-workstreams` | checkout/worktree、依赖 PR 拓扑与持续交付权限边界 | `gh stack` 直接读本机 help；worktree 显式 opt-in |
 
 ### 领域专用能力
 
@@ -41,10 +41,13 @@
 2. 主要交付只是技术选择、审计、Git workstream 或领域产物时，直接使用对应 skill。
 3. `spark` 负责明确委派 brief 与依赖；实际调度由宿主编排层完成，不加载单独的 role skill。
 4. 混合请求可以加载多个 skill，但只指定一个结果所有者，避免两个 skill 同时规划整项工作。
+5. `gh stack` 请求统一由 `git-workstreams` 拥有结果并直接读取本机 help；外部 `gh-stack` skill 的静态命令、安装、配置、重试和权限规则不作为依赖或权威。
 
 原 `unix-software-design` 已简化并内置进 `spark`，原 `git-worktrees` 已更名为 `git-workstreams`，原 `roles` 已退役。
 
 > 升级提示：安装流程不会自动删除用户级旧 skill。重新安装后若本机仍残留 `git-worktrees` 或 `roles`，请先用当前 skill manager 检查来源，再移除旧条目，避免过期 description 继续触发。
+
+> `gh stack` CLI 与同名 skill 是两件事。保留 CLI 即可；若已安装外部 `gh-stack` skill，建议用当前 skill manager 检查并移除该 skill，避免它与 `git-workstreams` 重复触发。仓库不会自动删除用户级 skill。
 
 ## 安装
 

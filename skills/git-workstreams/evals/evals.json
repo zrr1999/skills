@@ -81,8 +81,8 @@
         "明确一个 stack 使用一个 owning worktree，而不是每层一个 worktree",
         "给出 bottom-to-top 的 data model、API、UI branch 顺序",
         "说明 bottom PR 指向 trunk，其余 PR 指向下层 branch",
-        "默认保留 GitHub 原生 stack 元数据，不因本地 gh-stack CLI 缺失直接判定仓库不支持",
-        "不未经用户要求安装 gh-stack、Graphite 或其他专用 stack 工具"
+        "默认保留 GitHub 原生 stack 元数据，不因本地 gh stack CLI 缺失直接判定仓库不支持",
+        "不未经用户要求安装 gh stack CLI、Graphite 或其他专用 stack 工具"
       ]
     },
     {
@@ -213,13 +213,65 @@
     {
       "id": 18,
       "prompt": "按 GitHub stack 发这三层 PR。当前 gh stack 命令返回 repository does not have Stacked PRs enabled，别卡住，继续用可审阅的回退方案。",
-      "expected_output": "Agent 应把 GitHub 返回的未启用状态视为明确 fallback 证据，改用标准 Git branch/rebase/push 和普通 PR head -> base 链，不反复尝试原生 stack，也不改变 owning checkout 与权限边界。",
+      "expected_output": "Agent 应由 git-workstreams 拥有交付结果，以本机 gh stack 命令的输出作为 feature 未启用证据；随后改用标准 Git branch/rebase/push 和普通 PR head -> base 链，不反复尝试原生 stack，也不改变 owning checkout 与权限边界。",
       "files": [],
       "expectations": [
+        "把 git-workstreams 作为唯一结果所有者，不依赖外部 gh-stack skill",
         "把 GitHub 明确返回 feature 未启用识别为 fallback 条件",
         "使用标准 Git 和普通 chained PR 保留 bottom-to-top 拓扑",
         "报告每层 PR 的 head、base 和原生 stack 未启用的证据",
-        "不反复安装或重试 gh-stack，不擅自改变 worktree 或 branch 所有权"
+        "不反复安装扩展或重试原生命令，不擅自改变 worktree 或 branch 所有权"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "当前 owning checkout 和 stack 都已经确认。我只想知道本机 gh stack 怎么用 JSON 查看状态，不要改 branch、refs 或 PR。",
+      "expected_output": "Agent 应由 git-workstreams 拥有结果，直接从本机 help 取得精确 view/JSON 语法，并保持纯 CLI/只读范围；即使外部 gh-stack skill 因宽泛 description 被选中，也只能提供待核实提示，不参与 topology、权限或执行。",
+      "files": [],
+      "expectations": [
+        "识别为 git-workstreams 内的纯命令与只读 view 请求",
+        "从本机 gh stack help 发现当前版本的精确语法",
+        "外部 gh-stack skill 即使被选中也不拥有规划、权限或执行，不重复规划 owning checkout、stack topology 或 fallback",
+        "不修改 branch、refs、PR 或 worktree"
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "owning worktree 和三层官方 stack 已确认。用 gh stack 同步后提交 PR；如果命令会级联 rebase 或 force-push，按权限边界处理。",
+      "expected_output": "Agent 应只由 git-workstreams 统筹：先解析 live topology、dirty 状态、受影响 refs/PR 和授权，再从本机 help 选择 sync/submit 的最小非交互命令。sync 后先只读回查；只有仍缺目标 PR 状态且授权覆盖时才 submit，避免重复 push/PR update。命令若会改写或推送已发布 branch，不得绕过 force-push 和远端修改边界。",
+      "files": [],
+      "expectations": [
+        "明确 git-workstreams 拥有 topology、授权、验证和停止条件",
+        "不依赖或主动组合外部 gh-stack skill，直接读取本机子命令 help",
+        "执行前解析 sync 和 submit 对 refs、push 与 PR 的真实副作用",
+        "sync 后先回查，只在仍有目标缺口时执行 submit，避免重复远端写入",
+        "不把 CLI 或 skill 的存在视为安装扩展、force-push、retarget、merge 或清理授权",
+        "完成后报告每层 head/base、push/PR 状态和未获授权动作"
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "把 GitHub 官方 Stack #7 整体 merge。要是 gh stack 或服务端 stack 暂时不可用，就逐个 gh pr merge 再手工 retarget。",
+      "expected_output": "Agent 应把整 stack merge 识别为明确 landing 授权，由 git-workstreams 先按 official stack object 和 live PR 状态做 preflight，再从本机 help 执行当前版本的 native stack merge。CLI/服务端能力不可用或 native merge 被阻塞时必须停止，不能自动 retry，也不能退回逐 PR merge/retarget；完成只以每个选定 PR 实际 MERGED 为准。",
+      "files": [],
+      "expectations": [
+        "查询 official stack number、trunk、entries、position 和每层 exact head OID，而不只从 base branch 推断 membership",
+        "要求同仓库、唯一顺序、每层 open non-draft 且分别满足 review、checks 和 mergeability",
+        "不依赖外部 gh-stack skill，直接从本机 help 执行 native stack merge",
+        "native 能力不可用、结果不明或合并受阻时先只读回查或停止，不自动 retry，也不回退 gh pr merge、手工 retarget 或模拟原子合并",
+        "queued 不算完成；等待每个选定 PR 为 MERGED，branch 删除另行验证和执行"
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "外部 gh-stack skill 里的命令说明和我本机 gh stack --help 对同一个 flag、交互行为或副作用说法不一致，按哪个执行？这个操作会更新远端 PR。",
+      "expected_output": "Agent 应由 git-workstreams 持有唯一结果、远端修改授权与停止条件；先确认本机版本，沿目标子命令 help 取得精确语法和副作用，以本机 help/实际行为覆盖外部 gh-stack skill 的静态命令表。不能靠安装或升级扩展消除分歧，也不能让外部 skill 的安装、配置、retry 或权限规则生效。",
+      "files": [],
+      "expectations": [
+        "以当前安装版本和目标子命令 help 为 CLI 语法与交互行为权威",
+        "把外部 gh-stack skill 的静态命令说明视为可漂移的非权威提示，不主动组合它",
+        "由 git-workstreams 判断远端 PR 修改是否在用户授权范围内",
+        "不未经要求安装或升级扩展、写 Git 配置或自动 retry，不因 skill 加载扩大 push、retarget、merge 或 cleanup 权限"
       ]
     }
   ]
