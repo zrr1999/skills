@@ -1,10 +1,10 @@
 {
-  "skill_name": "quality-audit",
+  "skill_name": "vet",
   "evals": [
     {
       "id": 1,
       "prompt": "这个仓库已经维护一段时间了，帮我做一次全仓库技术债和质量审计，最好能跑工具就跑工具，最后告诉我最该先修什么。",
-      "expected_output": "Agent 应使用 quality-audit 的 maintenance audit 模式，先做 orientation，再按工具类别收集证据，最后在对话中给出带 file:line、严重度、工作量、Top priorities、quick wins、误报排除和开放问题的结论；默认不生成报告文件。",
+      "expected_output": "Agent 应使用 vet 的 repo 轨道 maintenance audit 模式，先做 orientation，再按工具类别收集证据，最后在对话中给出带 file:line、严重度、工作量、Top priorities、quick wins、误报排除和开放问题的结论；默认不生成报告文件。",
       "files": [],
       "expectations": [
         "明确本次是 maintenance/technical-debt audit，而不是发布预检",
@@ -12,13 +12,13 @@
         "工具结果按类别组织，而不是简单堆命令输出",
         "每个具体 finding 有 file:line 或明确工具证据",
         "输出包含 Top priorities、quick wins、things that look bad but are actually fine 或等价误报排除",
-        "默认不生成或更新 QUALITY_AUDIT.md 等报告文件"
+        "默认不生成或更新报告文件"
       ]
     },
     {
       "id": 2,
       "prompt": "我准备把这个 repo 公开发布，Scorecard 分数低，REUSE 也有报错。你帮我把开源前问题都处理一下。",
-      "expected_output": "Agent 应使用 quality-audit 的 public-release preflight 模式，把 Scorecard、REUSE、license、公开时机等作为发布风险和用户决策处理，不应机械修分或直接公开 repo。",
+      "expected_output": "Agent 应使用 vet 的 repo 轨道 public-release preflight 模式，把 Scorecard、REUSE、license、公开时机等作为发布风险和用户决策处理，不应机械修分或直接公开 repo。",
       "files": [],
       "expectations": [
         "明确这是公开发布/开源前 release preflight",
@@ -30,7 +30,7 @@
     {
       "id": 3,
       "prompt": "我要今天发 v1.0 并把 GitHub repo 公开。跑下安全检查就行，分数低的你直接修。",
-      "expected_output": "Agent 应使用 quality-audit 的 release/mixed 流程，但不能盲目自动修所有低分项；应说明工具分数是信号，并把高风险或行为性修复交给用户确认。",
+      "expected_output": "Agent 应使用 vet 的 release/mixed 流程，但不能盲目自动修所有低分项；应说明工具分数是信号，并把高风险或行为性修复交给用户确认。",
       "files": [],
       "expectations": [
         "说明 Scorecard 或工具分数不是自动 gate",
@@ -42,7 +42,7 @@
     {
       "id": 4,
       "prompt": "这个 TypeScript monorepo 感觉重复代码和复杂度都上来了，帮我用 jscpd、lizard、madge、knip 之类的工具分门别类扫一下，再综合判断。",
-      "expected_output": "Agent 应使用 quality-audit 的 maintenance/mixed 工具流程，将 jscpd 归入 duplication，lizard 归入 complexity hotspots，madge 归入 architecture graph，knip 归入 dependency hygiene，并强调工具缺失时记录原因、不全局安装。",
+      "expected_output": "Agent 应使用 vet 的 repo 轨道 maintenance/mixed 工具流程，将 jscpd 归入 duplication，lizard 归入 complexity hotspots，madge 归入 architecture graph，knip 归入 dependency hygiene，并强调工具缺失时记录原因、不全局安装。",
       "files": [],
       "expectations": [
         "按审计类别分类 jscpd、lizard、madge、knip",
@@ -54,7 +54,7 @@
     {
       "id": 5,
       "prompt": "我想从更抽象一点的数学结构角度看这个代码库，比如群论、环论、范畴论那种，看看架构有没有隐藏债务。",
-      "expected_output": "Agent 应使用 quality-audit 的 Structural / algebraic lens，但必须把数学观察翻译成具体维护风险，并要求 file:line 证据，不能输出纯术语化或无证据的玄学评价。",
+      "expected_output": "Agent 应使用 vet 的 Structural / algebraic lens，但必须把数学观察翻译成具体维护风险，并要求 file:line 证据，不能输出纯术语化或无证据的玄学评价。",
       "files": [],
       "expectations": [
         "包含 symmetry/algebraic/composition 或等价结构 lens",
@@ -66,7 +66,7 @@
     {
       "id": 6,
       "prompt": "I'm creating a new open source repo today. Before I make it public, do a quick preflight and tell me what I need to fix.",
-      "expected_output": "Agent should use quality-audit's public-release preflight mode, run or propose Scorecard/security/repo-hygiene checks, and separate blockers from non-blocking follow-ups.",
+      "expected_output": "Agent should use vet's repo-track public-release preflight mode, run or propose Scorecard/security/repo-hygiene checks, and separate blockers from non-blocking follow-ups.",
       "files": [],
       "expectations": [
         "Output uses English",
@@ -78,7 +78,7 @@
     {
       "id": 7,
       "prompt": "准备开源这个服务，但我也担心它内部架构有点乱。你帮我统一做一轮质量检查：哪些公开前必须修，哪些只是后续技术债优化。",
-      "expected_output": "Agent 应使用 quality-audit 的 mixed mode，先区分公开前 Blocker/User Decision，再列维护型技术债 Top priorities，避免把长期 polish 当作发布 blocker。",
+      "expected_output": "Agent 应使用 vet 的 repo 轨道 mixed mode，先区分公开前 Blocker/User Decision，再列维护型技术债 Top priorities，避免把长期 polish 当作发布 blocker。",
       "files": [],
       "expectations": [
         "明确采用 mixed mode",
@@ -90,24 +90,48 @@
     {
       "id": 8,
       "prompt": "帮我 review 这个 PR 的 diff，重点看有没有引入技术债。",
-      "expected_output": "Agent 不应启动全仓库 quality-audit；应走 PR/diff review，并可借用质量/技术债维度做审查 lens，但范围保持在 diff 和相关上下文。",
+      "expected_output": "Agent 不应启动全仓库审计；应走 vet 的 diff 轨道（或普通 PR review），可借用质量/技术债维度做审查 lens，但范围保持在 diff 和相关上下文。",
       "files": [],
       "expectations": [
         "明确这是 PR/diff review，不是全仓库审计",
         "审查范围保持在 diff 和必要相关上下文",
         "可以使用架构、重复、测试、类型等质量维度作为 review lens",
-        "不要求生成 QUALITY_AUDIT.md"
+        "不生成全仓审计报告文件"
       ]
     },
     {
       "id": 9,
       "prompt": "我们这个内部服务今天要发一个 CI tag，帮我检查 release 流程有没有明显问题，不涉及开源或公开仓库。",
-      "expected_output": "Agent 不应使用 quality-audit 的 public-release preflight；应按普通项目维护或 CI/release 调试流程处理。只有涉及公开发布、开源、Scorecard、license/security/public readiness 时才触发 release preflight。",
+      "expected_output": "Agent 不应使用 vet 的 public-release preflight；应按普通项目维护或 CI/release 调试流程处理。只有涉及公开发布、开源、Scorecard、license/security/public readiness 时才触发 release preflight。",
       "files": [],
       "expectations": [
         "未启动公开发布预检或 Scorecard/license 决策流程",
         "明确范围是内部 CI/release 检查",
         "如需项目推进，应转向普通调试/维护流程"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "刚用 AI 给这个项目加了个缓存层，代码能跑但看着有点过度设计，注释也啰嗦。帮我清理一下这次的改动。",
+      "expected_output": "Agent 应使用 vet 的 diff 轨道 deslop 流程：范围限定在本次 diff，先跑项目已有检查拿基线，按 smell 清单排查（过度抽象、comment slop、防御性过度、幻觉 API 等），deletion-first 给出最小补丁，改完重跑同一组检查。",
+      "files": [],
+      "expectations": [
+        "范围限定在本次 diff/改动文件，不扩散到全仓",
+        "修改前先运行项目已有的 typecheck/test 拿基线",
+        "finding 带 file:line 与一句话理由，并按 delete/consolidate/consider 或等价分类",
+        "修复以删除和收敛为主，不新增抽象层或依赖",
+        "修改后重跑同一组检查验证"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "帮我把整个 src/ 目录按 anti-slop 标准清理一遍，所有 AI 味都去掉。",
+      "expected_output": "全目录清理超出 diff 轨道的默认范围；Agent 应与用户确认范围，或转入 repo 轨道的 maintenance audit 先取证再排优先级，不直接对全目录做删除式改写。",
+      "files": [],
+      "expectations": [
+        "不直接在全目录范围执行删除式改写",
+        "明确区分 diff 轨道默认范围与全仓审计",
+        "转向 repo maintenance audit 流程或要求用户确认范围后再动手"
       ]
     }
   ]

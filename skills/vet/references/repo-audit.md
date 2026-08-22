@@ -1,14 +1,10 @@
----
-name: quality-audit
-description: >-
-  对单个仓库、子树或相关仓库做有证据的质量审计与优化规划：维护型技术债、架构健康、可维护性、测试、依赖/配置、CI/仓库卫生，或公开发布/开源/v1.0/package publish 前的 release readiness、Scorecard、安全、许可证和 public surface 预检。先判断 maintenance、public-release、mixed 或 portfolio，再读取现场、运行适合的检查、给出带 file:line 或工具证据的风险分级和优先级。默认不生成报告。不要用于普通 PR diff review、单点 bug 调试或纯安全渗透测试。
----
+# Repo audit（vet 的仓库级轨道）
 
-# Quality Audit
+仅在 repo 范围时加载：全仓技术债/架构/质量审计，或公开发布/开源/v1.0/package publish 前的 release readiness 预检。diff 级审查回 `../SKILL.md` 的 diff 轨道。
 
 ## Goal
 
-把“这个仓库哪里有风险、先修什么、哪些只是长期债务”变成可决策的证据。结论必须区分真实风险、用户决策、低风险修复和 backlog，不把工具分数直接当 gate，也不把长期 polish 伪装成发布 blocker。
+把"这个仓库哪里有风险、先修什么、哪些只是长期债务"变成可决策的证据。结论必须区分真实风险、用户决策、低风险修复和 backlog，不把工具分数直接当 gate，也不把长期 polish 伪装成发布 blocker。
 
 ## Mode and boundary
 
@@ -19,7 +15,7 @@ description: >-
 - **mixed**：同时存在公开发布和内部质量问题时，先 release readiness，再 maintenance priorities。
 - **portfolio**：用户明确要求多个相关仓库；先确定纳入/排除集合，每个仓库都必须有本地可读路径才能给 `file:line` 证据。
 
-普通 PR/diff review 只看 diff 和必要上下文；内部 CI/tag 检查只走普通维护或 release 调试，不启动 public-release preflight。不要替用户公开仓库、选择许可证、重写历史、轮换密钥、删除数据或做高风险升级。
+内部 CI/tag 检查只走普通维护或 release 调试，不启动 public-release preflight。不要替用户公开仓库、选择许可证、重写历史、轮换密钥、删除数据或做高风险升级。
 
 ## Inspect first
 
@@ -47,7 +43,7 @@ description: >-
 | Static and tests | `tsc`、`ruff`、`ty`、`clippy`、`go vet`、仓库测试与 coverage；关注高 churn 无测试、skip/flaky |
 | Documentation drift | README 命令与真实 install/build/run/release 路径是否一致 |
 
-工具输出只是线索。一个根因合并为一个 finding，工具结果和代码阅读作为同一条 evidence；每个 finding 要有 `file:line`、具体工具结果或明确说明“未能取得证据”。
+工具输出只是线索。一个根因合并为一个 finding，工具结果和代码阅读作为同一条 evidence；每个 finding 要有 `file:line`、具体工具结果或明确说明"未能取得证据"。
 
 ## Semantic lenses
 
