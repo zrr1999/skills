@@ -273,6 +273,84 @@
         "由 git-workstreams 判断远端 PR 修改是否在用户授权范围内",
         "不未经要求安装或升级扩展、写 Git 配置或自动 retry，不因 skill 加载扩大 push、retarget、merge 或 cleanup 权限"
       ]
+    },
+    {
+      "id": 23,
+      "prompt": "我已经在确认过的 linked worktree 和 feature/fix-login 分支里。请修复登录回跳 bug，按仓库要求验证；我没有另外说要不要提 PR。",
+      "expected_output": "Agent 应把实现类仓库改动默认交付为 Draft PR：完成范围内修复和验证后按仓库规范 commit、push 到 feature/fix-login，并创建 Draft PR，不再等待一次“是否提 PR”的确认；随后回读 head/base、Draft 状态和 CI。",
+      "files": [],
+      "expectations": [
+        "识别为会触发默认 Draft PR 交付的实现请求，而不是只读或规划请求",
+        "复用已确认的 linked worktree 和 owning branch，不切换主工作区或创建替代分支",
+        "验证后按仓库规范 commit、push 并创建 Draft PR",
+        "不为是否提 PR 单独请求第二次确认",
+        "不自动标记 Ready、merge、force-push、deploy 或 cleanup"
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "把这个解析器 bug 修好并跑测试，但只保留本地改动：不要 commit、不要 push，也不要提 PR。",
+      "expected_output": "Agent 应完成范围内本地修复与验证，但用户明确覆盖了默认 Draft PR 交付，因此不得 commit、push 或创建 PR；应报告本地 diff、验证结果和未执行的交付动作。",
+      "files": [],
+      "expectations": [
+        "识别用户的仅本地交付边界优先于默认 Draft PR",
+        "可以修改和验证当前任务范围内文件",
+        "不 commit、不 push、不创建或修改 PR",
+        "报告本地状态而不把任务错误地标成已发布"
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "owning checkout 已确认。实现 schema、依赖它的 service，以及只依赖 service 的 docs；每层都要单独 review。完成后按默认方式交付。",
+      "expected_output": "Agent 应把三个真实依赖且可独立 review 的 concern 组织为 schema -> service -> docs，并自动交付为三层 stacked Draft PR；逐层验证 head/base 和 Draft 状态，不因默认交付自动 Ready 或 merge。",
+      "files": [],
+      "expectations": [
+        "识别三个 concern 的真实依赖和独立 review 价值",
+        "在一个 owning checkout 中保持 schema -> service -> docs 的线性 branch chain",
+        "bottom PR 指向 trunk，其余 PR 指向下层 branch",
+        "完成验证后 commit、push 并创建 stacked Draft PR，不等待额外发布确认",
+        "不自动标记 Ready、merge 或 force-push"
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "两个 owning worktree 都已确认：一个修支付重试，一个更新搜索排序，两者互不依赖。都实现并按默认方式交付。",
+      "expected_output": "Agent 应保持两个独立 workstream 和 owning worktree，各自验证、commit、push 并创建独立 Draft PR；不得把无依赖的支付与搜索改动伪造成 stacked PR，也不得自动 Ready 或 merge。",
+      "files": [],
+      "expectations": [
+        "保持两个独立 owning worktree 和 branch，不共享可变 checkout",
+        "分别完成验证、commit、push 和 Draft PR 创建",
+        "创建两个独立 PR 而不是人为构造 stack",
+        "逐个回读 PR head/base、Draft 状态和 CI",
+        "不自动标记 Ready、merge 或清理 worktree"
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "实现已经在 Draft PR #42 上了，把它推进到 Ready，但不要 merge。",
+      "expected_output": "Agent 应把请求识别为明确的 Ready 授权；重新读取 #42 的 exact head、required checks 和仓库定义的 Ready blocker，只在 exact head 未漂移且 checks 处于允许终态后标记 Ready 并回读确认。Review approval 与最终 mergeability 是 Ready 后的 gate；若 CI 运行中或 head 漂移则继续等待或处理范围内失败，且不得 merge。",
+      "files": [],
+      "expectations": [
+        "重新读取当前 PR 的 exact head、Draft 状态、checks 和仓库定义的 Ready blocker",
+        "不使用历史 CI 证明当前 head 已就绪",
+        "不把 Ready 后才发生的 review approval 或最终 mergeability 当成循环前置条件",
+        "只在当前 head 满足仓库 Ready 规则后标记 Ready",
+        "Ready 后回读确认 PR 状态和 head 未漂移",
+        "不 merge、不 retarget、不清理 branch 或 worktree"
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "修好配置加载问题并跑测试，然后 commit、push；这次交付到这里。",
+      "expected_output": "Agent 应把 commit+push 识别为用户明确指定的交付终点：完成范围内修复和验证后按仓库规范 commit、push，并在这里停止，不因默认 Draft PR 规则额外创建 PR。",
+      "files": [],
+      "expectations": [
+        "识别用户明确指定的 commit+push 终点覆盖默认 Draft PR",
+        "完成范围内修改、验证、commit 和 push",
+        "不创建或修改 PR，也不再询问是否提 PR",
+        "报告 commit、push 目标和验证结果",
+        "不扩张为 Ready、merge、cleanup、deploy 或 release"
+      ]
     }
   ]
 }
