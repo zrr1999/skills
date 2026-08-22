@@ -1,10 +1,10 @@
 {
-  "skill_name": "spark",
+  "skill_name": "pilot",
   "evals": [
     {
       "id": 1,
       "prompt": "我有个想法，想做一个把零散项目灵感整理成 SPARK.md 的工具，帮我先聊清楚，不要一上来让我填表。",
-      "expected_output": "Agent 应使用 spark 的 Capture 模式，用中文按批次提出 2-3 个互不依赖的问题，等待整批反馈后再继续，并明确后续会按中文 SPARK.md 结构起草。",
+      "expected_output": "Agent 应使用 pilot 的 Capture 模式，用中文按批次提出 2-3 个互不依赖的问题，等待整批反馈后再继续，并明确后续会按中文 SPARK.md 结构起草。",
       "files": [],
       "expectations": [
         "输出使用中文作为工作语言",
@@ -17,7 +17,7 @@
     {
       "id": 2,
       "prompt": "I have an idea for a developer tool that turns messy terminal history into reusable runbooks. Help me write a SPARK.md and ask whatever is missing.",
-      "expected_output": "Agent should use spark Capture mode in English, ask a batch of 2-3 mutually independent conversational questions, wait for the batch response, and preserve English for the future SPARK.md draft.",
+      "expected_output": "Agent should use pilot Capture mode in English, ask a batch of 2-3 mutually independent conversational questions, wait for the batch response, and preserve English for the future SPARK.md draft.",
       "files": [],
       "expectations": [
         "Output uses English as the working language",
@@ -54,7 +54,7 @@
     {
       "id": 5,
       "prompt": "我想先看看这个优秀项目有哪些设计值得借鉴，然后顺手把我自己的老项目下一步怎么改也一起想一下。",
-      "expected_output": "Agent 应把这类请求视为 Spark 的 Inspect / Advance 工作流：检查参考项目和当前项目的证据，明确二者关系并给出最小可验证下一步；输出应随任务调整，不必填满固定 packet。",
+      "expected_output": "Agent 应把这类请求视为 pilot 的 Inspect / Advance 工作流：检查参考项目和当前项目的证据，明确二者关系并给出最小可验证下一步；输出应随任务调整，不必填满固定 packet。",
       "files": [],
       "expectations": [
         "输出包含结论、关键证据、最小下一步和验证方式，而非机械填充固定模板",
@@ -65,7 +65,7 @@
     {
       "id": 6,
       "prompt": "我想做一个 CLI 小工具，用来批量重命名图片，顺便看看仓库里现有脚本能不能复用，必要的话在终端里直接搜。",
-      "expected_output": "Agent 应把这类请求视为 Spark 的 Clarify / Inspect / Advance 工作流，并在需要终端证据时启用内建 CLI-first 工作法。",
+      "expected_output": "Agent 应把这类请求视为 pilot 的 Clarify / Inspect / Advance 工作流，并在需要终端证据时启用内建 CLI-first 工作法。",
       "files": [],
       "expectations": [
         "输出体现 CLI-first 或终端取证思路",
@@ -76,10 +76,10 @@
     {
       "id": 7,
       "prompt": "我要给这个 TypeScript 服务拆模块边界，也想知道该不该换框架。你先帮我理一理下一步怎么推进，必要时告诉我该调用哪些专项 skill。",
-      "expected_output": "Agent 应把这类请求视为 Spark 的项目级工作流：使用内置设计判断处理模块边界，把框架选型交给 tech-preferences，并由 Spark 统一给出最小下一步与验证。",
+      "expected_output": "Agent 应把这类请求视为 pilot 的项目级工作流：使用内置设计判断处理模块边界，把框架选型交给 tech-preferences，并由 Spark 统一给出最小下一步与验证。",
       "files": [],
       "expectations": [
-        "明确框架选型使用 tech-preferences，而模块边界由 Spark 的内置设计判断处理",
+        "明确框架选型使用 tech-preferences，而模块边界由 pilot 的内置设计判断处理",
         "输出仍以项目推进、最小下一步和验证方式为主",
         "设计建议包含边界、数据流或状态归属以及反悔成本"
       ]
@@ -87,18 +87,18 @@
     {
       "id": 8,
       "prompt": "这个改动我想拆成三个可以交给子代理的工作单元：先查现状和 diff，再落一版改动，最后做性能审查。请按依赖关系写成可执行 brief，不要预设固定角色名。",
-      "expected_output": "Agent 应在 Spark 的 Advance 模式中把三个工作单元写成有边界、可验证的 brief，并根据取证、实现、性能验证之间的实质依赖安排顺序；具体子代理职责由宿主运行时决定。",
+      "expected_output": "Agent 应在 pilot 的 Advance 模式中把三个工作单元写成有边界、可验证的 brief，并根据取证、实现、性能验证之间的实质依赖安排顺序；具体子代理职责由宿主运行时决定。",
       "files": [],
       "expectations": [
         "每个工作单元包含目标、输入或证据、非目标、预期产物与验证，以及依赖或阻塞关系",
         "明确取证、实现、性能验证存在实质依赖，不因有三个子任务而默认并行",
-        "不固化自定义角色名或审查协议，并由 Spark 保持整体结论与推进顺序"
+        "不固化自定义角色名或审查协议，并由 pilot 保持整体结论与推进顺序"
       ]
     },
     {
       "id": 9,
       "prompt": "我要重新想一下这个工具的模块边界和接口设计，怎样拆才能更简单透明？先给设计建议，不要直接改代码。",
-      "expected_output": "Agent 应使用 Spark 的 Inspect 路径和内置设计判断，先核对当前代码和约束，再围绕模块、接口、状态或数据流给出最小设计；保持在设计层，不进入实现。",
+      "expected_output": "Agent 应使用 pilot 的 Inspect 路径和内置设计判断，先核对当前代码和约束，再围绕模块、接口、状态或数据流给出最小设计；保持在设计层，不进入实现。",
       "files": [],
       "expectations": [
         "先要求或检查当前代码、文档、数据流等现场证据",
@@ -111,7 +111,7 @@
     {
       "id": 10,
       "prompt": "这个前端项目只想决定继续用 pnpm 还是换 Bun。帮我结合我的技术偏好做选择，不需要规划整个项目。",
-      "expected_output": "Agent 应把主要结果识别为技术/工具选择并路由到 tech-preferences；不应启动 Spark 的项目级 Inspect/Advance 或扩写项目路线。",
+      "expected_output": "Agent 应把主要结果识别为技术/工具选择并路由到 tech-preferences；不应启动 pilot 的项目级 Inspect/Advance 或扩写项目路线。",
       "files": [],
       "expectations": [
         "明确使用 tech-preferences 或等价的个人技术偏好基线做选择",
