@@ -31,7 +31,7 @@ Spark 只拥有项目级结论和推进顺序；专项 skill 拥有自己的技�
 9. **交给更窄的 skill。** Spark 继续拥有整体推进，但不复制专项方法：
    - 技术栈、工具、仓库边界取舍或 Python 工具链：`tech-preferences`
    - 第三方 SDK/API 文档：`get-api-docs`
-   - 全仓维护质量或公开发布预检：`quality-audit`
+   - 代码质量审查：diff 级 AI slop 清理或全仓维护质量/公开发布预检：`vet`
    - worktree、branch/PR stack 或目标 PR 跟进：`git-workstreams`
    - 私有 SSH 设备事实源和信任：`ssh-fleet`
    - SVG/图标/Logo：`svg-design`
