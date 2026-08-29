@@ -63,13 +63,14 @@
     },
     {
       "id": 6,
-      "prompt": "我只想在当前干净仓库里切到另一个分支改一行，十分钟能做完。",
-      "expected_output": "Agent 不应仅因出现分支切换就创建 worktree；普通单任务和短暂切换使用当前仓库的 Git 工作流，除非存在并行、隔离或保留 WIP 的真实需求。",
+      "prompt": "这是个没有 remote、tag、release、发布规则或版本流水线的本地临时仓库。我只想在当前干净分支改一行，十分钟能做完。",
+      "expected_output": "Agent 应先确认没有规范化证据，并且不应仅因普通单任务或短暂修改创建 worktree；在没有并行、隔离、保留 WIP、PR 请求或显式 opt-in 时使用当前 checkout。",
       "files": [],
       "expectations": [
+        "识别缺少规则、发布和版本生命周期证据，不能判为规范化仓库",
         "不创建新的 worktree",
         "不引入统一目录或 setup 流程",
-        "使用普通 Git 分支切换或说明现有状态阻碍"
+        "使用当前 checkout 的普通 Git 流程或说明现有状态阻碍"
       ]
     },
     {
@@ -94,7 +95,7 @@
         "先检查现有 branch/diff/commit 与 worktree 占用，避免盲拆",
         "使用标准 Git branch/rebase/push 与 GitHub PR base/head 表达 stack",
         "按 schema、service、docs 的依赖顺序拆层",
-        "不因使用 PR stack 自动创建或启用 worktree",
+        "创建 draft PR 默认允许按需使用 owning worktree，但当前 checkout 已安全隔离时不强制多建一个",
         "发布后报告每个 draft PR 的 head、base、验证和未完成项"
       ]
     },
@@ -113,8 +114,8 @@
     },
     {
       "id": 10,
-      "prompt": "这个仓库还有未提交改动，但我想让你并行修两个互不相关的 bug，直接开始吧。",
-      "expected_output": "Agent 可以只读检查现场并说明 worktree 能隔离现有 WIP，但在用户没有明确选择前，必须直接询问是否为两个任务启用 worktree；不得先创建、进入或交接 worktree。",
+      "prompt": "这是个刚初始化、没有 remote、规则、tag、release 或发布版本的本地仓库，现在还有未提交改动。我想让你并行修两个互不相关的 bug，直接开始吧。",
+      "expected_output": "Agent 应确认仓库没有规范化证据，可以只读检查现场并说明 worktree 能隔离现有 WIP；但在用户没有明确选择前，必须直接询问是否为两个任务启用 worktree，不得先创建、进入或交接 worktree。",
       "files": [],
       "expectations": [
         "说明当前 WIP 与并行修改使 worktree 成为可选方案",
@@ -125,8 +126,8 @@
     },
     {
       "id": 11,
-      "prompt": "Codex 已经自动把这个任务放进一个 linked worktree，但我没有选过。帮我继续实现功能。",
-      "expected_output": "Agent 应先识别并说明当前是平台托管 worktree，在开始任务改动前询问用户是否继续使用它；如果用户不启用，则不在该 worktree 修改，并说明需要回到用户选择的 checkout。",
+      "prompt": "这是个没有 remote、发布规则、tag、release 或版本流水线的本地临时仓库。Codex 已经自动把任务放进一个 linked worktree，但我没有选过。帮我继续实现功能。",
+      "expected_output": "Agent 应确认仓库没有规范化证据，再识别并说明当前是平台托管 worktree；由于用户也没有选择 worktree 或要求创建 PR，在开始任务改动前询问是否继续使用它。如果用户不启用，则不在该 worktree 修改，并说明需要回到用户选择的 checkout。",
       "files": [],
       "expectations": [
         "识别当前 worktree 的平台管理者",
@@ -176,13 +177,14 @@
     {
       "id": 15,
       "prompt": "我在仓库主目录的 main 上有一批已经验证的未提交改动。commit+push，然后提个 PR。",
-      "expected_output": "Agent 应先识别当前是主工作区默认分支并记录 dirty 状态；commit+push/提 PR 不构成隐式切分支授权，因此不得直接 git switch -c。Agent 应询问是启用 owning worktree 并明确迁移方案，还是允许当前 checkout 的临时分支流程；回答前不 stash、reset、复制或提交改动。",
+      "expected_output": "Agent 应先识别当前是主工作区默认分支并记录 dirty 状态；创建 PR 已默认允许使用 owning worktree，因此不得再次询问是否启用，也不得直接 git switch -c。由于主工作区现有 WIP 不会自动进入新 worktree，若安全迁移方式无法从现场确定，只针对 WIP 处理方式询问；回答前不 stash、reset、复制或提交改动。",
       "files": [],
       "expectations": [
         "解析主工作区路径、起始 branch/HEAD、dirty 状态和远端默认分支",
         "没有因为 commit+push 或提 PR 直接在主工作区执行 git switch -c 或 checkout -b",
-        "明确询问 owning worktree 或当前 checkout 临时分支的选择",
-        "用户选择前不自动 stash、reset、复制或提交现有 WIP"
+        "把创建 PR 视为默认允许 owning worktree，不再询问是否启用或要求在 worktree 与当前 checkout 之间二选一",
+        "迁移方式不明确时只询问现有 WIP 如何安全处理",
+        "处理方式明确前不自动 stash、reset、复制或提交现有 WIP"
       ]
     },
     {
@@ -350,6 +352,56 @@
         "不创建或修改 PR，也不再询问是否提 PR",
         "报告 commit、push 目标和验证结果",
         "不扩张为 Ready、merge、cleanup、deploy 或 release"
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "我刚才已经明确让你创建 fix-session worktree，你也报告创建和验证成功了。现在继续进去实现、测试、commit 并 push；不要再问我要不要使用这个 worktree。",
+      "expected_output": "Agent 应把已成功创建的 fix-session worktree 视为同一 workstream 内持续有效的启用选择，直接复用它完成已授权的实现、验证、commit 和 push，不再次询问是否进入或使用该 worktree；只在目标、所有者、拓扑、安全状态或额外权限发生变化时针对新事项询问。",
+      "files": [],
+      "expectations": [
+        "识别 worktree 已由用户选择且创建、验证成功",
+        "同一 workstream 后续进入、复用、实现和验证不重复询问 worktree opt-in",
+        "在已授权范围内继续 commit 和 push，而不是因恢复任务再次等待确认",
+        "仅在 workstream、所有者、拓扑、安全状态或新增权限发生变化时询问"
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "在当前主工作区的 main 上实现登录超时修复，验证后 commit、push 并创建 draft PR。",
+      "expected_output": "Agent 应把创建 draft PR 视为默认允许使用 worktree：检查现场后按需要创建或复用 owning worktree，在其中实现、验证和发布，不再询问是否启用 worktree，也不隐式切换主工作区分支；如果当前已经是安全的 owning checkout，则可以直接复用而不强制创建第二个 worktree。",
+      "files": [],
+      "expectations": [
+        "把创建 PR 请求识别为默认允许创建或复用 owning worktree",
+        "不再询问用户是否启用 worktree",
+        "不在主工作区默认分支上隐式创建或切换临时 branch",
+        "当前 checkout 已安全隔离时复用它，不强制创建嵌套或多余 worktree",
+        "worktree 权限不扩大为 force-push、merge 或清理授权"
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "这个仓库的 CONTRIBUTING 写明 main 禁止直接 push、所有改动必须走 PR，npm 包已经发布到 2.4.1，也有 v2.4.1 tag。帮我修一个类型错误，验证后 commit+push；不用提 PR。",
+      "expected_output": "Agent 应根据默认分支禁推规则和已发布包/version tag 判定这是规范化仓库，默认创建或复用 owning worktree 完成修复、验证、commit 和 push，不询问是否启用 worktree，也不在主工作区当前 checkout 切分支；用户未要求创建 PR，因此 push 后停止。",
+      "files": [],
+      "expectations": [
+        "用仓库禁推规则、已发布 package 和对应 version tag 作为规范化证据",
+        "规范化仓库即使只要求 commit+push 也默认使用 owning worktree",
+        "不询问是否启用 worktree，也不把主工作区当前 checkout 作为写入默认",
+        "不因默认 worktree 权限擅自创建 PR、force-push、merge、发布或清理",
+        "报告规范化判定证据和 owning worktree 拓扑"
+      ]
+    },
+    {
+      "id": 32,
+      "prompt": "这是刚初始化的本地练习仓库，没有 remote、tag、release 或发布配置，pyproject.toml 还是脚手架默认的 version = '0.1.0'。在当前干净分支改一行并 commit。",
+      "expected_output": "Agent 不应仅凭脚手架默认的 0.1.0 判定仓库规范化；在没有 worktree opt-in、PR 请求或其他发布/协作证据时，保持当前 checkout 完成普通单线任务，不创建额外 worktree。",
+      "files": [],
+      "expectations": [
+        "识别单独的占位版本号不足以证明规范化仓库",
+        "确认缺少 remote rule、tag、release、package 发布和版本流水线等印证",
+        "不自动创建 worktree",
+        "在当前干净 checkout 按普通 Git 流程完成范围内改动和 commit"
       ]
     }
   ]
