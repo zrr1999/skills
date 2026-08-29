@@ -411,6 +411,7 @@
       "files": [],
       "expectations": [
         "创建 PR 前发现并读取目标 base 仓库的唯一模板",
+        "把模板作为 PR 创建动作的必需输入，不用自由文本或 commit 自动填充绕过",
         "保留模板章节、顺序、必填提示和 checklist",
         "用当前 diff、风险与验证结果具体填写，不虚构证据",
         "使用模板创建 Draft PR 后回读 body、head/base 和 Draft 状态",
