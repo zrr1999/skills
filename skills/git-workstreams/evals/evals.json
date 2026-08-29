@@ -403,6 +403,46 @@
         "不自动创建 worktree",
         "在当前干净 checkout 按普通 Git 流程完成范围内改动和 commit"
       ]
+    },
+    {
+      "id": 33,
+      "prompt": "修复解析器并按默认方式交付。仓库只有 .github/pull_request_template.md，里面要求 Summary、Risk、Validation 和 checklist。",
+      "expected_output": "Agent 应在验证、commit 和 push 后读取并使用唯一的仓库 PR 模板创建 Draft PR，保留 Summary、Risk、Validation 和 checklist 的结构，按当前 diff 与验证证据填写并回读确认；不得用自定义自由文本 body 替换模板或勾选未经验证的事项。",
+      "files": [],
+      "expectations": [
+        "创建 PR 前发现并读取目标 base 仓库的唯一模板",
+        "把模板作为 PR 创建动作的必需输入，不用自由文本或 commit 自动填充绕过",
+        "保留模板章节、顺序、必填提示和 checklist",
+        "用当前 diff、风险与验证结果具体填写，不虚构证据",
+        "使用模板创建 Draft PR 后回读 body、head/base 和 Draft 状态",
+        "不以自定义自由文本 body 绕过模板"
+      ]
+    },
+    {
+      "id": 34,
+      "prompt": "实现文档站搜索，仓库在 .github/PULL_REQUEST_TEMPLATE/ 下分别有 bug_fix.md 和 feature.md。完成后提 Draft PR。",
+      "expected_output": "Agent 应根据 change type 选择明确匹配的 feature.md，保留并填写它的结构后创建 Draft PR；不得拼接 bug fix 模板，也不需要为这个明确选择询问用户。若模板说明无法区分才停在 push 后列出候选等待选择。",
+      "files": [],
+      "expectations": [
+        "发现多个仓库 PR 模板并读取其适用说明",
+        "根据功能新增的 change type 选择 feature.md",
+        "不拼接互斥模板，也不为明确匹配重复询问",
+        "用所选模板创建 Draft PR并回读确认模板结构",
+        "只有无法可靠判断模板时才停在 push 后请求选择"
+      ]
+    },
+    {
+      "id": 35,
+      "prompt": "修好类型错误并默认交付，但这个仓库没有任何 PR 模板；你临时写个 Summary 和 Tests 就提 PR 吧。",
+      "expected_output": "Agent 应完成范围内修改、验证、commit 和 push，但把缺少仓库模板视为 PR 创建 blocker，不接受用临时自由文本 body 绕过要求；只有用户把建立或恢复模板纳入任务时，才把模板作为仓库改动后再创建 PR。",
+      "files": [],
+      "expectations": [
+        "确认目标 base 仓库没有可用 PR 模板",
+        "不临时编造自由文本 PR body，也不创建无模板 PR",
+        "在已授权的验证、commit 和 push 完成后明确报告 blocker",
+        "说明建立或恢复模板需要成为受审阅的仓库改动",
+        "不把默认 Draft PR 交付当成绕过模板要求的授权"
+      ]
     }
   ]
 }

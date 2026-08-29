@@ -1,14 +1,14 @@
 ---
 name: git-workstreams
 description: >
-  使用 Git/GitHub 组织 change workstream 的 checkout/worktree 拓扑、规范化仓库隔离、默认 Draft PR 交付、依赖 branch/PR stack 和持续交付权限边界：根据默认分支禁推规则、已发布 package/release、版本与发布流水线等证据识别规范化仓库，并默认用 owning worktree 隔离改动；创建 PR 请求也默认允许 worktree；从默认分支安全发布；完成仓库改动后默认创建可审阅的 Draft PR，真实依赖拆为 stacked Draft PR；跟进已有 PR 的冲突、CI 与本地 commit/push。适用于 worktree 创建、迁移、安全清理、“branch already checked out”，实现或修改完成后的 PR 交付，从 main/master 发布改动，拆分 stacked/dependent PR，使用 `gh stack` 创建、查看、同步或落地 stack，处理 PR merge conflict、checks failed、修到可合并、未提交或未推送修复等请求。`gh stack` 是从本机 `--help` 驱动的可选工具；不要让外部 `gh-stack` skill 共同规划或扩大权限。非规范化仓库且不创建 PR 时，worktree 仍是显式 opt-in；默认 Draft 交付不授权隐式切换主工作区分支、Ready、merge 或 force-push。
+  使用 Git/GitHub 组织 change workstream 的 checkout/worktree 拓扑、规范化仓库隔离、默认 Draft PR 交付、PR 模板、依赖 branch/PR stack 和持续交付权限边界：根据默认分支禁推规则、已发布 package/release、版本与发布流水线等证据识别规范化仓库，并默认用 owning worktree 隔离改动；创建 PR 请求也默认允许 worktree；从默认分支安全发布；完成仓库改动后默认创建可审阅的 Draft PR，创建前发现并使用仓库 PR 模板，真实依赖拆为 stacked Draft PR；跟进已有 PR 的冲突、CI 与本地 commit/push。适用于 worktree 创建、迁移、安全清理、“branch already checked out”，实现或修改完成后的 PR 交付，从 main/master 发布改动，拆分 stacked/dependent PR，使用 `gh stack` 创建、查看、同步或落地 stack，处理 PR merge conflict、checks failed、修到可合并、未提交或未推送修复等请求。`gh stack` 是从本机 `--help` 驱动的可选工具；不要让外部 `gh-stack` skill 共同规划或扩大权限。非规范化仓库且不创建 PR 时，worktree 仍是显式 opt-in；没有可用仓库模板时不得用自由文本绕过；默认 Draft 交付不授权隐式切换主工作区分支、Ready、merge 或 force-push。
 ---
 
 # Git Workstreams
 
 ## Goal
 
-识别规范化仓库并默认用隔离 worktree 保护其主工作区；其他仓库在用户明确选择后或创建 PR 请求默认允许时启用 worktree。为依赖改动选择可审阅的 branch/PR 拓扑，把实现类仓库改动默认交付为 Draft PR，并把已有 PR 的冲突与 CI 跟到可合并或明确 blocker。GitHub 原生 stack 只是一条执行路线，不接管 workstream 所有权或授权判断。完成时应能给出判定证据、实际拓扑、基准、验证结果、commit/push、PR 状态和未获授权的动作。
+识别规范化仓库并默认用隔离 worktree 保护其主工作区；其他仓库在用户明确选择后或创建 PR 请求默认允许时启用 worktree。为依赖改动选择可审阅的 branch/PR 拓扑，把实现类仓库改动默认交付为使用仓库模板的 Draft PR，并把已有 PR 的冲突与 CI 跟到可合并或明确 blocker。GitHub 原生 stack 只是一条执行路线，不接管 workstream 所有权或授权判断。完成时应能给出判定证据、实际拓扑、基准、验证结果、commit/push、所用模板、PR 状态和未获授权的动作。
 
 ## Choose the topology
 
@@ -64,22 +64,31 @@ gh stack --help  # GitHub stack 请求；用于发现本地扩展是否可用
 ## Workflow
 
 1. **确认结果**：区分普通单线任务、独立 worktree、依赖 stack、原生 stack CLI 操作、stack landing、PR follow-up、只读诊断、迁移或清理；先指定唯一结果所有者，并识别用户是否明确指定了仅本地、commit 或 commit+push 等交付终点。
-2. **检查现场**：解析 repo root、absolute/common git dir、superproject、主工作区路径及起始 branch/HEAD、当前 branch/HEAD、dirty 状态、remote、远端默认分支、`git worktree list --porcelain`，并按上节只读判断仓库是否规范化；同时检查任务相关 PR 的 head/base、冲突、checks 和可写权限。GitHub stack 请求检查 `gh stack` 本地能力和仓库返回的 feature 状态，但不因 CLI 缺失直接判定仓库不支持。普通本地任务不隐式 fetch；PR follow-up 本身依赖当前远端状态，可更新相关 refs 并读取 PR/check 状态。
+2. **检查现场**：解析 repo root、absolute/common git dir、superproject、主工作区路径及起始 branch/HEAD、当前 branch/HEAD、dirty 状态、remote、远端默认分支、`git worktree list --porcelain`，并按上节只读判断仓库是否规范化；同时检查任务相关 PR 的 head/base、冲突、checks、可写权限和仓库 PR 模板。GitHub stack 请求检查 `gh stack` 本地能力和仓库返回的 feature 状态，但不因 CLI 缺失直接判定仓库不支持。普通本地任务不隐式 fetch；PR follow-up 本身依赖当前远端状态，可更新相关 refs 并读取 PR/check 状态。
 3. **取得启用选择**：只读盘点不需要确认；创建 worktree、把它作为可写工作区复用、把任务迁入其中或交给另一个 agent 前，通常必须得到用户明确 opt-in。若仓库已判为规范化，或当前请求明确要求创建/使用 worktree 或创建 PR，视为已选择；这些默认只表示允许按现场需要使用 owning worktree，不要求在当前 checkout 已安全隔离时多建一个。其他情况简要说明收益、成本和拟议范围，并直接询问是否启用；在答案到来前保持当前 checkout，不执行 worktree 动作。worktree 创建成功后，这个选择在同一 workstream 内持续有效；后续进入、复用、恢复任务、实现、验证或发布时不要再次询问是否使用它。只有目标 workstream、所有者或拓扑发生实质变化，worktree 已不可安全使用，或后续动作本身需要新的权限时，才针对变化或新增权限询问。
 4. **选择并画出拓扑**：启用后将独立任务按 worktree 分开；依赖改动无论是否启用 worktree，都按 reviewable concern 从 trunk 向上排列。GitHub 仓库默认保留原生 stack 元数据；只有 GitHub 明确返回未启用/不支持、仓库不在 GitHub，或用户明确退出时才使用普通 chained PR fallback。原生 stack 已进入 landing 阶段时不再回退逐 PR 合并。一个结果会改变上层设计时保持串行。
 5. **执行最小动作**：按用户选择和仓库分类复用已有隔离环境或创建 owning worktree；新实现从明确基准创建 branch，只有已 opt-in 才创建、进入或交接 worktree。规范化仓库和创建 PR 的请求已经提供这一 opt-in；非规范化仓库中的单独 `commit+push` 没有。发布前应用下方主工作区保护；不要把任何发布请求当成隐式切换主工作区的授权。临时只读检查需要新 detached worktree 时也先取得选择。不要用 force 绕过 branch 占用或目标路径保护。
 6. **准备和验证**：读取 `AGENTS.md` 和项目 setup，只运行相关检查；不自动复制 `.env`、凭据、ignored 文件或缓存，也不无条件安装依赖。
 7. **处理 PR follow-up**：当前 workstream 已有确认过的 PR，且用户要求实现、修复、跟进或保持可合并时，按下方闭环处理范围内冲突与 CI，并把验证过的本地修复小步 commit、及时 push 到已解析的 PR head。只读诊断不获得这些写权限。
-8. **处理其他远端动作**：实现或修改仓库内容时，按下方默认交付规则 commit、push 并创建 Draft PR；用户明确指定较窄的交付终点或禁止其中某项时停在该边界。force-push、retarget、Ready 和 merge 仍需明确授权；先解析精确 refs、PR base 和受影响层，再从本机 help 选择所需原生命令。
+8. **处理其他远端动作**：实现或修改仓库内容时，按下方默认交付规则 commit、push，并严格使用仓库 PR 模板创建 Draft PR；用户明确指定较窄的交付终点或禁止其中某项时停在该边界。force-push、retarget、Ready 和 merge 仍需明确授权；先解析精确 refs、PR base 和受影响层，再从本机 help 选择所需原生命令。
 9. **报告并停止**：达到隔离、stack 或 PR-ready 目标后，报告拓扑、所有权、commit/push、checks 与剩余 blocker；不顺带清理、合并或改写其他 workstream。
 
 ## Default Draft PR delivery
 
-- 用户要求实现、修复或修改仓库内容，且没有明确指定更窄的交付终点时，把经过仓库要求验证的改动 commit、push，并创建 Draft PR；不再为“是否提 PR”单独等待一次确认。用户明确要求仅本地、commit 或 commit+push 时停在该终点；只读、诊断、评审、规划和回答类请求不触发该默认。
+- 用户要求实现、修复或修改仓库内容，且没有明确指定更窄的交付终点时，把经过仓库要求验证的改动 commit、push，并用仓库模板创建 Draft PR；不再为“是否提 PR”单独等待一次确认。用户明确要求仅本地、commit 或 commit+push 时停在该终点；只读、诊断、评审、规划和回答类请求不触发该默认。
 - 一个可独立 review 的 concern 默认对应一个 Draft PR。只有后续 concern 真实依赖前层、且每层都值得独立 review 时才创建 stacked Draft PR；互不依赖的 concern 使用独立 PR，不为展示 stack 而制造依赖。
 - 默认交付只覆盖当前任务确认范围内的非破坏性 commit、push 和 Draft PR 创建。它不授权改变未确认的 checkout/worktree 拓扑，也不授权 force-push、retarget、标记 Ready、merge、清理、deploy 或 release。
 - 发布前仍需满足主工作区保护、仓库贡献规范和本地验证。无法安全取得 owning branch/checkout、远端写权限或合规 PR base 时停止并报告具体 blocker，不把默认交付当成绕过权限与拓扑边界的理由。
 - PR 创建后回读 head/base、Draft 状态和 CI。用户明确要求推进 Ready 时，只在 exact head 未漂移、required checks 处于仓库允许的终态且没有仓库定义的 Ready blocker 后标记；review approval 与最终 mergeability 留给 Ready 后的 review 或 merge preflight。CI 仍在运行或 head 漂移时继续等待或处理范围内失败。
+
+## PR template
+
+- PR 模板是 PR 创建动作的必需输入，不是可选的文案参考。创建路线必须从选定模板开始生成 body；不得直接传入另写的 `--body`、commit 自动填充或其他自由文本来绕过模板。
+- 每次创建 PR 前先读取目标 base 仓库实际提供的模板。检查根目录、`docs/` 或 `.github/` 下的单模板 `pull_request_template.md`，以及 `.github/PULL_REQUEST_TEMPLATE/` 下的多模板；仓库贡献文档明确指定其他入口时按其约定。以 base branch 上生效的模板为默认事实源；若当前任务本身明确新增或修复模板，则使用本次改动后的版本。
+- 只有一个模板时直接使用。存在多个模板时，根据模板说明和当前 change type 选择明确匹配的一份；不要拼接互斥模板。无法可靠判断时停在 push 后，列出候选和差异，等待用户选择，不创建猜测性的 PR。
+- PR body 必须保留所选模板的章节、顺序、必填提示和 checklist，用当前 diff、验证命令及结果逐项填写。可以在完成对应要求后删除纯指导性的 HTML 注释，但不得把模板替换为自由文本、静默删掉不方便填写的栏目，或勾选未经证据支持的事项；不适用项按模板允许的方式明确说明。
+- 仓库没有可用模板时，PR 创建是 blocker：不得临时编造一个只用于本次 PR 的自由文本 body。只有当前任务明确包含建立或恢复仓库模板时，才先把模板作为受审阅的仓库改动加入同一 workstream，再用该版本创建 PR。
+- 更新已有 PR body 时保留它采用的模板结构；只有仓库模板已明确变更或用户要求迁移时才按新模板调整。创建或更新后回读 body，确认模板章节与 checklist 没有被 CLI、API 或转义处理破坏。
 
 ## Worktree boundaries
 
