@@ -4,13 +4,20 @@ set -euo pipefail
 
 status=0
 
-for file in skills/*/evals/evals.json; do
-  skill_dir="${file#skills/}"
-  skill_dir="${skill_dir%%/*}"
+for skill_file in skills/*/SKILL.md; do
+  skill_dir="${skill_file%/SKILL.md}"
+  skill_name="${skill_dir#skills/}"
+  file="$skill_dir/evals/evals.json"
 
-  if ! jq -e --arg skill_dir "$skill_dir" '
+  if [[ ! -f "$file" ]]; then
+    printf 'Missing eval file: %s\n' "$file" >&2
+    status=1
+    continue
+  fi
+
+  if ! jq -e --arg skill_name "$skill_name" '
     def nonempty_string: type == "string" and length > 0;
-    (.skill_name == $skill_dir)
+    (.skill_name == $skill_name)
     and (.evals | type == "array" and length > 0)
     and (([.evals[].id] | length) == ([.evals[].id] | unique | length))
     and all(.evals[];
