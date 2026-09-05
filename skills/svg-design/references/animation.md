@@ -2,11 +2,11 @@
 
 Non-obvious patterns and gotchas for animating SVG elements, especially in React/JSX projects with bundlers like Vite.
 
-## Vite/Bundler Trap
+## Vite/Bundler Compatibility
 
-**Never use `<style>` tags inside JSX-rendered SVGs.** Vite's `EnvironmentPluginContainer.transform` crashes with `Cannot read properties of undefined (reading 'call')`. SMIL elements (`<animate>`, `<animateTransform>`) work but run on CPU with no GPU acceleration.
+Some Vite/plugin combinations have produced `EnvironmentPluginContainer.transform` failures when an SVG rendered through JSX contains an inline `<style>` block. Treat this as an environment-specific compatibility issue, not a general SVG/JSX rule.
 
-**Solution:** Create a separate `.css` file, import it in the component, apply classes via `className`. This gets GPU compositing and avoids bundler issues.
+If the failure reproduces in the current project, move the rules to a separate `.css` file, import it in the component, and apply classes via `className`; then rerun the build. Prefer this workaround only when it fixes an observed toolchain issue or when external CSS better fits the project's style architecture. Do not infer GPU acceleration or CPU-only execution merely from choosing CSS versus SMIL; rendering behavior depends on the animated property and browser implementation.
 
 ## Splitting Opacity and Transform
 
@@ -54,9 +54,9 @@ Even spacing feels mechanical. Vary gaps for organic feel: `0, 1.6, 3.5, 5.0, 6.
 
 ## SVG-Specific Techniques
 
-### ViewBox clipping
+### Viewport clipping
 
-The `viewBox` naturally clips content outside bounds. Calculate when an element's top point exits: if top is at `y=13` and viewBox starts at `y=0`, clip happens at `translateY = -13px`. Fade out *before* this point to avoid a hard cut.
+`viewBox` defines the SVG user coordinate system; it does not by itself guarantee clipping. Clipping depends on the SVG viewport, `overflow`, and embedding context. When the target environment clips overflow at the viewport boundary, calculate the exit point from that boundary—for example, if the visible top is `y=0` and an element's top starts at `y=13`, it exits at `translateY = -13px`. Fade before the boundary when a hard cut would be visible. When clipping behavior matters, verify it in the actual embedding context instead of assuming it from `viewBox` alone.
 
 ### Box occlusion (emerge-from-container)
 
