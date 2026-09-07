@@ -65,10 +65,10 @@ gh stack --help  # GitHub stack 请求；用于发现本地扩展是否可用
 
 1. **确认结果**：区分普通单线任务、独立 worktree、依赖 stack、原生 stack CLI 操作、stack landing、PR follow-up、只读诊断、迁移或清理；先指定唯一结果所有者，并识别用户是否明确指定了仅本地、commit 或 commit+push 等交付终点。
 2. **检查现场**：解析 repo root、absolute/common git dir、superproject、主工作区路径及起始 branch/HEAD、当前 branch/HEAD、dirty 状态、remote、远端默认分支、`git worktree list --porcelain`，并按上节只读判断仓库是否规范化；同时检查任务相关 PR 的 head/base、冲突、checks、可写权限和仓库 PR 模板。GitHub stack 请求检查 `gh stack` 本地能力和仓库返回的 feature 状态，但不因 CLI 缺失直接判定仓库不支持。普通本地任务不隐式 fetch；PR follow-up 本身依赖当前远端状态，可更新相关 refs 并读取 PR/check 状态。
-3. **取得启用选择**：只读盘点不需要确认；创建 worktree、把它作为可写工作区复用、把任务迁入其中或交给另一个 agent 前，通常必须得到用户明确 opt-in。若仓库已判为规范化，或当前请求明确要求创建/使用 worktree 或创建 PR，视为已选择；这些默认只表示允许按现场需要使用 owning worktree，不要求在当前 checkout 已安全隔离时多建一个。其他情况简要说明收益、成本和拟议范围，并直接询问是否启用；在答案到来前保持当前 checkout，不执行 worktree 动作。worktree 创建成功后，这个选择在同一 workstream 内持续有效；后续进入、复用、恢复任务、实现、验证或发布时不要再次询问是否使用它。只有目标 workstream、所有者或拓扑发生实质变化，worktree 已不可安全使用，或后续动作本身需要新的权限时，才针对变化或新增权限询问。
+3. **取得启用选择**：只读盘点不需要确认；创建 worktree、把它作为可写工作区复用、把任务迁入其中或交给另一个 agent 前，通常必须得到用户明确 opt-in。若仓库已判为规范化，或当前请求明确要求创建/使用 worktree 或创建 PR，视为已选择；这些默认只表示允许按现场需要使用 owning worktree，不要求在当前 checkout 已安全隔离时多建一个。其他情况默认保持当前 checkout；当前环境足以完成任务时，不例行询问是否启用 worktree。确需新增隔离或改变工作区安排时，说明具体原因与拟议范围并询问；答案到来前不执行依赖该选择的 worktree 动作，继续独立且已授权的工作。已明确选择并验证的 worktree（包括已有 worktree 的复用选择）在同一 workstream 内持续有效；后续进入、复用、恢复任务、实现、验证或发布时不要再次询问是否使用它。只有目标 workstream、所有者或拓扑发生实质变化，worktree 已不可安全使用，或后续动作本身需要新的权限时，才针对变化或新增权限询问。
 4. **选择并画出拓扑**：启用后将独立任务按 worktree 分开；依赖改动无论是否启用 worktree，都按 reviewable concern 从 trunk 向上排列。GitHub 仓库默认保留原生 stack 元数据；只有 GitHub 明确返回未启用/不支持、仓库不在 GitHub，或用户明确退出时才使用普通 chained PR fallback。原生 stack 已进入 landing 阶段时不再回退逐 PR 合并。一个结果会改变上层设计时保持串行。
 5. **执行最小动作**：按用户选择和仓库分类复用已有隔离环境或创建 owning worktree；新实现从明确基准创建 branch，只有已 opt-in 才创建、进入或交接 worktree。规范化仓库和创建 PR 的请求已经提供这一 opt-in；非规范化仓库中的单独 `commit+push` 没有。发布前应用下方主工作区保护；不要把任何发布请求当成隐式切换主工作区的授权。临时只读检查需要新 detached worktree 时也先取得选择。不要用 force 绕过 branch 占用或目标路径保护。
-6. **准备和验证**：读取 `AGENTS.md` 和项目 setup，只运行相关检查；不自动复制 `.env`、凭据、ignored 文件或缓存，也不无条件安装依赖。
+6. **准备和验证**：读取 `AGENTS.md` 和项目 setup，运行覆盖受影响行为的必要检查及仓库必需检查；通过后仅因新改动、失败或未解决的具体疑点扩大或重复验证，不以改动行数判断风险。不自动复制 `.env`、凭据、ignored 文件或缓存，也不无条件安装依赖。
 7. **处理 PR follow-up**：当前 workstream 已有确认过的 PR，且用户要求实现、修复、跟进或保持可合并时，按下方闭环处理范围内冲突与 CI，并把验证过的本地修复小步 commit、及时 push 到已解析的 PR head。只读诊断不获得这些写权限。
 8. **处理其他远端动作**：实现或修改仓库内容时，按下方默认交付规则 commit、push，并严格使用仓库 PR 模板创建 Draft PR；用户明确指定较窄的交付终点或禁止其中某项时停在该边界。force-push、retarget、Ready 和 merge 仍需明确授权；先解析精确 refs、PR base 和受影响层，再从本机 help 选择所需原生命令。
 9. **报告并停止**：达到隔离、stack 或 PR-ready 目标后，报告拓扑、所有权、commit/push、checks 与剩余 blocker；不顺带清理、合并或改写其他 workstream。
@@ -161,7 +161,7 @@ ui         -> api
 
 ## PR follow-up loop
 
-“检查/总结/解释 PR”是只读请求；对已有 PR 的实现、修复、跟进、解决冲突或做到可合并，授权范围内本地编辑、commit，并 push 到该 PR 已确认的 head branch。它不授权 force-push、修改其他分支、retarget 或 merge。
+“检查/总结/解释 PR”是只读请求；对已有 PR 的实现、修复、跟进、解决冲突或做到可合并，授权范围内本地编辑、commit，并 push 到该 PR 已确认的 head branch；同一目标和权限未变化时，不因恢复任务或加载 skill 再次索要 commit/push 授权。它不授权 force-push、修改其他分支、retarget 或 merge。
 
 1. **解析目标与所有权**：确认精确 PR、head repo/branch、base、当前 checkout/worktree 管理者、dirty 内容、冲突、checks 和 push 权限。不要把用户或其他任务的未提交改动混入 PR。
 2. **解决冲突**：按仓库约定选择 merge 或 rebase，逐项理解冲突双方意图并运行相关验证。stack 从 bottom 向 top 处理；低层变化重放到后继层后分别验证。已发布 branch 需要重写时，在 force-push 前停止并取得明确授权。
