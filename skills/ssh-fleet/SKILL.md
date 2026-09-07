@@ -1,7 +1,7 @@
 ---
 name: ssh-fleet
 description: >
-  管理私有 SSH 设备清单、连接元数据和已验证 host key，并通过 auto-config 安全校验和渲染 SSH、Ansible、DDNS 或 hosts 输出。只要用户要求新增、修改、查找、审计、退役远程机器，维护 devices.toml/known_hosts，处理 SSH alias/hostname/user/port/ForwardAgent，或生成、比较、应用 fleet 配置，就应使用。默认只读且不连接远端；编辑事实源、连接、应用、信任变更、提交和推送遵循各自授权边界。
+  管理私有 SSH 设备清单、连接元数据和已验证 host key，并通过 auto-config 安全校验和渲染 SSH、Ansible、DDNS 或 hosts 输出。只要用户要求新增、修改、查找、审计、退役远程机器，维护 devices.toml/known_hosts，处理 SSH alias/hostname/user/port/ForwardAgent，或生成、比较、应用 fleet 配置，就应使用。默认只读且不连接远端；编辑事实源、连接、应用、信任变更、提交和推送遵循各自授权边界，这些更严格的领域边界不因同时加载通用 Git/交付 skill 而放宽。
 ---
 
 # SSH Fleet
@@ -29,7 +29,7 @@ description: >
 
 ## Authorization boundaries
 
-把动作拆开，不用一个许可推导另一个许可：
+把动作拆开，不用一个许可推导另一个许可。这里的领域边界优先于通用 Git/PR skill 的默认交付：其他 skill 可以执行本节已经允许的 Git 动作，但不能据其默认规则新增 commit、push、apply、连接或信任权限。
 
 - **本地读取和审计**：可检查 inventory、生成器代码、Git 状态、现有 SSH 配置和 `ssh -G` 解析结果；不连接设备。
 - **编辑 inventory**：用户要求新增、修改、迁移或退役设备时，才修改 `devices.toml`。这不授权连接或应用生成文件。
