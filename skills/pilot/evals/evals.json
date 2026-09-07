@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "我有个想法，想做一个把零散项目灵感整理成 SPARK.md 的工具，帮我先聊清楚，不要一上来让我填表。",
-      "expected_output": "Agent 应使用 pilot 的 Capture 模式，用中文按批次提出 2-3 个互不依赖的问题，等待整批反馈后再继续，并明确后续会按中文 SPARK.md 结构起草。",
+      "expected_output": "Agent 应使用 pilot 的 Capture 模式，用中文按批次提出当前必要且互不依赖的问题，等待反馈后再推进依赖答案的事项，并明确后续会按中文 SPARK.md 结构起草。",
       "files": [],
       "expectations": [
         "输出使用中文作为工作语言",
@@ -17,13 +17,13 @@
     {
       "id": 2,
       "prompt": "I have an idea for a developer tool that turns messy terminal history into reusable runbooks. Help me write a SPARK.md and ask whatever is missing.",
-      "expected_output": "Agent should use pilot Capture mode in English, ask a batch of 2-3 mutually independent conversational questions, wait for the batch response, and preserve English for the future SPARK.md draft.",
+      "expected_output": "Agent should use pilot Capture mode in English, ask a batch of necessary, mutually independent conversational questions, wait for the batch response, and preserve English for the future SPARK.md draft.",
       "files": [],
       "expectations": [
         "Output uses English as the working language",
         "Does not include Chinese-only confirmation text such as 有没有明显偏差的地方",
-        "Asks 2-3 mutually independent questions in the current batch",
-        "Waits for the current batch response before asking dependent follow-ups or acting",
+        "Asks necessary, mutually independent questions in the current batch",
+        "Waits for the current batch response before asking dependent follow-ups or taking dependent actions",
         "Mentions or implies the English SPARK.md structure"
       ]
     },
@@ -76,7 +76,7 @@
     {
       "id": 7,
       "prompt": "我要给这个 TypeScript 服务拆模块边界，也想知道该不该换框架。你先帮我理一理下一步怎么推进，必要时告诉我该调用哪些专项 skill。",
-      "expected_output": "Agent 应把这类请求视为 pilot 的项目级工作流：使用内置设计判断处理模块边界，把框架选型交给 tech-preferences，并由 Spark 统一给出最小下一步与验证。",
+      "expected_output": "Agent 应把这类请求视为 pilot 的项目级工作流：使用内置设计判断处理模块边界，把框架选型交给 tech-preferences，并由 pilot 统一给出最小下一步与验证。",
       "files": [],
       "expectations": [
         "明确框架选型使用 tech-preferences，而模块边界由 pilot 的内置设计判断处理",
@@ -126,7 +126,7 @@
       "files": [],
       "expectations": [
         "先检查仓库、文档或现有运行入口等可安全取得的事实，而不是把事实问题转给用户",
-        "当前批次通常包含 2-3 个互不依赖的根决策，并为每题给出推荐与影响",
+        "当前批次只包含必要且互不依赖的根决策，并为每题给出推荐与影响",
         "没有在部署形态确定前追问具体鉴权方案，也没有在历史保留策略确定前追问具体数据库",
         "发出当前批次后等待反馈，不继续提出依赖性下游问题",
         "没有改代码、提交、推送、创建云资源或执行其他高风险事项"
@@ -139,7 +139,7 @@
       "files": [],
       "expectations": [
         "Inspects or requests access to inspect discoverable repository and documentation facts before asking the user factual questions",
-        "Asks 2-3 mutually independent root decisions in the first batch",
+        "Asks necessary, mutually independent root decisions in the first batch",
         "Provides a recommendation and key consequence for each decision",
         "Does not mix downstream billing, tenancy, or rollout questions whose answers depend on an unresolved root decision into the same batch",
         "Explicitly waits for the batch response and performs no consequential action before shared understanding"
@@ -148,13 +148,61 @@
     {
       "id": 13,
       "prompt": "这个改动边界已经清楚，不用重新规划项目。请把它拆成查现状、实现、回归三个可交给子代理的 brief，并标明依赖和可以并行的部分。",
-      "expected_output": "Agent 应识别主要交付是委派编排并直接使用 Spark：产出有边界、可验证的 brief，按实质依赖判断串并行，同时把实际调度留给宿主运行时。",
+      "expected_output": "Agent 应识别主要交付是委派编排并直接使用 pilot：产出有边界、可验证的 brief，按实质依赖判断串并行，同时把实际调度留给宿主运行时。",
       "files": [],
       "expectations": [
         "不因改动边界明确而拒绝委派编排，也不重新规划整个项目",
         "每个 brief 包含目标、输入或证据、非目标、预期产物与验证，以及依赖或阻塞关系",
         "根据实质依赖说明串行和可并行部分，不固化自定义角色体系",
         "明确实际调度由宿主运行时或编排层完成"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "使用 pilot 推进这个已明确的本地修复：CLI 名称两端空格导致查找失败，按既有规范去掉两端空格，并更新对应说明。只保留本地改动。",
+      "expected_output": "完成实现、相关说明及必要验证，不停在计划或扩大交付。",
+      "files": [],
+      "expectations": [
+        "自行检查调用点与现有规范，不重新访谈已确定目标",
+        "完成授权的代码与说明修改，不只交付下一步",
+        "运行受影响行为的检查及仓库必需检查，通过后不无故全测",
+        "不 commit、push 或创建 PR"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "改进导出功能：现有 CSV 对引号的转义有明确 bug，请修好；另外想新增一种导出格式，但 JSON 还是 XLSX 我还没决定，需要你给建议。先保留本地改动。",
+      "expected_output": "询问新增格式的实质取舍，同时完成不依赖该决策的 CSV 修复与验证。",
+      "files": [],
+      "expectations": [
+        "查明现有 CSV 行为并完成独立修复",
+        "只询问影响新增格式的必要决策，不凑固定题数",
+        "不擅自实现未决定的格式",
+        "等待格式选择不阻塞 CSV 修复，不自动发布"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "鉴权里只有一行要改：现在只比较 user_id，跨租户同名用户也能访问。按现有 tenant_id 字段修好并验证，只改本地。",
+      "expected_output": "检查租户隔离契约并验证允许和拒绝路径，不按行数降低验证。",
+      "files": [],
+      "expectations": [
+        "检查调用路径与 tenant_id 的来源",
+        "验证同租户允许、跨租户拒绝及身份缺失时的行为",
+        "完成仓库要求检查，不仅做格式检查",
+        "不引入无关重构或发布"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "使用 pilot 把这个已确定的修复完成。相关回归与仓库必需检查已经在当前未变化的 diff 上通过，结果可从日志核实。请核实后交付本地结果。",
+      "expected_output": "核实当前 diff 与既有结果关联后完成交付，没有新证据时不重复测试。",
+      "files": [],
+      "expectations": [
+        "核实结果属于当前 diff",
+        "不无理由重跑相同检查或扩大测试",
+        "报告真实验证证据，不编造未运行的测试",
+        "不为已完成事项添加虚构 blocker 或下一阶段"
       ]
     }
   ]

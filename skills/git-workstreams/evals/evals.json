@@ -63,14 +63,15 @@
     },
     {
       "id": 6,
-      "prompt": "这是个没有 remote、tag、release、发布规则或版本流水线的本地临时仓库。我只想在当前干净分支改一行，十分钟能做完。",
+      "prompt": "这是个没有 remote、tag、release、发布规则或版本流水线的本地临时仓库。我只想在当前干净分支改一行，十分钟能做完。只保留本地改动，不发布。",
       "expected_output": "Agent 应先确认没有规范化证据，并且不应仅因普通单任务或短暂修改创建 worktree；在没有并行、隔离、保留 WIP、PR 请求或显式 opt-in 时使用当前 checkout。",
       "files": [],
       "expectations": [
         "识别缺少规则、发布和版本生命周期证据，不能判为规范化仓库",
         "不创建新的 worktree",
         "不引入统一目录或 setup 流程",
-        "使用当前 checkout 的普通 Git 流程或说明现有状态阻碍"
+        "使用当前 checkout 的普通 Git 流程或说明现有状态阻碍",
+        "当前 checkout 足够完成任务时，不例行询问是否启用 worktree，也不因默认 Draft 交付扩大发布范围"
       ]
     },
     {
@@ -102,14 +103,14 @@
     {
       "id": 9,
       "prompt": "我要并行做支付和搜索两个互不相关的功能，但每个功能都要拆成两个依赖 PR，worktree 和 stack 怎么安排？",
-      "expected_output": "Agent 应建议把支付和搜索作为两个独立 workstream，并明确询问用户是否启用两个 owning worktree；得到肯定选择后，每个 worktree 内维护自己的两层线性 PR stack，不共享可变 checkout 或跨 stack branch。",
+      "expected_output": "Agent 应只给出拓扑建议：支付和搜索是两个独立 workstream，每个包含两层线性 PR stack；当前请求询问怎么安排，不自动创建 worktree、分支或 PR，也不把实施阶段的启用选择变成本轮规划的前置条件。",
       "files": [],
       "expectations": [
-        "创建前明确询问用户是否启用 worktree",
-        "用户确认后创建两个独立 owning worktree，而不是四个 layer worktree",
-        "每个 worktree 内有一个独立的两层 branch/PR stack",
-        "两个 workstream 可以并行，同一 stack 的依赖层按顺序推进",
-        "报告两个 stack 各自的基准、branch 顺序和所有者"
+        "给出两个独立 owning worktree 的建议，而不是四个 layer worktree",
+        "每个 stack 内按真实依赖形成两层 branch chain",
+        "说明两个 workstream 可独立推进，同一 stack 的依赖层按顺序推进",
+        "当前只交付安排建议，不创建 worktree、branch 或 PR",
+        "不因尚未选择工作区而拒绝给出具体建议"
       ]
     },
     {
@@ -442,6 +443,42 @@
         "在已授权的验证、commit 和 push 完成后明确报告 blocker",
         "说明建立或恢复模板需要成为受审阅的仓库改动",
         "不把默认 Draft PR 交付当成绕过模板要求的授权"
+      ]
+    },
+    {
+      "id": 36,
+      "prompt": "当前已经明确选择并验证过这个现成 worktree，不是本次新建的。继续修复并测试；只保留本地改动。",
+      "expected_output": "复用同一 workstream 的已选 worktree；不把持续授权限定为本轮新建的工作区。",
+      "files": [],
+      "expectations": [
+        "检查当前所有权和安全状态",
+        "不重复询问是否使用这个 worktree",
+        "完成范围内修复和必要验证",
+        "不 commit、push 或创建 PR"
+      ]
+    },
+    {
+      "id": 37,
+      "prompt": "之前选好的 worktree 现在被另一个任务使用，并有它未提交的修改。继续我们的修复，但不要碰对方的改动。",
+      "expected_output": "识别所有权与安全状态变化，针对新的工作区安排提问；不把旧 opt-in 当作覆盖他人工作的许可。",
+      "files": [],
+      "expectations": [
+        "先查明占用和 dirty 范围",
+        "不写入另一个任务正在使用的 checkout 或复制其 WIP",
+        "仅对新工作区安排询问，不重问已确定的修复目标",
+        "继续不依赖工作区选择的只读取证"
+      ]
+    },
+    {
+      "id": 38,
+      "prompt": "PR #42 的 head、owning checkout 和 push 权限已经确认。继续处理上次未完成的 CI 修复，修好及时 commit/push，不 merge。",
+      "expected_output": "回查现场后延续 PR follow-up 授权，完成范围内修复、验证和推送，不重复索要相同权限。",
+      "files": [],
+      "expectations": [
+        "回查当前 PR head、dirty 和失败 checks",
+        "只修复当前 PR 范围内可复现问题",
+        "相关检查通过后 commit/push 并回查当前 head 的远端检查",
+        "不重复询问相同 commit/push 授权，不自动 force-push、retarget 或 merge"
       ]
     }
   ]
