@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | `tech-preferences` | 技术栈/工具取舍与 Python 工具链落地 | 项目级模块、接口和状态边界仍由 `pilot` 统筹 |
 | `vet` | diff 级 AI slop 清理，或全仓质量审计与公开发布就绪预检 | 不替代正确性调试或纯安全渗透测试 |
-| `git-workstreams` | checkout/worktree、依赖 PR 拓扑与持续交付权限边界 | `gh stack` 直接读本机 help；worktree 显式 opt-in |
+| `git-workstreams` | checkout/worktree、依赖 PR 拓扑与持续交付权限边界 | 规范化仓库或创建 PR 时可默认使用 owning worktree；其他场景显式 opt-in |
 
 ### 领域专用能力
 
@@ -40,7 +40,7 @@
 1. 请求横跨目标、现场证据、设计和下一步，或主要结果是组织子代理 brief 与依赖时，以 `pilot` 为主；遇到明确专项再加载更窄的 skill。
 2. 主要交付只是技术选择、审计、Git workstream 或领域产物时，直接使用对应 skill。
 3. `pilot` 负责明确委派 brief 与依赖；实际调度由宿主编排层完成，不加载单独的 role skill。
-4. 混合请求可以加载多个 skill，但只指定一个结果所有者，避免两个 skill 同时规划整项工作。
+4. 混合请求可以加载多个 skill，但只指定一个结果所有者；专项 skill 可以收窄副作用授权，加载另一个 skill 不会扩大授权。
 5. `gh stack` 请求统一由 `git-workstreams` 拥有结果并直接读取本机 help；外部 `gh-stack` skill 的静态命令、安装、配置、重试和权限规则不作为依赖或权威。
 
 原 `unix-software-design` 已简化并内置进 `pilot`，原 `git-worktrees` 已更名为 `git-workstreams`，原 `roles` 已退役，原 `quality-audit` 已合入 `vet`（新增 diff 级轨道），原 `spark` 已更名为 `pilot`（避免与 Spark 产品仓库混淆）。
@@ -108,7 +108,7 @@ pnpx skills add zrr1999/skills -g -y --agent cline --skill '*'
 
 ## 本地开发
 
-每个技能在 `skills/<skill-name>/evals/evals.json` 下有评测用例。本地快速校验 JSON 语法：`for f in skills/*/evals/evals.json; do jq empty "$f"; done`。结构校验：`bash scripts/check-evals.sh`。
+每个技能在 `skills/<skill-name>/evals/evals.json` 下有评测用例。本地快速校验 JSON 语法：`for f in skills/*/evals/evals.json; do jq empty "$f"; done`。结构与完整性校验由 `check-evals` prek hook 执行，也可直接运行 `bash scripts/check-evals.sh`。
 
 ```bash
 # 默认安装远程已发布版本（含 Vite+ / pnpm / chub / skills）
@@ -121,9 +121,5 @@ REPO_SOURCE=./skills bash install.sh
 pnpx skills add ./skills -g --agent cline --skill pilot
 
 # 与 prek.toml 对齐的本地检查（需已执行 prek install）
-prek run check-json check-yaml check-executables-have-shebangs --all-files
-# 校验每个 skill eval 的结构
-bash scripts/check-evals.sh
-# 或运行全部已配置的钩子：
 prek run --all-files
 ```
