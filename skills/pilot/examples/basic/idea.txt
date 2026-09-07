@@ -6,7 +6,7 @@ Expected skill behavior:
 
 - Stay in `pilot` Capture mode.
 - Safely inspect any existing repository or reference the user supplied before asking for discoverable facts.
-- Ask one batch of 2-3 mutually independent, high-signal decisions; include a recommendation for each and wait for the whole batch before asking dependent follow-ups.
+- Ask only necessary, mutually independent decisions; include a recommendation for each and wait for answers before dependent follow-ups. Do not require a fixed question count.
 - Draft a concrete `SPARK.md` in Chinese, marking uncertain guesses with `<!-- 待确认 -->`.
 - Keep the first draft in the conversation unless the user asked to write the file.
 - Do not create a repo, commit, publish, or take another consequential action until the user confirms the shared understanding and authorizes that action.
