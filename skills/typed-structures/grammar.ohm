@@ -3,7 +3,7 @@
 // 这是识别文法，不包含类型规则、证明有效性或 elaboration。
 // 大写规则会跳过空白与 `//` 注释；`///` 在词法上与 `//` 相同，附着关系见 SKILL.md。
 // `[A, B]` 未写种类时的默认 `Type`、以及 `S :> T` 的成员补全，也不在本文件判定。
- 
+
 TypedStructures {
   Module = TopDecl*
 
