@@ -1,0 +1,185 @@
+// TypedStructures —— ADT + law + :> 表面语法（方案 B）
+//
+// 这是识别文法，不包含类型规则、证明有效性或 elaboration。
+// 大写规则会跳过空白与 `//` 注释；`///` 在词法上与 `//` 相同，附着关系见 SKILL.md。
+// `[A, B]` 未写种类时的默认 `Type`、以及 `S :> T` 的成员补全，也不在本文件判定。
+ 
+TypedStructures {
+  Module = TopDecl*
+
+  TopDecl = TypeDecl | ForallDecl | SubtypeDecl | LetDecl | DefDecl | ProofDecl
+
+  // ---------------------------------------------------------------------------
+  // 声明
+  // ---------------------------------------------------------------------------
+
+  TypeDecl = typeKw ident KindSig? TypeParams? TypeBody
+
+  KindSig = ":" TypeExpr
+
+  TypeParams = "[" NonemptyListOf<TypeParam, ","> ","? "]"
+
+  TypeParam = ident ":" TypeExpr  --ann
+            | ident               --bare
+
+  TypeBody = "{" TypeMember* "}"
+
+  TypeMember = CaseDecl | FnField | LawField | DefDecl | ProofDecl | DataField
+
+  DataField = ident ":" TypeExpr ";"
+
+  FnField = fnKw ident TypeParams? AnnParamList "->" TypeExpr ";"
+
+  LawField = lawKw ident TypeParams? AnnParamList "->" Prop ";"
+
+  CaseDecl = caseKw ident TypeParams? AnnParamList? ReturnType? CaseTail
+
+  CaseTail = TypeBody  --rec
+           | ";"       --pos
+
+  ReturnType = "->" TypeExpr
+
+  AnnParamList = "(" ListOf<AnnParam, ","> ")"
+
+  AnnParam = ident ":" TypeExpr
+
+  ParamList = "(" ListOf<Param, ","> ")"
+
+  Param = ident ":" TypeExpr  --ann
+        | ident               --bare
+
+  DefDecl = defKw ident TypeParams? AnnParamList "->" TypeExpr Block
+
+  ProofDecl = proofKw ident TypeParams? ParamList ("->" Prop)? Block
+
+  Prop = "(" Expr ")"
+
+  LetDecl = letKw ident ":" TypeExpr "=" Expr ";"
+
+  LocalLet = letKw ident (":" TypeExpr)? "=" Expr ";"
+
+  ForallDecl = forallKw TypeParams "{" SubtypeDecl+ "}"
+
+  SubtypeDecl = TypeExpr ":>" TypeExpr SubtypeTail
+
+  SubtypeTail = CtorBody  --fill
+              | ";"       --empty
+
+  // ---------------------------------------------------------------------------
+  // 类型
+  // ---------------------------------------------------------------------------
+
+  TypeExpr = TypeApp "->" TypeExpr  --fun
+           | TypeApp                --atom
+
+  TypeApp = TypeApp "[" NonemptyListOf<TypeExpr, ","> ","? "]"  --index
+          | TypeApp "(" ListOf<TypeExpr, ","> ")"               --call
+          | TypeApp "." ident                                  --qual
+          | TypePrimary                                        --atom
+
+  TypePrimary = "(" NonemptyListOf<TypeExpr, ","> ")"  --parens
+              | ident                                  --name
+
+  // ---------------------------------------------------------------------------
+  // 表达式
+  // ---------------------------------------------------------------------------
+
+  Expr = Lambda | IfExpr | MatchExpr | CmpExpr
+
+  Lambda = LambdaBind "=>" Expr
+
+  LambdaBind = "(" NonemptyListOf<ident, ","> ")"  --tuple
+             | ident                               --name
+
+  IfExpr = ifKw Expr Block elseKw Block
+
+  MatchExpr = matchKw Expr "{" NonemptyListOf<MatchArm, ","> ","? "}"
+
+  MatchArm = Pattern "=>" Expr
+
+  CmpExpr = AddExpr CmpOp AddExpr  --cmp
+          | AddExpr                --add
+
+  CmpOp = "~=" | "=="
+
+  AddExpr = AddExpr "+" AppExpr  --plus
+          | AppExpr              --app
+
+  AppExpr = AppExpr "(" ListOf<Expr, ","> ")"                    --call
+          | AppExpr "[" NonemptyListOf<TypeExpr, ","> ","? "]"  --types
+          | AppExpr "." Field CtorBody?                          --member
+          | ident CtorBody                                       --record
+          | Primary                                              --atom
+
+  Field = ident | number
+
+  Primary = selfKw                                 --self
+          | trueKw                                 --true
+          | falseKw                                --false
+          | number                                 --number
+          | string                                 --string
+          | CtorBody                               --ctor
+          | Block                                  --block
+          | "(" NonemptyListOf<Expr, ","> ")"      --parens
+          | ident                                  --name
+
+  Block = "{" LocalLet* Expr "}"
+
+  // 结构值、数据记录、以及带 proof/def 的构造器载荷共用此形状。
+  // 字段之间的逗号可省略；类型体里的数据字段仍必须用分号。
+  CtorBody = "{" CtorMember* "}"
+
+  CtorMember = CtorElement ","?
+
+  CtorElement = DefDecl | ProofDecl | FieldAssign
+
+  FieldAssign = ident ":" Expr
+
+  // ---------------------------------------------------------------------------
+  // 模式
+  // ---------------------------------------------------------------------------
+
+  Pattern = ident "." ident PatternTail?  --ctor
+          | ident                         --var
+
+  PatternTail = "(" ListOf<Pattern, ","> ")"  --args
+              | "{" PatternFields "}"         --fields
+
+  PatternFields = "..."                                            --rest
+                | NonemptyListOf<ident, ","> ("," "...")?          --names
+
+  // ---------------------------------------------------------------------------
+  // 词法
+  // ---------------------------------------------------------------------------
+
+  space += comment
+  comment = "//" (~"\n" any)*
+
+  typeKw = "type" ~identPart
+  caseKw = "case" ~identPart
+  letKw = "let" ~identPart
+  fnKw = "fn" ~identPart
+  lawKw = "law" ~identPart
+  defKw = "def" ~identPart
+  proofKw = "proof" ~identPart
+  matchKw = "match" ~identPart
+  ifKw = "if" ~identPart
+  elseKw = "else" ~identPart
+  forallKw = "forall" ~identPart
+  selfKw = "self" ~identPart
+  trueKw = "true" ~identPart
+  falseKw = "false" ~identPart
+
+  keyword = typeKw | caseKw | letKw | fnKw | lawKw | defKw | proofKw
+          | matchKw | ifKw | elseKw | forallKw | selfKw | trueKw | falseKw
+
+  ident (an identifier) = ~keyword identStart identPart*
+  identStart = letter | "_"
+  identPart = alnum | "_"
+
+  number (a whole number) = digit+
+
+  string (a string) = "\"" stringChar* "\""
+  stringChar = "\\" any       --esc
+             | ~"\"" ~"\n" any  --char
+}

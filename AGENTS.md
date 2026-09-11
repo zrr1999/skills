@@ -13,6 +13,7 @@
 - 委派子代理时，由编排层或宿主运行时根据目标、输入、范围、预期产物、验证和依赖关系组织工作，不在 skill 中固化角色体系。
 - `unix-software-design` 已退役；通用的软件设计判断由 `pilot` 内建并继任，不重新添加独立 skill。pilot 负责结合项目现场判断模块、接口、数据、状态、失败恢复和复杂度边界；单一技术或工具取舍仍交给 `tech-preferences`。
 - 需要横切技术选型、偏好基线或 Python 工程化落地（uv、ruff、ty、CI 等）时加载 `tech-preferences`；需要持久终端工作区、会话恢复、pane/tab/layout 或 Zellij 远程观察时加载 `zellij`。
+- 需要编写、改写或审阅 ADT、law、def、proof 与 `:>` 结构语言（typed-structures / 方案 B）时加载 `typed-structures`。句法用全局 `ohm match` 对照 `grammar.ohm` 识别；不要把它当成 Rust、Lean、Haskell 或 Cue 执行内核。
 - 混合请求中，结果所有权与副作用授权分开判断：专项 skill 可以收窄允许的动作，但加载另一个 skill 不能扩大授权；若多个 skill 的权限边界不同，采用更严格且更贴近当前领域的边界。`git-workstreams` 负责兑现已经允许的 Git/PR 交付，不用其默认交付规则覆盖 `ssh-fleet` 等专项 skill 明确要求的更严格授权。
 - 需要从默认分支发布本地改动、为独立工作流选择 worktree、为依赖改动组织 branch/PR stack、使用 `gh stack`，或持续跟进 PR 冲突与 CI 时加载 `git-workstreams`。它直接读取本机 `gh stack --help`，不依赖或主动组合外部 `gh-stack` skill；后者若被用户明确加载，也不得拥有命令、权限、preflight、fallback、retry 或停止条件。先只读判断仓库是否规范化：默认分支禁推或必须走 PR 的规则、已发布 package/release，或由非占位版本号与 tag/发布配置/changelog/版本流水线共同证明的发布生命周期都属于证据。规范化仓库默认创建或复用 owning worktree，不再单独询问，也不把主工作区的当前 checkout 作为写入默认；创建 PR 的请求同样默认允许 worktree。仅在两者都不成立时，worktree 才要求用户明确选择，未选择则使用当前 checkout。任何默认 worktree 选择都不授权隐式切换主工作区分支、force-push、retarget、merge 或清理；用户明确选择当前 checkout 时，发布后应在安全条件满足时回到起始分支。所有 PR 创建都必须先发现并使用仓库 PR 模板，保留其章节和 checklist，按当前 diff 与验证证据填写；没有模板时不得用自由文本绕过，除非当前任务本身就是建立或恢复模板。PR follow-up 请求授权范围内修复、小步 commit 并及时 push 到确认过的 head branch。
 
@@ -61,3 +62,4 @@
 - `git-workstreams` 由 `git-worktrees` 更名并扩展而来：规范化仓库与创建 PR 的请求默认允许按需启用 worktree，其他情况才是显式 opt-in；启用后独立任务使用独立 worktree，同一依赖 review stack 在一个 owning worktree 内形成线性 branch chain。它拥有 workstream 拓扑、授权、PR 模板、fallback 和停止条件，并直接从本机 help 驱动可选 `gh stack` CLI；外部同名 skill 不再是 workflow 依赖。创建/发布阶段若 GitHub 明确不支持、仓库不在 GitHub 或用户明确退出，可回退普通 chained PR；official stack landing 不回退逐 PR merge。PR 创建必须使用仓库模板；PR follow-up 负责冲突、范围内 CI、及时 commit/push 和重新检查。
 - 各 skill 的评测用例在 `skills/<skill-name>/evals/evals.json`。
 - `zellij` 以能力与边界为主：精确命令从当前安装版本的 `zellij --help` 和子命令 help 获取，不维护易过期的 flags 清单。
+- `typed-structures` 用 Ohm 文法描述 ADT + law + `:>` 表面；`ohm match` 的精确 flags 从本机 help 获取，全局安装 `@ohm-js/cli`，识别通过不等于证明成立。

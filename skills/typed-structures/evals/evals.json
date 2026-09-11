@@ -1,0 +1,61 @@
+{
+  "skill_name": "typed-structures",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "按 typed-structures 写一个 Option ADT，再给 Option 配一份 Monad 结构和 identity 证明。",
+      "expected_output": "Agent 应使用 typed-structures skill，用 type/case/fn/law/def/proof 写程序并先写入文件，用全局 ohm match 对照 grammar.ohm 检查后再交付；不要译成 Rust、Lean 或 Haskell。",
+      "files": [],
+      "expectations": [
+        "使用 type、case、fn 或 law、def、proof 等该语言表面",
+        "把程序写入文件后用 ohm match 对照 grammar.ohm 检查",
+        "没有把程序写成 Rust impl、Lean instance 或 Haskell typeclass",
+        "交付时说明句法检查已通过或给出 Ohm 的 Line/Expected 诊断"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我声明 Monad[F] :> Applicative[F] :> Functor[F]，并把 map 从 ap/pure 补出来。",
+      "expected_output": "Agent 应使用 forall 与 S :> T 写子类型补全，用 self 引用源结构，并证明目标 law；不要按名字寻找全局实例。",
+      "files": [],
+      "expectations": [
+        "使用 forall 与 :> 声明泛型子类型关系",
+        "用 self 引用源结构来补 map 或 ap",
+        "为目标 law 提供 proof，而不是只补同名函数",
+        "没有根据类型名自动挑选全局 Monad 实例"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "这段看起来像 Haskell typeclass，直接改成 Rust trait 和 impl 吧，跑 cargo test。",
+      "expected_output": "Agent 不应把 typed-structures 表面当成 Rust/Haskell 实现；若用户要的是该语言程序，应保持 type/case/law/:>。若用户明确只要 Rust 工程代码，则退出本 skill 的语言表面，不假装已有编译器。",
+      "files": [],
+      "expectations": [
+        "没有把 type/case/law/:> 静默改写成 Rust trait",
+        "没有声称存在该语言的编译器或 cargo test 入口",
+        "若继续写该语言，则仍走 ohm match 句法检查"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "解释一下 Option.Some 和 Option.None 的差别就行，不用写新程序。",
+      "expected_output": "Agent 可以用 skill 中的语义说明构造器，不必为行文中的短名字运行 ohm match。",
+      "files": [],
+      "expectations": [
+        "说明 Some 与 None 是 Option 的两个 case",
+        "没有仅为短名字去安装 ohm 或创建检查文件"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "本机没有 ohm，用 npx 在项目里临时跑一下 match 就行。",
+      "expected_output": "Agent 应全局安装 @ohm-js/cli（优先 pnpm add -g），不要用 npx，也不要在项目或 skill 目录再装一份。",
+      "files": [],
+      "expectations": [
+        "优先 pnpm add -g @ohm-js/cli，没有 pnpm 再用 npm install -g",
+        "不使用 npx 或 pnpx 调用 ohm",
+        "不在当前项目或 skill 目录安装 ohm-js / @ohm-js/cli"
+      ]
+    }
+  ]
+}
