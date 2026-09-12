@@ -13,10 +13,7 @@
 
 - **默认下限**：`project.requires-python` 宜为 **`>=3.12`**（除非用户或上游约束更旧）。
 - **尽量用新**：在兼容依赖的前提下，本地与 CI 优先使用**当前目标范围内的最新稳定小版本**（例如下限 3.12 时可用 3.12.x 最新；若项目明确以 3.13 为下限，则用 3.13.x 最新），并与 `uv python pin`、测试镜像一致。
-- **按下限叠读 What's New**：设项目支持的最低版本为 **N**（如 3.12、3.13），写代码与评审时应对 **3.12 起至 N 的每个小版本** 阅读官方 *What's New*，以便主动用上该范围内的新语法与标准库变化。
-  - 例：仅支持到 **3.12** → 至少读 [3.12](https://docs.python.org/zh-cn/3.12/whatsnew/3.12.html)。
-  - 例：最低 **3.13** → 读 [3.12](https://docs.python.org/zh-cn/3.12/whatsnew/3.12.html) 与 [3.13](https://docs.python.org/zh-cn/3.13/whatsnew/3.13.html)。
-  - 例：最低 **3.14** → 依次读 3.12、3.13、3.14（依此类推）。
+- **按需查版本差异**：仅在采用新语法、迁移解释器或确认兼容性时读取相关版本的官方 What's New；不要求每次修改从 3.12 起逐版通读。
 - **与工具对齐**：`[tool.ruff]` 的 `target-version`（及 ty 的 Python 目标）应与**实际检查的版本**一致，通常取 `requires-python` 的下界或团队统一的目标特性版本，避免 lint/类型与运行时假设脱节。
 
 ## 工具分工（简表）
@@ -34,7 +31,7 @@
    ```bash
    uv init
    ```
-   需要应用模板时可用 `uv init --lib` 等；以 `uv init --help` 为准。
+   库项目可用 `uv init --lib`；应用与其他模板以 `uv init --help` 为准。
 
 2. **把 Python 版本写死**（推荐）：在 `pyproject.toml` 的 `project.requires-python` 写明范围（默认下限 **3.12**，见上节），并用 `uv python pin` 固定本机/CI 解释器版本，避免漂移。
 
@@ -49,7 +46,7 @@
 
 5. **脚本入口**：优先用 `project.scripts` 或 `uvx`；单文件脚本可配合 `uv run` 与显式 `requires-python`。
 
-6. **本地一键检查**（在 `[tool.uv]` 或 README/just 里固化）：
+6. **本地一键检查**（在 README 或 Justfile 里固化）：
    ```bash
    uvx ruff check .
    uvx ruff format --check .
@@ -80,7 +77,7 @@ select = [
   "F",
   "SIM",
   "UP",
-  "FA",  # flake8-annotations
+  "FA",  # flake8-future-annotations
   "I",  # isort
   "B",  # flake8-bugbear
   "C4",  # flake8-comprehensions
@@ -97,7 +94,7 @@ ignore = ["D100", "D104", "D105", "D107"]
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["volvox"]
+known-first-party = ["your_package"]  # 替换为当前项目的导入名
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
@@ -147,38 +144,19 @@ uvx ty check .
 
 最小思路：**同一组命令**在本地钩子与 GitHub Actions 中各跑一遍，避免「本地绿、CI 红」。
 
-### GitHub Actions（示例骨架）
+### GitHub Actions
 
-```yaml
-# .github/workflows/python-check.yml
-name: python-check
-on:
-  push:
-    branches: [main]
-  pull_request:
-
-jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv sync --all-groups
-      - run: uvx ruff check .
-      - run: uvx ruff format --check .
-      - run: uvx ty check .
-      - run: uv run pytest
-```
-
-按项目替换分支名、是否 `--all-groups`、是否缓存 uv 等。
+复用项目已有 workflow 和上述验证命令。新增 workflow 时，从官方 action
+仓库核对当前受支持版本，并按仓库策略固定引用；不要复制静态旧版本模板。
+按项目选择分支、依赖组、缓存和测试矩阵。
 
 ## Agent 执行清单
 
-接到相关任务时，按顺序完成并能在回复中**逐条对应**：
+按任务完成适用项，报告改动、验证和剩余缺口：
 
 1. 确认目标：新仓库 / 脚本 / 迁移 / 仅 CI。
 2. 读现有 `pyproject.toml` 与锁文件；识别旧工具残留配置。
-3. 确认 `requires-python` 下限（默认 **>=3.12**）与是否采用最新稳定小版本；按「Python 版本与新特性」列出应阅读的 What's New 版本区间（3.12 起至该下限）。
+3. 确认 `requires-python` 下限（默认 **>=3.12**）与是否采用最新稳定小版本；仅核对影响当前改动的版本差异。
 4. 给出或修改 `pyproject.toml` 片段（`[project]`、`[tool.ruff]`、`[tool.ty]`、可选 `[tool.pytest.ini_options]`），保证 ruff/ty 的目标版本与上一致。
 5. 给出本地验证命令（`uv sync`、`ruff`、`ty`、`pytest`）。
 6. 若需 CI：添加或更新 workflow；若需钩子：prek 或等价方案。
@@ -189,4 +167,4 @@ jobs:
 - [uv](https://docs.astral.sh/uv/)
 - [ruff](https://docs.astral.sh/ruff/)
 - [ty](https://docs.astral.sh/ty/)
-- What's New（中文）：自 [3.12](https://docs.python.org/zh-cn/3.12/whatsnew/3.12.html) 起按小版本叠读至项目下限，例如 [3.13](https://docs.python.org/zh-cn/3.13/whatsnew/3.13.html)；更高版本用 `https://docs.python.org/zh-cn/3.x/whatsnew/3.x.html` 替换 `3.x`。
+- [Python What's New](https://docs.python.org/3/whatsnew/)：按当前兼容性问题读取相关版本。

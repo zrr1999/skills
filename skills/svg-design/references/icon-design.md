@@ -110,7 +110,9 @@ The keylines ensure different-shaped icons occupy similar visual space.
 
 ## Lucide Element Constraints
 
-Lucide convention prohibits `<g>`, `transform`, `<use>`, `<defs>`, `<filter>`, inline styles, and `<text>`. Flatten everything to bare shape/path elements with styling on the root `<svg>`. Follow these constraints when building icon sets. For standalone icons or logos, you can be more flexible.
+For a Lucide contribution or explicitly compatible icon set, verify and follow
+the current project's element constraints. Do not apply another icon library's
+restrictions to unrelated standalone icons or logos.
 
 ## Naming Conventions
 

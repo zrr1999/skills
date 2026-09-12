@@ -2,11 +2,13 @@
 
 Non-obvious patterns and gotchas for animating SVG elements, especially in React/JSX projects with bundlers like Vite.
 
-## Vite/Bundler Compatibility
+## Build and rendering environment
 
-Some Vite/plugin combinations have produced `EnvironmentPluginContainer.transform` failures when an SVG rendered through JSX contains an inline `<style>` block. Treat this as an environment-specific compatibility issue, not a general SVG/JSX rule.
-
-If the failure reproduces in the current project, move the rules to a separate `.css` file, import it in the component, and apply classes via `className`; then rerun the build. Prefer this workaround only when it fixes an observed toolchain issue or when external CSS better fits the project's style architecture. Do not infer GPU acceleration or CPU-only execution merely from choosing CSS versus SMIL; rendering behavior depends on the animated property and browser implementation.
+Follow the project's existing styling pipeline. Reproduce build failures with
+the installed bundler and plugin versions before imposing an SVG syntax ban.
+Choose CSS, SMIL, or a supported animation library for the requested effect and
+verify rendering and performance in the target browser; the mechanism alone
+does not guarantee GPU compositing.
 
 ## Splitting Opacity and Transform
 
@@ -76,19 +78,17 @@ When layers share the same spawn position, ensure `stagger_interval > linger_dur
 
 These are critical differences that will silently break your animations if you assume SVG elements behave like HTML elements.
 
-### CSS `clip-path: inset()` does not work on SVG `<g>` elements
+### Group clipping
 
-`clip-path: inset()` needs a reference bounding box. HTML elements have one. SVG `<g>` groups do NOT have an intrinsic box, so `inset()` percentages resolve to nothing. The clip has no visual effect.
-
-**Apply clip-path to individual child elements** (rect, path, circle), not to groups. For grouped clipping, use SVG `<clipPath>` with a `<rect>` child, not CSS `clip-path`.
-
-Exception: `<g>` elements containing `<path>` children sometimes work because the path establishes a bounding box. Test case by case, don't assume.
+Check the clipping reference box and target browser behavior. For a grouped
+clip, an explicit SVG `<clipPath>` can make coordinates easier to inspect.
+Verify the rendered result instead of assuming a group has no usable box.
 
 ### CSS `transform` conflicts with SVG `transform` attribute
 
 An SVG element with `<g transform="translate(100,50)">` cannot have an independent CSS `transform: scale(0.5)` animation. CSS `transform` and SVG `transform` occupy the same property slot. The CSS value replaces the SVG attribute, displacing the element entirely.
 
-**Fix:** For elements positioned with SVG `transform` attributes (common with arc/pie slices, force-directed graph nodes), use `opacity`-only animations. Never add CSS transform animations to these elements.
+Keep positioning and animated transforms on separate parent/child elements, or choose an opacity-only effect when movement is unnecessary. Verify the final positioning.
 
 ### SVG elements have no consistent DOM wrapper structure
 
@@ -99,8 +99,8 @@ Different SVG mark types may render as:
 
 A CSS selector like `.mark-type circle` fails when the circle IS the `.mark-type` element. Always inspect the actual DOM structure before writing selectors. Use `circle.mark-type` (element selector) vs `.mark-type circle` (descendant selector) accordingly.
 
-### Sequential chained animations need linear easing
+### Sequential handoffs
 
-When chaining animations so segment B starts when segment A ends, non-linear easing creates visible jitter at handoffs. Segment A decelerates, then segment B starts at full speed, producing a stutter.
-
-**Fix:** Use `animation-timing-function: linear` for all segments in a chain. Reserve non-linear easing (spring, ease-out, bezier) for standalone animations that don't hand off to another element.
+Check position and velocity continuity where animation segments meet. Linear
+interpolation can suit constant-speed motion; choose easing for the intended
+motion and verify that the handoff does not introduce a visible jump.

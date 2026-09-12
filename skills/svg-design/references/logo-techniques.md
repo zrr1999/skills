@@ -207,17 +207,17 @@ This keeps the family coherent. Small-size versions should feel like the same co
 
 ## Logo Ideation: Exploring Metaphors
 
-Don't fixate on one concept. Before writing any SVG code, brainstorm 8-10 visual metaphors that represent the product. Then pick the 3-4 strongest and create variants of each.
+Use this exploration when the brief needs distinct concepts. With an established direction, implement it directly. Generate only the number of options needed for the request.
 
 ### Step 1: Mine the domain
 
-The biggest source of generic logos is skipping this step. Before thinking about shapes, list 10-15 physical objects, tools, environments, textures, and actions that are *specific to this product's world*:
+When exploring a domain, consider its characteristic objects, tools, environments, textures, and actions:
 
 - A marine logistics company: knots, anchors, currents, hull cross-sections, container stacks, signal flags, wake patterns, bollards, cargo nets
 - A code editor: cursors, brackets, indentation, diff markers, tree structures, merge arrows, syntax highlighting bands, terminal prompts
 - A bakery: wheat stalks, dough scoring patterns, rolling pins, oven arches, braided loaves, flour dusting, banneton spiral imprints
 
-These domain objects become the raw material. If you can't list 10, you don't know the domain well enough yet.
+Use the relevant objects as raw material; there is no required brainstorming count.
 
 ### Step 2: Semantic branching (literal -> abstract -> unexpected)
 
@@ -229,11 +229,11 @@ For each promising domain object, push through three levels of abstraction:
 | **Abstract** | The bean's center crease as a single curved line | Distinctive, still evocative |
 | **Unexpected** | The crease becomes a sound wave (roasting = transformation) | Unique, carries a second meaning |
 
-The best logos live at level 2-3. Level 1 is where cliches come from. Always push at least to level 2.
+Choose the abstraction level that fits the brief and recognition needs.
 
 ### Step 3: Check against industry cliches
 
-Before finalizing concepts, reject any that match common overused motifs:
+Compare these common motifs when distinctiveness matters; a user-selected motif remains part of the brief:
 
 | Industry | Overused motifs to avoid |
 |---|---|
@@ -245,11 +245,11 @@ Before finalizing concepts, reject any that match common overused motifs:
 | Creative/design | Pencils, color wheels, paintbrushes, eye symbols |
 | Environment/green | Leaves, globes, trees, recycling arrows |
 
-If a concept matches this list, push it to level 2-3 abstraction or replace it entirely.
+If a motif feels generic, explore a more specific treatment within the brief.
 
 ### Step 4: Guarantee category diversity
 
-Every logo set of 5+ options must include concepts from different *structural categories*, not just different metaphors rendered the same way:
+When the user requests alternatives, vary structure within the allowed scope. Possible categories include:
 
 | Category | What it means | Forces you to... |
 |---|---|---|
@@ -259,7 +259,7 @@ Every logo set of 5+ options must include concepts from different *structural ca
 | **Letterform + metaphor** | A letter that doubles as a visual concept | Find where typography and meaning intersect |
 | **Negative space / dual-read** | Two meanings coexist in one mark (FedEx arrow style) | Think about figure-ground relationships |
 
-Include at least 3 of these 5 categories. If all your concepts are symbolic icons, the set lacks structural variety regardless of how different the symbols are.
+Do not force a wordmark, letterform, or other excluded category into a symbols-only brief.
 
 ### Step 5: SCAMPER one concept to push it further
 
@@ -353,7 +353,7 @@ Sketch this budget on paper first. Adjusting after the fact is tedious because m
 
 ## Dark Mode Variants for Colored Logos
 
-Logos with hardcoded colors need separate dark-mode SVG files. `currentColor` logos can use CSS `filter: brightness(0) invert(1)` but colored logos cannot.
+Check contrast on the requested backgrounds. Create a separate dark asset only when required and the same asset cannot meet the brief; hardcoded color alone does not require another file.
 
 ### Color mapping for dark variants
 
@@ -385,17 +385,11 @@ A popular technique for colored logos: each node has a dark outer ring with a co
 <circle cx="12" cy="8" r="2" fill="#38BDF8" />   <!-- same fill -->
 ```
 
-## Logo File Checklist
+## Logo acceptance
 
-Before shipping a logo SVG:
-
-- [ ] Works at 16px (favicon), 32px, 64px, and 200px+
-- [ ] Works in monochrome (single color)
-- [ ] Works on both light and dark backgrounds (use `currentColor` or provide dark variants for colored logos)
-- [ ] Dark variants created for any logo with hardcoded colors (see dark mode section above)
-- [ ] No content clipping at viewBox edges (check all coordinates are within bounds)
-- [ ] No embedded fonts (text converted to paths)
-- [ ] No editor metadata or hidden layers
-- [ ] `viewBox` is tight to the artwork (no excess whitespace)
-- [ ] `xmlns` attribute present
-- [ ] File is optimized (see optimization reference)
+Verify the requested sizes, backgrounds, composition, and delivery format.
+Check clipping, intentional whitespace, valid SVG structure, references, and
+rendering. Add monochrome or dark variants only when required by the brief.
+Use `svg-basics.md` and `accessibility-and-pitfalls.md` for structure and semantics;
+use `optimization.md` when optimization is needed. Do not expand a single asset
+request into a full brand package.
