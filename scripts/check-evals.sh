@@ -8,9 +8,20 @@ for skill_file in skills/*/SKILL.md; do
   skill_dir="${skill_file%/SKILL.md}"
   skill_name="${skill_dir#skills/}"
   file="$skill_dir/evals/evals.json"
+  external_file="evals/$skill_name/evals.json"
+
+  if [[ -f "$file" && -f "$external_file" ]]; then
+    printf 'Duplicate eval files: %s and %s\n' "$file" "$external_file" >&2
+    status=1
+    continue
+  fi
+
+  if [[ -f "$external_file" ]]; then
+    file="$external_file"
+  fi
 
   if [[ ! -f "$file" ]]; then
-    printf 'Missing eval file: %s\n' "$file" >&2
+    printf 'Missing eval file: %s or %s\n' "$file" "$external_file" >&2
     status=1
     continue
   fi

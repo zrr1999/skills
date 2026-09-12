@@ -59,5 +59,5 @@
 - `pilot` 现为统一项目工作流与软件设计入口：内建需求澄清、简化的软件设计判断、按依赖组织的 brief 编排、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`get-api-docs`；非平凡经验沉淀迁移到 pi-spark 的 `spark-learnings` 工具链。
 - `tech-preferences` 同时承载选型基线与 Python 工具链落地（原独立 `modern-python` 已合入）。
 - `git-workstreams` 由 `git-worktrees` 更名并扩展而来：规范化仓库与创建 PR 的请求默认允许按需启用 worktree，其他情况才是显式 opt-in；启用后独立任务使用独立 worktree，同一依赖 review stack 在一个 owning worktree 内形成线性 branch chain。它拥有 workstream 拓扑、授权、PR 模板、fallback 和停止条件，并直接从本机 help 驱动可选 `gh stack` CLI；外部同名 skill 不再是 workflow 依赖。创建/发布阶段若 GitHub 明确不支持、仓库不在 GitHub 或用户明确退出，可回退普通 chained PR；official stack landing 不回退逐 PR merge。PR 创建必须使用仓库模板；PR follow-up 负责冲突、范围内 CI、及时 commit/push 和重新检查。
-- 各 skill 的评测用例在 `skills/<skill-name>/evals/evals.json`。
+- 各 skill 的评测用例可放在 `skills/<skill-name>/evals/evals.json` 或仓库级 `evals/<skill-name>/evals.json`；同一 skill 只保留一处，避免两份答案漂移。
 - `zellij` 以能力与边界为主：精确命令从当前安装版本的 `zellij --help` 和子命令 help 获取，不维护易过期的 flags 清单。
