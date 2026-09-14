@@ -35,7 +35,7 @@
 | `zellij` | 组织、恢复、观察或分享持久终端工作区 |
 | `ssh-fleet` | 管理私有 SSH 设备事实源、host key 信任和生成配置 |
 | `writing-style` | 起草、改写和审阅六个骨头的技术博客；其他文体仅在明确要求个人文风时应用 |
-| `typed-structures` | 用 ADT、law、def、proof 与 `:>` 编写或审阅结构语言程序，并用 Ohm 做句法识别 |
+| `typed-structures` | 用 ADT、`def fn`、`def law`、`method`、Self 与 `<:` 编写或审阅 Spore Notation，并用 Ohm 做句法识别 |
 
 ### 选择规则
 

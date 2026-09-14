@@ -1,655 +1,115 @@
-# 例子
+# 示例
 
-下列例子按同一模块的依赖顺序排列；后文可以引用前文。合在一起应能被 [grammar.ohm](grammar.ohm) 识别。单节不是封闭编译单元。
+按以下顺序共享背景，所有 spore 代码块拼接为一个识别单元。后文可以引用前文；单节不一定独立。证明项尚未经过类型检查器或证明内核核验。
 
-`proof` 是写出来的证明项，不是类型检查器给出的核验。
+| 顺序 | 内容 |
+| --- | --- |
+| 01 | 定义、方法与 curry / uncurry |
+| 02 | 往返、幂等与子类型复用 |
+| 03 | 精化与谓词弱化 |
+| 04 | Functor → Applicative → Selective → Monad：Option |
+| 05 | Sequence → LinkedList / VectorLayout |
+| 06 | Mapping、有限枚举与更新：BoolMap |
+| 07 | Fin / Vec 与 Expr |
 
-## 01 Option / Either：普通 ADT
+共同背景：Type、Prop、Int、Nat、Bool、Str、元组及其基本运算；Nat 按 Zero / Succ 归纳定义，数字是简写，加法与比较按构造器归约。采用纯全函数与结构递减递归、函数外延性及 SKILL.md 列出的证明组合子。`def law` 给出证明项，`law` 声明待补全的证据字段。
 
-`type` 含 `case` 时是选择。构造器为 `Type.Case`。
+## 01 定义、方法与 curry / uncurry
 
-```
-/// 一个可能不存在的值。
-type Option[A] {
-    case None;
-    case Some(value: A);
+区分实例字段、固定的类型预定义和绑定方法。Self 是当前完整类型。
+
+```spore
+// 定义、成员选择与函数应用。共享背景见本页开头；这些文件是待机器核验的设计稿。
+
+type Counter {
+    value: Int;
+    step: Int = 1;
+
+    def fn make(value: Int) -> Self {
+        Self { value = value }
+    }
+
+    method next() -> Self {
+        Self.make(self.value + step)
+    }
 }
 
-/// 两种可能之一，不预设成功或失败的含义。
+counter: Counter = Counter.make(41);
+advance: () -> Counter = counter.next;
+
+def law bound_method() -> (advance().value ~= 42) {
+    refl
+}
+
+type Mapper[A, B] {
+    fn transform(value: A) -> B;
+
+    method apply(value: A) -> B {
+        self.transform(value)
+    }
+}
+
+increment: Mapper[Int, Int] = Mapper {
+    transform = (value: Int) => value + 1
+};
+
+def law function_field() -> (increment.transform(41) ~= increment.apply(41)) {
+    refl
+}
+
+def law member_selection() -> ((increment.apply)(41) ~= increment.apply(41)) {
+    refl
+}
+
 type Either[A, B] {
     case Left(value: A);
     case Right(value: B);
-}
 
-let present: Option[Int] = Option.Some(3);
-let absent: Option[Int] = Option.None;
-let alternative: Either[Int, Str] = Either.Right("ready");
-```
-
-## 02 带 law 的记录：没有 concept，也不引入 trait
-
-没有 `case` 的 `type` 是记录。`fn` / `law` 待提供；`def` / `proof` 固有。`fn pure[A](value: A) -> F[A];` 与 `pure[A]: A -> F[A];` 同一字段，主例只保留前者。
-
-```
-/// 把普通函数提升到 F 上，并保持恒等与复合。
-type Functor[F: Type -> Type] {
-    /// 需要由结构构造或子类型补全提供。
-    fn map[A, B](
-        value: F[A],
-        transform: A -> B
-    ) -> F[B];
-
-    /// 固定派生定义，不是可覆盖的默认方法。
-    def replace[A, B](
-        value: F[A],
-        replacement: B
-    ) -> F[B] {
-        map(value, _ => replacement)
-    }
-
-    /// 恒等映射不改变原值。
-    law identity[A](value: F[A]) -> (
-        map(value, x => x) ~= value
-    );
-
-    /// 连续映射，与先复合函数再映射一致。
-    law composition[A, B, C](
-        value: F[A],
-        first: A -> B,
-        second: B -> C
-    ) -> (
-        map(map(value, first), second)
-        ~=
-        map(value, x => second(first(x)))
-    );
-}
-
-/// 提升纯值，并组合预先给出的结构。
-/// 不要求组合可交换，也不规定必须并行执行。
-type Applicative[F: Type -> Type] {
-    fn pure[A](value: A) -> F[A];
-
-    fn ap[A, B](
-        function: F[A -> B],
-        argument: F[A]
-    ) -> F[B];
-
-    /// 用普通二元函数组合两个结构。
-    def map2[A, B, C](
-        left: F[A],
-        right: F[B],
-        combine: (A, B) -> C
-    ) -> F[C] {
-        ap(
-            ap(pure(a => b => combine(a, b)), left),
-            right
-        )
-    }
-
-    /// 丢弃左侧结果值，不擅自删除左侧的结构或效果。
-    def keep_right[A, B](left: F[A], right: F[B]) -> F[B] {
-        map2(left, right, (_, value) => value)
-    }
-
-    law ap_identity[A](value: F[A]) -> (
-        ap(pure(x => x), value) ~= value
-    );
-
-    law ap_homomorphism[A, B](
-        transform: A -> B,
-        value: A
-    ) -> (
-        ap(pure(transform), pure(value))
-        ~=
-        pure(transform(value))
-    );
-
-    law ap_interchange[A, B](
-        function: F[A -> B],
-        value: A
-    ) -> (
-        ap(function, pure(value))
-        ~=
-        ap(pure(f => f(value)), function)
-    );
-
-    law ap_composition[A, B, C](
-        outer: F[B -> C],
-        inner: F[A -> B],
-        value: F[A]
-    ) -> (
-        ap(
-            ap(
-                ap(pure(f => g => x => f(g(x))), outer),
-                inner
-            ),
-            value
-        )
-        ~=
-        ap(outer, ap(inner, value))
-    );
-}
-
-/// 允许后续结构依赖前一步得到的值。
-type Monad[F: Type -> Type] {
-    fn pure[A](value: A) -> F[A];
-
-    fn bind[A, B](
-        value: F[A],
-        next: A -> F[B]
-    ) -> F[B];
-
-    /// 固有派生定义：依赖本结构的 bind，但不允许独立重选 join。
-    def join[A](nested: F[F[A]]) -> F[A] {
-        bind(nested, inner => inner)
-    }
-
-    /// 从纯值开始再接续，等同于直接接续。
-    law left_identity[A, B](
-        value: A,
-        next: A -> F[B]
-    ) -> (
-        bind(pure(value), next) ~= next(value)
-    );
-
-    /// 原样取出并放回，不改变原结构。
-    law right_identity[A](value: F[A]) -> (
-        bind(value, x => pure(x)) ~= value
-    );
-
-    /// 改变接续的分组方式，不改变含义。
-    law associativity[A, B, C](
-        value: F[A],
-        first: A -> F[B],
-        second: B -> F[C]
-    ) -> (
-        bind(bind(value, first), second)
-        ~=
-        bind(value, x => bind(first(x), second))
-    );
-
-    /// 由定义直接得到的固定证明，不是新的待提供字段。
-    proof join_expansion[A](nested: F[F[A]]) -> (
-        join(nested) ~= bind(nested, inner => inner)
-    ) {
-        refl
-    }
-}
-```
-
-## 03 子类型：`Monad :> Applicative :> Functor`
-
-这两条关系连接结构类型，不把 `Option` 本身当成 `Monad[Option]`。目标定律也必须有证据。较长证明在第 14 节，这里直接调用。
-
-```
-forall[F: Type -> Type] {
-    /// 通过 pure、ap 补出 map，并满足 Functor 要求。
-    Applicative[F] :> Functor[F] {
-        def map[A, B](value: F[A], transform: A -> B) -> F[B] {
-            self.ap(self.pure(transform), value)
-        }
-
-        proof identity(value) {
-            self.ap_identity(value)
-        }
-
-        proof composition(value, first, second) {
-            applicative_map_composition(self, value, first, second)
-        }
-    }
-
-    /// 通过 bind 构造应用结构；操作与证明都来自同一份源结构。
-    Monad[F] :> Applicative[F] {
-        def pure[A](value: A) -> F[A] {
-            self.pure(value)
-        }
-
-        def ap[A, B](
-            function: F[A -> B],
-            argument: F[A]
-        ) -> F[B] {
-            self.bind(function, f =>
-                self.bind(argument, x => self.pure(f(x)))
-            )
-        }
-
-        proof ap_identity(value) {
-            trans(
-                self.left_identity(
-                    x => x,
-                    f => self.bind(value, x => self.pure(f(x)))
-                ),
-                self.right_identity(value)
-            )
-        }
-
-        proof ap_homomorphism(transform, value) {
-            trans(
-                self.left_identity(
-                    transform,
-                    f => self.bind(self.pure(value), x => self.pure(f(x)))
-                ),
-                self.left_identity(value, x => self.pure(transform(x)))
-            )
-        }
-
-        proof ap_interchange(function, value) {
-            monad_ap_interchange(self, function, value)
-        }
-
-        proof ap_composition(outer, inner, value) {
-            monad_ap_composition(self, outer, inner, value)
+    def fn fold[C](on_left: A -> C, on_right: B -> C) -> (Self -> C) {
+        choice => match choice {
+            Self.Left(value) => on_left(value),
+            Self.Right(value) => on_right(value)
         }
     }
 }
-```
 
-## 04 Option 上的 Monad 结构值
+def fn identity[A](value: A) -> A {
+    value
+}
 
-`Monad[Option]` 来自 `Monad` 的唯一外层参数 `F = Option`。它是操作及证据的类型；`Option[Int]` 是可选整数，两者不同。不使用 `impl`，不登记全局实例。
+def fn curry[A, B, C](function: (A, B) -> C) -> (A -> B -> C) {
+    a => b => function(a, b)
+}
 
-```
-let option_monad: Monad[Option] = {
-    def pure[A](value: A) -> Option[A] {
-        Option.Some(value)
-    }
+def fn uncurry[A, B, C](function: A -> B -> C) -> ((A, B) -> C) {
+    (a, b) => function(a)(b)
+}
 
-    def bind[A, B](
-        value: Option[A],
-        next: A -> Option[B]
-    ) -> Option[B] {
-        match value {
-            Option.None => Option.None,
-            Option.Some(x) => next(x)
-        }
-    }
+def law curry_uncurry[A, B, C](function: A -> B -> C) -> (
+    curry(uncurry(function)) ~= function
+) {
+    funext(a => funext(b => refl))
+}
 
-    proof left_identity(value, next) {
-        refl
-    }
-
-    proof right_identity(value) {
-        match value {
-            Option.None => refl,
-            Option.Some(x) => refl
-        }
-    }
-
-    proof associativity(value, first, second) {
-        match value {
-            Option.None => refl,
-            Option.Some(x) => refl
-        }
-    }
-};
-
-// 这些是把已有值按已声明的父类型使用，不是从空上下文寻找实例。
-let option_applicative: Applicative[Option] = option_monad;
-let option_functor: Functor[Option] = option_applicative;
-
-proof option_map_example() -> (
-    option_functor.map(Option.Some(2), x => x + 1)
-    ~=
-    Option.Some(3)
+def law uncurry_curry[A, B, C](function: (A, B) -> C, a: A, b: B) -> (
+    uncurry(curry(function))(a, b) ~= function(a, b)
 ) {
     refl
 }
 
-proof option_replace_example() -> (
-    option_functor.replace(Option.Some(2), "done")
-    ~=
-    Option.Some("done")
-) {
-    refl
-}
-
-proof option_map2_example() -> (
-    option_applicative.map2(Option.Some(2), Option.Some(3), (a, b) => a + b)
-    ~=
-    Option.Some(5)
-) {
-    refl
-}
-
-proof option_join_example() -> (
-    option_monad.join(Option.Some(Option.Some(2)))
-    ~=
-    Option.Some(2)
-) {
-    refl
-}
-
-/// 从结构中取得 law 成员，就是取得对应的参数化证明。
-proof option_identity_example() -> (
-    option_functor.map(Option.Some(2), x => x) ~= Option.Some(2)
-) {
-    option_functor.identity(Option.Some(2))
-}
+// 应拒绝：Counter { value = 1, step = 2 }；预定义不是可覆盖的字段默认值。
+// 应拒绝：counter.step；普通类型预定义通过 Counter.step 访问。
+// 应拒绝：无 body 的 method、同一实例域的 transform 字段与同名 method。
+// 类型域的 map 与实例域的 map 可以同名，见 04-computation.sp。
+// Self 只表示当前完整类型；Option[A] 的作用域里 Self[A] / Self[B] 都应拒绝。
 ```
 
-## 05 公共字段 + case
+## 02 往返、幂等与子类型复用
 
-构造时同时提供公共字段和分支字段。`Event :> HasId;` 是空补全：目标字段已在源结构中。数据为只读值，没有可变记录的宽度子类型规则。
+从往返定律推导幂等；带标签子类型复用返回 Self 的方法与定律。
 
-```
-/// 每种事件都有 id；额外数据取决于所选分支。
-type Event {
-    id: Int;
-
-    case Click {
-        x: Int;
-        y: Int;
-    }
-
-    case Key {
-        code: Str;
-    }
-
-    /// 公共固定定义；分支字段只在对应匹配中可见。
-    def label() -> Str {
-        match self {
-            Event.Click { ... } => "click",
-            Event.Key { ... } => "key"
-        }
-    }
-}
-
-let click: Event = Event.Click {
-    id: 1,
-    x: 10,
-    y: 20
-};
-
-let key: Event = Event.Key {
-    id: 2,
-    code: "Enter"
-};
-
-/// 只要求共同的 id 观察能力，不要求知道事件的分支。
-type HasId {
-    id: Int;
-}
-
-Event :> HasId;
-
-let identified: HasId = click;
-
-proof common_field_example() -> (
-    identified.id ~= 1
-) {
-    refl
-}
-
-/// 只有 Click 分支才产生坐标。
-def click_position(event: Event) -> Option[(Int, Int)] {
-    match event {
-        Event.Click { x, y, ... } => Option.Some((x, y)),
-        Event.Key { ... } => Option.None
-    }
-}
-```
-
-## 06 和 / 积嵌套
-
-选择可以出现在字段里，记录可以出现在分支里。两个字段是两次独立选择。构造这些值不发送网络请求，也不读写文件。
-
-```
-/// 一个地址本身有多种形态。
-type Endpoint {
-    case File {
-        path: Str;
-    }
-
-    case Network {
-        host: Str;
-        port: Int;
-    }
-}
-
-/// 同时具有一个主地址和一个可选的备用地址。
-type Route {
-    primary: Endpoint;
-    fallback: Option[Endpoint];
-}
-
-/// 公共请求标识 + 分支各自的数据；Routed 内部又包含记录 Route。
-type Delivery[A] {
-    request_id: Int;
-
-    case Direct {
-        payload: A;
-    }
-
-    case Routed {
-        route: Route;
-        payload: A;
-    }
-}
-
-let delivery: Delivery[Str] = Delivery.Routed {
-    request_id: 7,
-    route: Route {
-        primary: Endpoint.Network {
-            host: "example.invalid",
-            port: 443
-        },
-        fallback: Option.Some(Endpoint.File { path: "./pending" })
-    },
-    payload: "hello"
-};
-
-/// 两个字段是两次独立选择，不是把所有 case 混为一次选择。
-type RedundantRoute {
-    first: Endpoint;
-    second: Endpoint;
-}
-```
-
-## 07 分支中的 law
-
-普通数据与有证据的数据不是同一分支。只有匹配 `Verified` 后才取得 `matches`。
-
-```
-/// 公共数据只写一次；Verified 分支额外携带相等证据。
-type Sample[A] {
-    expected: A;
-    actual: A;
-
-    case Verified {
-        law matches() -> (actual ~= expected);
-    }
-
-    case Unchecked {
-        note: Str;
-    }
-
-    /// 固定定义对所有分支可用，不假设具有 matches 证据。
-    def value() -> A {
-        actual
-    }
-}
-
-let verified: Sample[Int] = Sample.Verified {
-    expected: 3,
-    actual: 3,
-
-    proof matches() {
-        refl
-    }
-};
-
-let unverified: Sample[Int] = Sample.Unchecked {
-    expected: 3,
-    actual: 5,
-    note: "仅记录观察；没有声称 actual 与 expected 相等。"
-};
-
-/// 只有匹配 Verified 后才取得 matches；Unchecked 不会凭空产生证明。
-def verified_value[A](sample: Sample[A]) -> Option[A] {
-    match sample {
-        Sample.Verified { actual, matches, ... } => {
-            let evidence = matches();
-            Option.Some(actual)
-        },
-        Sample.Unchecked { ... } => Option.None
-    }
-}
-```
-
-## 08 递归 ADT：List / Tree
-
-这里规定逻辑构造，不规定机器上的链表内存布局。结构归纳处理更小的尾部，再把相等性放回 `Cons`。
-
-```
-/// 有限列表；这里规定逻辑构造，不规定机器上的链表内存布局。
-type List[A] {
-    case Nil;
-    case Cons(head: A, tail: List[A]);
-}
-
-def list_map[A, B](values: List[A], transform: A -> B) -> List[B] {
-    match values {
-        List.Nil => List.Nil,
-        List.Cons(head, tail) =>
-            List.Cons(transform(head), list_map(tail, transform))
-    }
-}
-
-/// 结构归纳：递归地处理更小的尾部，再把相等性放回 Cons。
-proof list_map_identity[A](values: List[A]) -> (
-    list_map(values, x => x) ~= values
-) {
-    match values {
-        List.Nil => refl,
-        List.Cons(head, tail) =>
-            congr_arg(
-                rest => List.Cons(head, rest),
-                list_map_identity(tail)
-            )
-    }
-}
-
-/// 二叉树：分支载荷本身是左右子树和值构成的积。
-type Tree[A] {
-    case Empty;
-
-    case Node {
-        left: Tree[A];
-        value: A;
-        right: Tree[A];
-    }
-}
-
-def tree_map[A, B](tree: Tree[A], transform: A -> B) -> Tree[B] {
-    match tree {
-        Tree.Empty => Tree.Empty,
-        Tree.Node { left, value, right } => Tree.Node {
-            left: tree_map(left, transform),
-            value: transform(value),
-            right: tree_map(right, transform)
-        }
-    }
-}
-```
-
-## 09 GADT：构造器明确返回类型族的哪一部分
-
-`Expr` 的外层签名只有 `Type -> Type`，没有隐含 `Self`。`Pair` / `If` 自己绑定类型参数。分支细化返回类型，不是运行时强制转换。
-
-```
-type Expr: Type -> Type {
-    case IntLit(value: Int) -> Expr[Int];
-
-    case BoolLit(value: Bool) -> Expr[Bool];
-
-    case Add(
-        left: Expr[Int],
-        right: Expr[Int]
-    ) -> Expr[Int];
-
-    case If[A](
-        condition: Expr[Bool],
-        when_true: Expr[A],
-        when_false: Expr[A]
-    ) -> Expr[A];
-
-    case Pair[A, B](
-        left: Expr[A],
-        right: Expr[B]
-    ) -> Expr[(A, B)];
-}
-
-/// 分支细化返回类型：不是运行时强制类型转换。
-def eval[A](expression: Expr[A]) -> A {
-    match expression {
-        Expr.IntLit(value) => value,
-        Expr.BoolLit(value) => value,
-        Expr.Add(left, right) => eval(left) + eval(right),
-        Expr.If(condition, when_true, when_false) =>
-            if eval(condition) {
-                eval(when_true)
-            } else {
-                eval(when_false)
-            },
-        Expr.Pair(left, right) => (eval(left), eval(right))
-    }
-}
-
-let expression: Expr[(Int, Bool)] = Expr.Pair(
-    Expr.Add(Expr.IntLit(1), Expr.IntLit(2)),
-    Expr.BoolLit(true)
-);
-
-proof evaluation_example() -> (
-    eval(expression) ~= (3, true)
-) {
-    refl
-}
-```
-
-## 10 值索引：长度写在类型里
-
-`head` 的参数类型已经说明非空；`Nil` 无法满足该索引。
-
-```
-/// 显式自然数构造，避免本例依赖复杂算术归一化。
-type Nat {
-    case Zero;
-    case Succ(previous: Nat);
-}
-
-type Vec: Type -> Nat -> Type {
-    case Nil[A] -> Vec[A, Nat.Zero];
-
-    case Cons[A, n: Nat](
-        head: A,
-        tail: Vec[A, n]
-    ) -> Vec[A, Nat.Succ(n)];
-}
-
-/// 参数类型已经说明非空；Nil 无法满足该索引。
-def head[A, n: Nat](values: Vec[A, Nat.Succ(n)]) -> A {
-    match values {
-        Vec.Cons(first, _) => first
-    }
-}
-
-let two_values: Vec[Int, Nat.Succ(Nat.Succ(Nat.Zero))] =
-    Vec.Cons(10, Vec.Cons(20, Vec.Nil));
-
-proof nonempty_head_example() -> (
-    head(two_values) ~= 10
-) {
-    refl
-}
-```
-
-## 11 多参数子类型：`RoundTrip[A, B] :> Idempotent[B]`
-
-`B` 进入目标参数；`A` 仍留在源结构里，没有自动重复填参。`twice` 固定，不属于可填写字段。
-
-```
-/// 一份幂等操作；twice 固定，不属于可填写字段。
+```spore
+// 从幂等投影与往返定律出发，为编码/解码构造规范化操作。
 type Idempotent[A] {
     fn run(value: A) -> A;
 
@@ -657,12 +117,42 @@ type Idempotent[A] {
         run(run(value)) ~= run(value)
     );
 
-    def twice(value: A) -> A {
-        run(run(value))
+    method twice(value: A) -> A {
+        self.run(self.run(value))
+    }
+
+    method unchanged() -> Self {
+        self
+    }
+
+    def law unchanged_identity(value: Self) -> (value.unchanged() ~= value) {
+        refl
     }
 }
 
-/// A 编码到 B 后能够恢复 A；不要求任意 B 都由某个 A 编码得到。
+// 只增加数据要求；两个方法和 unchanged_identity 都直接复用父定义。
+type TaggedIdempotent[A] <: Idempotent[A] {
+    tag: Str;
+}
+
+tagged_identity: TaggedIdempotent[Int] = TaggedIdempotent {
+    run = value => value,
+    idempotent = value => refl,
+    tag = "identity"
+};
+
+retained: TaggedIdempotent[Int] = tagged_identity.unchanged();
+
+def law inherited_self() -> (retained ~= tagged_identity) {
+    TaggedIdempotent[Int].unchanged_identity(tagged_identity)
+}
+
+identity_view: Idempotent[Int] = tagged_identity;
+retained_view: Idempotent[Int] = identity_view.unchanged();
+
+// 视图按 Idempotent[Int] 实例化 Self，不根据隐藏的源值动态恢复子类型。
+// 应拒绝：wrong: TaggedIdempotent[Int] = identity_view.unchanged();
+
 type RoundTrip[A, B] {
     fn encode(value: A) -> B;
     fn decode(value: B) -> A;
@@ -673,322 +163,1011 @@ type RoundTrip[A, B] {
 }
 
 forall[A, B] {
-    /// 从 A/B 往返结构获得 B 上的幂等归一化能力。
-    RoundTrip[A, B] :> Idempotent[B] {
-        def run(value: B) -> B {
-            self.encode(self.decode(value))
-        }
-
-        proof idempotent(value) {
-            congr_arg(
-                self.encode,
-                self.round_trip(self.decode(value))
-            )
-        }
+    // 关系补全以源值 self 为参数，目标的 run 保持 encode/decode 观察。
+    RoundTrip[A, B] <: Idempotent[B] {
+        run = (value: B) => self.encode(self.decode(value)),
+        idempotent = value =>
+            congr_arg(self.encode, self.round_trip(self.decode(value)))
     }
 }
 
-/// 编码附上标准标签 0；解码只读取 Bool。
-let tagged_bool: RoundTrip[Bool, (Bool, Int)] = {
-    def encode(value: Bool) -> (Bool, Int) {
-        (value, 0)
-    }
-
-    def decode(value: (Bool, Int)) -> Bool {
-        value.0
-    }
-
-    proof round_trip(value) {
-        refl
-    }
+tagged_bool: RoundTrip[Bool, (Bool, Int)] = RoundTrip {
+    encode = (value: Bool) => (value, 0),
+    decode = (pair: (Bool, Int)) => pair.0,
+    round_trip = value => refl
 };
 
-let normalize_tag: Idempotent[(Bool, Int)] = tagged_bool;
+// 此处插入规范视图；只得到 Idempotent 接口，不改写 tagged_bool。
+normalize_tag: Idempotent[(Bool, Int)] = tagged_bool;
 
-proof normalization_example() -> (
+def law normalized_tag() -> (
     normalize_tag.run((true, 42)) ~= (true, 0)
 ) {
     refl
 }
 
-proof normalization_is_idempotent(value: (Bool, Int)) -> (
+def law normalize_twice(value: (Bool, Int)) -> (
     normalize_tag.twice(value) ~= normalize_tag.run(value)
 ) {
     normalize_tag.idempotent(value)
 }
+
+// 重复证明该关系不能再选择另一套 run，也不把目标擅自改成 Idempotent[A]。
+// 应拒绝：在补全块里重新提供 twice，或把一个相等命题直接当作证明体。
 ```
 
-## 12 抽象依赖：不必展开底层实现
+## 03 精化与谓词弱化
 
-外层和内层只需满足 `Functor`。两个 `Monad[Option]` 参数在期望 `Functor[Option]` 的位置通过子类型链使用。
+补全基础值与证据；弱化条件时保留原值。
 
-```
-/// 只声明处理能力，不要求此处知道算法或内部表示。
-type Stage[A, B] {
-    fn run(value: A) -> B;
+```spore
+// 精化是基础值与谓词证据；谓词弱化应保留基础值。
+type Refined[A, P: A -> Prop] {
+    value: A;
+    law valid() -> (P(value));
 }
 
-/// A -> B -> C 的组合。共享的 B 显式写在类型参数中。
-type Pipeline[A, B, C] {
-    first: Stage[A, B];
-    second: Stage[B, C];
+// when 的 self 绑定基础值；布尔条件展开为相等命题。
+type Positive = Int when self > 0;
 
-    def run(value: A) -> C {
-        second.run(first.run(value))
+three: Positive = Positive {
+    value = 3,
+    valid = () => refl
+};
+
+type PredicateImplication[A, P: A -> Prop, Q: A -> Prop] {
+    law entails(value: A, evidence: P(value)) -> (Q(value));
+}
+
+def fn weaken[A, P: A -> Prop, Q: A -> Prop](
+    implication: PredicateImplication[A, P, Q],
+    refined: Refined[A, P]
+) -> Refined[A, Q] {
+    Refined[A, Q] {
+        value = refined.value,
+        valid = () => implication.entails(refined.value, refined.valid())
     }
 }
 
-/// 外层和内层只需满足 Functor；不要求展开它们的内部结构。
-def map_nested[
-    F: Type -> Type,
-    G: Type -> Type,
-    A,
-    B
-](
-    outer: Functor[F],
-    inner: Functor[G],
-    value: F[G[A]],
-    transform: A -> B
-) -> F[G[B]] {
-    outer.map(
-        value,
-        nested => inner.map(nested, transform)
-    )
-}
-
-let nested_result: Option[Option[Int]] =
-    map_nested[Option, Option, Int, Int](
-        option_monad,
-        option_monad,
-        Option.Some(Option.Some(2)),
-        x => x + 1
-    );
-
-proof nested_result_example() -> (
-    nested_result ~= Option.Some(Option.Some(3))
+def law weakening_preserves_value[A, P: A -> Prop, Q: A -> Prop](
+    implication: PredicateImplication[A, P, Q],
+    refined: Refined[A, P]
+) -> (
+    weaken(implication, refined).value ~= refined.value
 ) {
     refl
 }
+
+// weaken 是显式函数，尚未据此登记全局泛型子类型规则。
+// 任意 Int 不能直接当作 Positive；-3 取绝对值得到 3 也不是保持原值的精化投影。
+// 应拒绝：Positive { value = 0, valid = () => refl }。
+// PositiveEven -> Positive -> Int 与经 Even 的路径可以共存的前提，
+// 是两条路径最终都保留同一个基础整数，而非按导入顺序选择解释。
 ```
 
-## 13 应当拒绝的反例
+## 04 Functor → Applicative → Selective → Monad：Option
 
-以下**不是**模块里的声明。有的能被文法识别，仍应按语义拒绝。
+逐层定义具体操作并给出基本定律与相容性证明。四份抽象契约的源码声明仍未确定；这些具体定义不等于已经登记 Option <: Monad。
 
-角色错误：`fn join(...) { ... }`。`fn` 没有定义体；已有定义必须使用 `def`。
+```spore
+// 从 Functor → Applicative → Selective → Monad 的契约逐层构造 Option。
+// 每层先给操作，再给对任意参数成立的 law；具体计算放在文件末尾。
+// 抽象契约的声明与类型族实例化规则见 SKILL.md 的未定部分。
 
-覆盖错误：在 `Monad` 记录构造中重新提供 `def join(...) { ... }`。`join` 已由类型固定定义，不属于构造时可以填写的字段。
+// Selective 结合律需要同时保存中间上下文与最初的输入。
+// 用一个单参数记录，避免把单个二元组参数混同于两个函数参数。
+type SelectInput[C, A] {
+    context: C;
+    value: A;
+}
 
-证据错误：`proof identity(value) { map(value, x => x) ~= value }`。这里只返回了命题，没有提供该命题的证明。
+def fn select_lift_right[A, B, C](
+    choice: Either[A, B]
+) -> Either[A, Either[SelectInput[C, A], B]] {
+    match choice {
+        Either.Left(value) => Either.Left(value),
+        Either.Right(value) => Either.Right(Either.Right(value))
+    }
+}
 
-分支错误：直接读取 `event.x`。`Event` 的公共接口没有 `x`；应先匹配 `Click`，或明确提供一个可选坐标操作。
+def fn select_route[A, B, C](
+    choice: Either[C, A -> B]
+) -> (A -> Either[SelectInput[C, A], B]) {
+    value => match choice {
+        Either.Left(context) => Either.Left(SelectInput { context = context, value = value }),
+        Either.Right(function) => Either.Right(function(value))
+    }
+}
 
-字段错误：`Event.Key { id: 1, x: 0, y: 0 }`。`Key` 需要 `code`，不接受 `Click` 的专有字段。
+def fn select_apply_pair[A, B, C](function: C -> A -> B) -> (SelectInput[C, A] -> B) {
+    input => function(input.context)(input.value)
+}
 
-同名覆盖：`case` 内重声明已有公共字段 `id`。不静默遮蔽公共字段；重名必须报告，不能按最后一个声明解释。
+type Option[A] {
+    case None;
+    case Some(value: A);
 
-虚假证明：`Sample.Verified { expected: 1, actual: 2, proof matches() { refl } }`。`1` 和 `2` 不会通过定义展开变为相同项。
+    // 此处 Self = Option[A]；改变参数后的 Option[B] 保留显式类型。
+    def fn map[B](function: A -> B) -> (Self -> Option[B]) {
+        value => match value {
+            Self.None => Option[B].None,
+            Self.Some(item) => Option[B].Some(function(item))
+        }
+    }
 
-GADT 错误：`let bad: Expr[Bool] = Expr.IntLit(1);`。`IntLit` 的返回类型是 `Expr[Int]`。
+    method map[B](function: A -> B) -> Option[B] {
+        Self.map(function)(self)
+    }
 
-索引错误：`head(Vec.Nil)`。空向量的索引无法成为 `Nat.Succ(n)`。
+    method is_some() -> Bool {
+        match self {
+            Option.None => false,
+            Option.Some(_) => true
+        }
+    }
 
-参数错误：把 `RoundTrip[A, B]` 的子类型目标擅自改为 `Idempotent[A]`。现有 `run` 定义接收 `B`、返回 `B`；必须另作明确且有效的构造，不能猜测参数。
+    def law map_identity() -> (
+        Self.map(identity[A]) ~= identity[Self]
+    ) {
+        funext(value => match value {
+            Option.None => refl,
+            Option.Some(_) => refl
+        })
+    }
 
-层次错误：`Option :> Monad[Option]`。`Option` 是类型构造器；`Monad[Option]` 是操作与证明构成的结构类型。没有授权从类型名字或 `Option[A]` 数据值凭空生成这份结构。
+    def law map_composition[B, C](first: A -> B, second: B -> C) -> (
+        Self.map(value => second(first(value)))
+        ~= (value => Option[B].map(second)(Self.map(first)(value)))
+    ) {
+        funext(value => match value {
+            Option.None => refl,
+            Option.Some(_) => refl
+        })
+    }
 
-路径错误：同一源值到同一目标类型存在两个含义不同的隐式补全。必须暴露歧义或证明路径一致；不得按声明顺序悄悄选择。
+    def law map_binding[B](value: Self, function: A -> B) -> (
+        value.map(function) ~= Self.map(function)(value)
+    ) {
+        refl
+    }
 
-证据失效：换掉结构的函数字段，直接复制原 `law` 的证明。证明类型依赖具体字段；只有仍然匹配或有明确转移证明时才可复用。
+    // Applicative：pure 嵌入值，ap 组合两个已给定的 Option；不依赖 bind。
+    def fn pure(value: A) -> Self {
+        Self.Some(value)
+    }
 
-## 14 泛型子类型证明展开
+    def fn ap[B](function: Option[A -> B], value: Self) -> Option[B] {
+        match function {
+            Option.None => Option.None,
+            Option.Some(f) => Self.map(f)(value)
+        }
+    }
 
-日常阅读可以跳过，但证据不能凭空省略。只使用 `SKILL.md` 中的相等规则，以及源结构真实提供的 `law` 成员。没有把要证明的目标 `law` 当作前提，也没有新增 `law` 充当全局公理。
+    def fn map2[B, C](
+        left: Self, right: Option[B], combine: (A, B) -> C
+    ) -> Option[C] {
+        Option[B].ap(left.map(a => b => combine(a, b)), right)
+    }
 
-```
-/// 标准映射构造满足复合要求。
-proof applicative_map_composition[
-    F: Type -> Type,
-    A,
-    B,
-    C
-](
-    app: Applicative[F],
-    value: F[A],
-    first: A -> B,
-    second: B -> C
-) -> (
-    app.ap(app.pure(second), app.ap(app.pure(first), value))
-    ~=
-    app.ap(app.pure(x => second(first(x))), value)
-) {
-    let compose = f => g => x => f(g(x));
+    def fn keep_right[B](left: Self, right: Option[B]) -> Option[B] {
+        Option[B].ap(left.map(_ => identity[B]), right)
+    }
 
-    trans(
-        symm(app.ap_composition(app.pure(second), app.pure(first), value)),
-        trans(
-            congr_arg(
-                lifted => app.ap(app.ap(lifted, app.pure(first)), value),
-                app.ap_homomorphism(compose, second)
+    def law map_from_ap[B](function: A -> B, value: Self) -> (
+        value.map(function) ~= Self.ap(Option[A -> B].pure(function), value)
+    ) {
+        refl
+    }
+
+    def law ap_identity(value: Self) -> (
+        Self.ap(Option[A -> A].pure(identity[A]), value) ~= value
+    ) {
+        match value {
+            Option.None => refl,
+            Option.Some(_) => refl
+        }
+    }
+
+    def law ap_homomorphism[B](function: A -> B, value: A) -> (
+        Self.ap(Option[A -> B].pure(function), Self.pure(value))
+        ~= Option[B].pure(function(value))
+    ) {
+        refl
+    }
+
+    def law ap_interchange[B](function: Option[A -> B], value: A) -> (
+        Self.ap(function, Self.pure(value))
+        ~= Option[A -> B].ap(
+            Option[(A -> B) -> B].pure(f => f(value)), function
+        )
+    ) {
+        match function {
+            Option.None => refl,
+            Option.Some(_) => refl
+        }
+    }
+
+    // 用 map 写组合律；map_from_ap 已证明它对应 ap(pure(compose), ...)。
+    def law ap_composition[B, C](
+        outer: Option[B -> C], inner: Option[A -> B], value: Self
+    ) -> (
+        Self.ap(
+            Option[A -> B].ap(outer.map(f => g => a => f(g(a))), inner),
+            value
+        )
+        ~= Option[B].ap(outer, Self.ap(inner, value))
+    ) {
+        match outer {
+            Option.None => refl,
+            Option.Some(_) => match inner {
+                Option.None => refl,
+                Option.Some(_) => match value {
+                    Option.None => refl,
+                    Option.Some(_) => refl
+                }
+            }
+        }
+    }
+
+    // Selective：Left 必须使用已给定 handler；Right 已携带最终结果。
+    def fn select[B](choice: Option[Either[A, B]], handler: Option[A -> B]) -> Option[B] {
+        match choice {
+            Option.None => Option.None,
+            Option.Some(result) => match result {
+                Either.Left(value) => handler.map(f => f(value)),
+                Either.Right(value) => Option[B].pure(value)
+            }
+        }
+    }
+
+    def law select_identity(choice: Option[Either[A, A]]) -> (
+        Self.select(choice, Option[A -> A].pure(identity[A]))
+        ~= choice.map(Either[A, A].fold(identity[A], identity[A]))
+    ) {
+        match choice {
+            Option.None => refl,
+            Option.Some(result) => match result {
+                Either.Left(_) => refl,
+                Either.Right(_) => refl
+            }
+        }
+    }
+
+    def law select_distributivity[B](
+        choice: Either[A, B], first: Option[A -> B], second: Option[A -> B]
+    ) -> (
+        Self.select(
+            Option[Either[A, B]].pure(choice),
+            Option[A -> B].keep_right(first, second)
+        )
+        ~= Option[B].keep_right(
+            Self.select(Option[Either[A, B]].pure(choice), first),
+            Self.select(Option[Either[A, B]].pure(choice), second)
+        )
+    ) {
+        match choice {
+            Either.Right(_) => refl,
+            Either.Left(_) => match first {
+                Option.None => refl,
+                Option.Some(_) => match second {
+                    Option.None => refl,
+                    Option.Some(_) => refl
+                }
+            }
+        }
+    }
+
+    def law select_associativity[B, C](
+        choice: Option[Either[A, B]],
+        route: Option[Either[C, A -> B]],
+        handler: Option[C -> A -> B]
+    ) -> (
+        Self.select(choice, Option[C].select(route, handler))
+        ~= Option[SelectInput[C, A]].select(
+            Self.select(
+                choice.map(select_lift_right[A, B, C]),
+                route.map(select_route[A, B, C])
             ),
-            congr_arg(
-                lifted => app.ap(lifted, value),
-                app.ap_homomorphism(compose(second), first)
-            )
+            handler.map(select_apply_pair[A, B, C])
         )
-    )
+    ) {
+        match choice {
+            Option.None => refl,
+            Option.Some(result) => match result {
+                Either.Right(_) => refl,
+                Either.Left(_) => match route {
+                    Option.None => refl,
+                    Option.Some(next) => match next {
+                        Either.Right(_) => refl,
+                        Either.Left(_) => match handler {
+                            Option.None => refl,
+                            Option.Some(_) => refl
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Monad：next 可以根据已有结果产生后续 Option。
+    def fn bind[B](next: A -> Option[B]) -> (Self -> Option[B]) {
+        value => match value {
+            Option.None => Option.None,
+            Option.Some(item) => next(item)
+        }
+    }
+
+    method bind[B](next: A -> Option[B]) -> Option[B] {
+        Self.bind(next)(self)
+    }
+
+    def law bind_left_identity[B](value: A, next: A -> Option[B]) -> (
+        Self.pure(value).bind(next) ~= next(value)
+    ) {
+        refl
+    }
+
+    def law bind_right_identity(value: Self) -> (
+        value.bind(Self.pure) ~= value
+    ) {
+        match value {
+            Option.None => refl,
+            Option.Some(_) => refl
+        }
+    }
+
+    def law bind_associativity[B, C](
+        value: Self, first: A -> Option[B], second: B -> Option[C]
+    ) -> (
+        value.bind(first).bind(second) ~= value.bind(a => first(a).bind(second))
+    ) {
+        match value {
+            Option.None => refl,
+            Option.Some(_) => refl
+        }
+    }
+
+    def law ap_from_bind[B](function: Option[A -> B], value: Self) -> (
+        Self.ap(function, value)
+        ~= function.bind(f => value.bind(a => Option[B].pure(f(a))))
+    ) {
+        match function {
+            Option.None => refl,
+            Option.Some(_) => match value {
+                Option.None => refl,
+                Option.Some(_) => refl
+            }
+        }
+    }
+
+    def law select_from_bind[B](
+        choice: Option[Either[A, B]], handler: Option[A -> B]
+    ) -> (
+        Self.select(choice, handler)
+        ~= choice.bind(Either[A, B].fold(
+            a => handler.map(f => f(a)),
+            Option[B].pure
+        ))
+    ) {
+        match choice {
+            Option.None => refl,
+            Option.Some(result) => match result {
+                Either.Left(_) => refl,
+                Either.Right(_) => refl
+            }
+        }
+    }
 }
 
-/// 证明辅助的固定定义；不登记新的子类型路径，不给 Monad 增加可覆盖成员。
-def monadic_ap[F: Type -> Type, A, B](
-    monad: Monad[F],
-    function: F[A -> B],
-    argument: F[A]
-) -> F[B] {
-    monad.bind(function, f =>
-        monad.bind(argument, x => monad.pure(f(x)))
-    )
-}
+inc: Int -> Int = value => value + 1;
+lifted_inc: Option[Int] -> Option[Int] = Option[Int].map(inc);
+sample: Option[Int] = Option.Some(41);
+apply_to_sample: (Int -> Int) -> Option[Int] = sample.map;
 
-/// 先作一次纯映射再 bind，可以把普通转换移进后续函数。
-proof bind_after_pure_map[F: Type -> Type, A, B, C](
-    monad: Monad[F],
-    value: F[A],
-    transform: A -> B,
-    next: B -> F[C]
-) -> (
-    monad.bind(
-        monad.bind(value, x => monad.pure(transform(x))),
-        next
-    )
-    ~=
-    monad.bind(value, x => next(transform(x)))
+def law mapping_two_directions() -> (
+    (lifted_inc(sample), apply_to_sample(inc)) ~= (Option.Some(42), Option.Some(42))
 ) {
-    trans(
-        monad.associativity(value, x => monad.pure(transform(x)), next),
-        congr_arg(
-            continuation => monad.bind(value, continuation),
-            funext(x => monad.left_identity(transform(x), next))
-        )
-    )
+    refl
 }
 
-/// 单子构造的 ap 满足交换要求。
-proof monad_ap_interchange[F: Type -> Type, A, B](
-    monad: Monad[F],
-    function: F[A -> B],
-    value: A
-) -> (
-    monadic_ap(monad, function, monad.pure(value))
-    ~=
-    monadic_ap(monad, monad.pure(f => f(value)), function)
+def law applicative_pair() -> (
+    Option[Int].map2(Option.Some(20), Option.Some(22), (a, b) => a + b)
+    ~= Option.Some(42)
 ) {
-    let left_to_common = congr_arg(
-        continuation => monad.bind(function, continuation),
-        funext(f =>
-            monad.left_identity(value, x => monad.pure(f(x)))
-        )
-    );
-
-    let right_to_common = monad.left_identity(
-        f => f(value),
-        apply => monad.bind(function, f => monad.pure(apply(f)))
-    );
-
-    trans(left_to_common, symm(right_to_common))
+    refl
 }
 
-/// 单子构造的 ap 满足复合要求。
-/// 两侧分别化为：先 outer，再 inner，再 value，最后返回 f(g(x))。
-proof monad_ap_composition[F: Type -> Type, A, B, C](
-    monad: Monad[F],
-    outer: F[B -> C],
-    inner: F[A -> B],
-    value: F[A]
-) -> (
-    monadic_ap(
-        monad,
-        monadic_ap(
-            monad,
-            monadic_ap(monad, monad.pure(f => g => x => f(g(x))), outer),
-            inner
-        ),
-        value
-    )
-    ~=
-    monadic_ap(monad, outer, monadic_ap(monad, inner, value))
+def law selective_ready_result() -> (
+    Option[Int].select[Int](Option.Some(Either.Right(7)), Option.None) ~= Option.Some(7)
 ) {
-    let compose = f => g => x => f(g(x));
-    let with_inner = h => monad.bind(inner, g => monad.pure(h(g)));
-    let with_value = h => monad.bind(value, x => monad.pure(h(x)));
-
-    let left_expand = congr_arg(
-        intermediate => monad.bind(
-            monad.bind(intermediate, with_inner),
-            with_value
-        ),
-        monad.left_identity(
-            compose,
-            k => monad.bind(outer, f => monad.pure(k(f)))
-        )
-    );
-
-    let left_flatten = congr_arg(
-        intermediate => monad.bind(intermediate, with_value),
-        bind_after_pure_map(monad, outer, compose, with_inner)
-    );
-
-    let left_associate = monad.associativity(
-        outer,
-        f => with_inner(compose(f)),
-        with_value
-    );
-
-    let left_normalize = congr_arg(
-        continuation => monad.bind(outer, continuation),
-        funext(f => bind_after_pure_map(monad, inner, compose(f), with_value))
-    );
-
-    let right_associate = congr_arg(
-        continuation => monad.bind(outer, continuation),
-        funext(f =>
-            monad.associativity(
-                inner,
-                g => monad.bind(value, x => monad.pure(g(x))),
-                y => monad.pure(f(y))
-            )
-        )
-    );
-
-    let right_normalize = congr_arg(
-        continuation => monad.bind(outer, continuation),
-        funext(f =>
-            congr_arg(
-                continuation => monad.bind(inner, continuation),
-                funext(g =>
-                    bind_after_pure_map(
-                        monad,
-                        value,
-                        g,
-                        y => monad.pure(f(y))
-                    )
-                )
-            )
-        )
-    );
-
-    trans(
-        left_expand,
-        trans(
-            left_flatten,
-            trans(
-                left_associate,
-                trans(
-                    left_normalize,
-                    symm(trans(right_associate, right_normalize))
-                )
-            )
-        )
-    )
+    refl
 }
+
+def law selective_missing_handler() -> (
+    Option[Int].select[Int](Option.Some(Either.Left(7)), Option.None) ~= Option.None
+) {
+    refl
+}
+
+def law dependent_next_step() -> (
+    Option.Some(21).bind(value =>
+        if value > 0 { Option.Some(value * 2) } else { Option.None }
+    ) ~= Option.Some(42)
+) {
+    refl
+}
+
+// Option <: Monad，以及它经 Selective、Applicative 到 Functor 的契约细化，
+// 在本文件有逐项操作和相容性证明稿；尚未登记未定语法的构造器关系。
+// Right 不需要 handler 的内容，不意味着严格求值会跳过 handler 实参表达式。
 ```
+
+## 05 Sequence → LinkedList / VectorLayout
+
+用 len/get 观察与范围定律统一接口，分别检查归纳表示和缓冲区布局模型。
+
+```spore
+// Sequence 是有限密集序列的观察契约：索引恰好在 [0, len) 内时有值。
+// 从契约选择表示，再证明表示的观察满足它；依赖 04 的 Option。
+
+type Sequence[A] {
+    fn len() -> Nat;
+    fn get(index: Nat) -> Option[A];
+
+    law bounds(index: Nat) -> (get(index).is_some() ~= (index < len()));
+
+    method is_empty() -> Bool {
+        self.len() == 0
+    }
+}
+
+type LinkedList[A] {
+    case Nil;
+    case Cons(head: A, tail: Self);
+
+    empty: Self = Self.Nil;
+
+    def fn singleton(value: A) -> Self {
+        Self.Cons(value, empty)
+    }
+
+    method len() -> Nat {
+        match self {
+            Self.Nil => 0,
+            Self.Cons(_, tail) => Nat.Succ(tail.len())
+        }
+    }
+
+    method get(index: Nat) -> Option[A] {
+        match self {
+            Self.Nil => Option.None,
+            Self.Cons(head, tail) => match index {
+                Nat.Zero => Option.Some(head),
+                Nat.Succ(previous) => tail.get(previous)
+            }
+        }
+    }
+
+    method prepend(value: A) -> Self {
+        Self.Cons(value, self)
+    }
+
+    method append(value: A) -> Self {
+        match self {
+            Self.Nil => Self.singleton(value),
+            Self.Cons(head, tail) => Self.Cons(head, tail.append(value))
+        }
+    }
+
+    // 与 Option 相同的 Functor 操作形状，数据表示改为递归节点。
+    def fn map[B](function: A -> B) -> (Self -> LinkedList[B]) {
+        values => match values {
+            Self.Nil => LinkedList[B].Nil,
+            Self.Cons(head, tail) =>
+                LinkedList[B].Cons(function(head), Self.map(function)(tail))
+        }
+    }
+
+    method map[B](function: A -> B) -> LinkedList[B] {
+        Self.map(function)(self)
+    }
+}
+
+def law linked_bounds[A](values: LinkedList[A], index: Nat) -> (
+    values.get(index).is_some() ~= (index < values.len())
+) {
+    match values {
+        LinkedList.Nil => refl,
+        LinkedList.Cons(_, tail) => match index {
+            Nat.Zero => refl,
+            Nat.Succ(previous) => linked_bounds(tail, previous)
+        }
+    }
+}
+
+def law linked_map_identity[A](values: LinkedList[A]) -> (
+    values.map(identity[A]) ~= values
+) {
+    match values {
+        LinkedList.Nil => refl,
+        LinkedList.Cons(head, tail) =>
+            congr_arg(rest => LinkedList.Cons(head, rest), linked_map_identity(tail))
+    }
+}
+
+def law linked_map_composition[A, B, C](
+    values: LinkedList[A], first: A -> B, second: B -> C
+) -> (
+    values.map(first).map(second) ~= values.map(a => second(first(a)))
+) {
+    match values {
+        LinkedList.Nil => refl,
+        LinkedList.Cons(head, tail) => congr_arg(
+            rest => LinkedList.Cons(second(first(head)), rest),
+            linked_map_composition(tail, first, second)
+        )
+    }
+}
+
+def law linked_map_length[A, B](values: LinkedList[A], function: A -> B) -> (
+    values.map(function).len() ~= values.len()
+) {
+    match values {
+        LinkedList.Nil => refl,
+        LinkedList.Cons(_, tail) =>
+            congr_arg(Nat.Succ, linked_map_length(tail, function))
+    }
+}
+
+def law linked_map_get[A, B](
+    values: LinkedList[A], function: A -> B, index: Nat
+) -> (
+    values.map(function).get(index) ~= values.get(index).map(function)
+) {
+    match values {
+        LinkedList.Nil => refl,
+        LinkedList.Cons(_, tail) => match index {
+            Nat.Zero => refl,
+            Nat.Succ(previous) => linked_map_get(tail, function, previous)
+        }
+    }
+}
+
+def law linked_append_length[A](values: LinkedList[A], value: A) -> (
+    values.append(value).len() ~= Nat.Succ(values.len())
+) {
+    match values {
+        LinkedList.Nil => refl,
+        LinkedList.Cons(_, tail) =>
+            congr_arg(Nat.Succ, linked_append_length(tail, value))
+    }
+}
+
+def law linked_append_lookup[A](values: LinkedList[A], value: A, index: Nat) -> (
+    values.append(value).get(index)
+    ~= if index == values.len() { Option.Some(value) } else { values.get(index) }
+) {
+    match values {
+        LinkedList.Nil => match index {
+            Nat.Zero => refl,
+            Nat.Succ(_) => refl
+        },
+        LinkedList.Cons(_, tail) => match index {
+            Nat.Zero => refl,
+            Nat.Succ(previous) => linked_append_lookup(tail, value, previous)
+        }
+    }
+}
+
+forall[A] {
+    LinkedList[A] <: Sequence[A] {
+        len = self.len,
+        get = self.get,
+        bounds = index => linked_bounds(self, index)
+    }
+}
+
+numbers: LinkedList[Int] = LinkedList[Int].singleton(10).append(20).prepend(0);
+number_view: Sequence[Int] = numbers;
+
+// 源方法绑定后填入视图的函数字段；两边都使用 .，但没有重复绑定接收者。
+def law sequence_observation() -> (
+    (number_view.len(), number_view.get(2)) ~= (numbers.len(), numbers.get(2))
+) {
+    refl
+}
+
+// 另一种表示：容量与序列内容分别建模，未暴露的槽位不算序列元素。
+// slot 仍是数学观察函数，本文件没有实现连续内存或分配器。
+type VectorLayout[A] {
+    size: Nat;
+    capacity: Nat;
+    fn slot(index: Nat) -> Option[A];
+
+    law fits() -> ((size <= capacity) ~= true);
+    law initialized(index: Nat) -> (slot(index).is_some() ~= (index < size));
+
+    method len() -> Nat {
+        self.size
+    }
+
+    method get(index: Nat) -> Option[A] {
+        self.slot(index)
+    }
+}
+
+forall[A] {
+    VectorLayout[A] <: Sequence[A] {
+        len = self.len,
+        get = self.get,
+        bounds = index => self.initialized(index)
+    }
+}
+
+pair_layout: VectorLayout[Int] = VectorLayout {
+    size = 2,
+    capacity = 4,
+    slot = index => match index {
+        Nat.Zero => Option.Some(10),
+        Nat.Succ(previous) => match previous {
+            Nat.Zero => Option.Some(20),
+            Nat.Succ(_) => Option.None
+        }
+    },
+    fits = () => refl,
+    initialized = index => match index {
+        Nat.Zero => refl,
+        Nat.Succ(previous) => match previous {
+            Nat.Zero => refl,
+            Nat.Succ(_) => refl
+        }
+    }
+};
+
+pair_view: Sequence[Int] = pair_layout;
+
+def law capacity_is_not_length() -> (
+    (pair_view.len(), pair_view.get(2)) ~= (2, Option.None)
+) {
+    refl
+}
+
+// LinkedList 与 VectorLayout 都满足 Sequence，不推出二者彼此为子类型。
+// 真正 Vector 的 reserve 还需证明长度和全部可读元素保持；本稿不声称实现了它。
+```
+
+## 06 Mapping、有限枚举与更新：BoolMap
+
+区分缺键与值为 None；对任意键证明枚举、更新和删除的观察。
+
+```spore
+// 从查询、有限枚举与更新定律构造 BoolMap：两个键各对应一个可缺失的值。
+// 选择有限 Bool 键域，使枚举与更新的通用证明完整可读，不假定任意 K 自带判等。
+
+type Mapping[K, V] {
+    fn get(key: K) -> Option[V];
+}
+
+def fn key_count(keys: LinkedList[Bool], query: Bool) -> Nat {
+    match keys {
+        LinkedList.Nil => 0,
+        LinkedList.Cons(key, tail) =>
+            (if key == query { 1 } else { 0 }) + key_count(tail, query)
+    }
+}
+
+type FiniteMapping[V] <: Mapping[Bool, V] {
+    fn keys() -> LinkedList[Bool];
+
+    law enumeration(query: Bool) -> (
+        key_count(keys(), query) ~= if get(query).is_some() { 1 } else { 0 }
+    );
+
+    method len() -> Nat {
+        self.keys().len()
+    }
+}
+
+// enumeration 同时排除重复键、缺键和额外的键。
+// 更新定律需要比较两个状态，因此明确携带载体 M。
+type MapUpdates[M, V] {
+    fn get(map: M, key: Bool) -> Option[V];
+    fn put(map: M, key: Bool, value: V) -> M;
+    fn remove(map: M, key: Bool) -> M;
+
+    law put_lookup(map: M, key: Bool, value: V, query: Bool) -> (
+        get(put(map, key, value), query)
+        ~= if key == query { Option.Some(value) } else { get(map, query) }
+    );
+
+    law remove_lookup(map: M, key: Bool, query: Bool) -> (
+        get(remove(map, key), query)
+        ~= if key == query { Option.None } else { get(map, query) }
+    );
+}
+
+type BoolMap[V] {
+    false_value: Option[V];
+    true_value: Option[V];
+
+    empty: Self = Self { false_value = Option.None, true_value = Option.None };
+
+    method get(key: Bool) -> Option[V] {
+        match key {
+            false => self.false_value,
+            true => self.true_value
+        }
+    }
+
+    method keys() -> LinkedList[Bool] {
+        match self.false_value {
+            Option.None => match self.true_value {
+                Option.None => LinkedList.Nil,
+                Option.Some(_) => LinkedList[Bool].singleton(true)
+            },
+            Option.Some(_) => match self.true_value {
+                Option.None => LinkedList[Bool].singleton(false),
+                Option.Some(_) => LinkedList.Cons(false, LinkedList[Bool].singleton(true))
+            }
+        }
+    }
+
+    def fn put(map: Self, key: Bool, value: V) -> Self {
+        match key {
+            false => Self { false_value = Option.Some(value), true_value = map.true_value },
+            true => Self { false_value = map.false_value, true_value = Option.Some(value) }
+        }
+    }
+
+    method put(key: Bool, value: V) -> Self {
+        Self.put(self, key, value)
+    }
+
+    def fn remove(map: Self, key: Bool) -> Self {
+        match key {
+            false => Self { false_value = Option.None, true_value = map.true_value },
+            true => Self { false_value = map.false_value, true_value = Option.None }
+        }
+    }
+
+    method remove(key: Bool) -> Self {
+        Self.remove(self, key)
+    }
+}
+
+def law bool_map_enumeration[V](map: BoolMap[V], query: Bool) -> (
+    key_count(map.keys(), query) ~= if map.get(query).is_some() { 1 } else { 0 }
+) {
+    match map.false_value {
+        Option.None => match map.true_value {
+            Option.None => match query {
+                false => refl,
+                true => refl
+            },
+            Option.Some(_) => match query {
+                false => refl,
+                true => refl
+            }
+        },
+        Option.Some(_) => match map.true_value {
+            Option.None => match query {
+                false => refl,
+                true => refl
+            },
+            Option.Some(_) => match query {
+                false => refl,
+                true => refl
+            }
+        }
+    }
+}
+
+def law bool_map_put_lookup[V](map: BoolMap[V], key: Bool, value: V, query: Bool) -> (
+    map.put(key, value).get(query)
+    ~= if key == query { Option.Some(value) } else { map.get(query) }
+) {
+    match key {
+        false => match query {
+            false => refl,
+            true => refl
+        },
+        true => match query {
+            false => refl,
+            true => refl
+        }
+    }
+}
+
+def law bool_map_remove_lookup[V](map: BoolMap[V], key: Bool, query: Bool) -> (
+    map.remove(key).get(query)
+    ~= if key == query { Option.None } else { map.get(query) }
+) {
+    match key {
+        false => match query {
+            false => refl,
+            true => refl
+        },
+        true => match query {
+            false => refl,
+            true => refl
+        }
+    }
+}
+
+forall[V] {
+    BoolMap[V] <: FiniteMapping[V] {
+        get = self.get,
+        keys = self.keys,
+        enumeration = query => bool_map_enumeration(self, query)
+    }
+}
+
+def fn bool_map_updates[V]() -> MapUpdates[BoolMap[V], V] {
+    MapUpdates[BoolMap[V], V] {
+        get = (map, key) => map.get(key),
+        put = BoolMap[V].put,
+        remove = BoolMap[V].remove,
+        put_lookup = (map, key, value, query) => bool_map_put_lookup(map, key, value, query),
+        remove_lookup = (map, key, query) => bool_map_remove_lookup(map, key, query)
+    }
+}
+
+original: BoolMap[Str] = BoolMap[Str].empty.put(false, "off").put(true, "on");
+updated: BoolMap[Str] = original.put(false, "OFF");
+updated_view: FiniteMapping[Str] = updated;
+updates: MapUpdates[BoolMap[Str], Str] = bool_map_updates[Str]();
+
+def law other_key_preserved() -> (updated.get(true) ~= original.get(true)) {
+    updates.put_lookup(original, false, "OFF", true)
+}
+
+def law previous_value_preserved() -> (original.get(false) ~= Option.Some("off")) {
+    refl
+}
+
+def law finite_size() -> (updated_view.len() ~= 2) {
+    refl
+}
+
+stored_none: BoolMap[Option[Int]] = BoolMap[Option[Int]].empty.put(true, Option.None);
+
+def law missing_and_stored_none() -> (
+    (stored_none.get(false), stored_none.get(true)) ~= (Option.None, Option.Some(Option.None))
+) {
+    refl
+}
+
+// BoolMap 的存储大小由有限键域决定；这里没有实现任意键的哈希表。
+// 具体 lookup/remove/put 的通用定律已提供，不能用几个具体查询代替这些证据。
+```
+
+## 07 Fin / Vec 与 Expr
+
+把长度或结果类型放进索引；空 match 消去不可能分支。
+
+```spore
+// 用 Fin[n] 表达有效索引，用 Vec[A, n] 表达长度；再证明映射保持索引观察。
+// Nat 采用本页开头的归纳背景。类型参数与值索引分别显式绑定。
+
+type Fin: Nat -> Type {
+    case Zero[n: Nat] -> Fin[Nat.Succ(n)];
+    case Succ[n: Nat](previous: Fin[n]) -> Fin[Nat.Succ(n)];
+}
+
+type Vec: Type -> Nat -> Type {
+    case Nil[A] -> Vec[A, Nat.Zero];
+    case Cons[A, n: Nat](head: A, tail: Vec[A, n]) -> Vec[A, Nat.Succ(n)];
+}
+
+def fn head[A, n: Nat](values: Vec[A, Nat.Succ(n)]) -> A {
+    match values {
+        Vec.Cons(first, _) => first
+    }
+}
+
+def fn vec_get[A, n: Nat](values: Vec[A, n], index: Fin[n]) -> A {
+    match values {
+        Vec.Nil => match index {},
+        Vec.Cons(first, rest) => match index {
+            Fin.Zero => first,
+            Fin.Succ(previous) => vec_get(rest, previous)
+        }
+    }
+}
+
+def fn vec_map[A, B, n: Nat](function: A -> B) -> (Vec[A, n] -> Vec[B, n]) {
+    values => match values {
+        Vec.Nil => Vec.Nil,
+        Vec.Cons(first, rest) => Vec.Cons(function(first), vec_map(function)(rest))
+    }
+}
+
+def law vec_map_identity[A, n: Nat](values: Vec[A, n]) -> (
+    vec_map(identity[A])(values) ~= values
+) {
+    match values {
+        Vec.Nil => refl,
+        Vec.Cons(first, rest) =>
+            congr_arg(tail => Vec.Cons(first, tail), vec_map_identity(rest))
+    }
+}
+
+def law vec_map_composition[A, B, C, n: Nat](
+    values: Vec[A, n], first: A -> B, second: B -> C
+) -> (
+    vec_map(second)(vec_map(first)(values)) ~= vec_map(a => second(first(a)))(values)
+) {
+    match values {
+        Vec.Nil => refl,
+        Vec.Cons(head, tail) => congr_arg(
+            rest => Vec.Cons(second(first(head)), rest),
+            vec_map_composition(tail, first, second)
+        )
+    }
+}
+
+def law vec_map_get[A, B, n: Nat](values: Vec[A, n], function: A -> B, index: Fin[n]) -> (
+    vec_get(vec_map(function)(values), index) ~= function(vec_get(values, index))
+) {
+    match values {
+        Vec.Nil => match index {},
+        Vec.Cons(_, rest) => match index {
+            Fin.Zero => refl,
+            Fin.Succ(previous) => vec_map_get(rest, function, previous)
+        }
+    }
+}
+
+pair_vector: Vec[Int, Nat.Succ(Nat.Succ(Nat.Zero))] =
+    Vec.Cons(10, Vec.Cons(20, Vec.Nil));
+
+def law nonempty_head() -> (head(pair_vector) ~= 10) {
+    refl
+}
+
+type Expr: Type -> Type {
+    case IntLit(value: Int) -> Expr[Int];
+    case BoolLit(value: Bool) -> Expr[Bool];
+    case Add(left: Expr[Int], right: Expr[Int]) -> Expr[Int];
+    case If[A](condition: Expr[Bool], when_true: Expr[A], when_false: Expr[A]) -> Expr[A];
+}
+
+def fn eval[A](expression: Expr[A]) -> A {
+    match expression {
+        Expr.IntLit(value) => value,
+        Expr.BoolLit(value) => value,
+        Expr.Add(left, right) => eval(left) + eval(right),
+        Expr.If(condition, when_true, when_false) =>
+            if eval(condition) { eval(when_true) } else { eval(when_false) }
+    }
+}
+
+calculation: Expr[Int] = Expr.If(
+    Expr.BoolLit(true),
+    Expr.Add(Expr.IntLit(1), Expr.IntLit(2)),
+    Expr.IntLit(0)
+);
+
+def law evaluated_branch() -> (eval(calculation) ~= 3) {
+    refl
+}
+
+// 空 match 消去不可能存在的 Fin[0]；分支检查需要根据构造器细化索引。
+// 应拒绝：head(Vec.Nil)，以及 wrong: Expr[Bool] = Expr.IntLit(1)。
+// Vec 的长度索引不承诺连续布局，也不是 Vector 的存储优化。
+```
+
+## 拒绝边界
+
+语法反例由 scripts/check-syntax.mjs 交给 Ohm 验证。以下是需要单独审阅的语义反例，不能靠识别器通过与否裁定：
+
+- Option[A] 内写 `Self[B]`：Self 已经是完整类型。
+- 在 Counter 构造块中填写 step：step 是类型预定义，不是默认实例字段。
+- 同一实例域同时声明名为 map 的函数字段和 method；类型函数与实例方法同名则允许。
+- 普通类型函数直接读取 `self.value`，或方法用裸 value 隐式读取字段。
+- 更换函数字段后直接复制不再成立的 law 证据，或用 refl 证明不能归约为同一项的等式。
+- 未匹配就读取某 case 专有字段、构造 GADT 时返回错误索引，或对 Vec.Nil 使用非空 head。
+- 把所有列表投影成空 Sequence：目标可能满足范围律，却没有保持源长度与元素。
+- 仅用结果协变，把接收任意 Applicative 的 ap 换成只能接收 Option 的函数。完整类型族专门化不是普通参数逆变。
+
+本稿保留 `Monad <: Selective <: Applicative <: Functor` 的契约增强方向，及 Option 的具体证据；它不把旧的 `Functor[Option]` 操作记录、`for F` 或 Family 作为已经接受的声明方案。

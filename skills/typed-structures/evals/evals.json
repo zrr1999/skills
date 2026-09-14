@@ -3,58 +3,105 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "按 typed-structures 写一个 Option ADT，再给 Option 配一份 Monad 结构和 identity 证明。",
-      "expected_output": "Agent 应使用 typed-structures skill，用 type/case/fn/law/def/proof 写程序并先写入文件，用全局 ohm match 对照 grammar.ohm 检查后再交付；不要译成 Rust、Lean 或 Haskell。",
+      "prompt": "按 typed-structures 写一个 Option，用类型侧 map 提升函数、实例侧 map 绑定值，并证明恒等与复合律。",
+      "expected_output": "用 def fn、method、def law 和完整类型 Self 写程序；提供通用证明项并运行 Ohm，只报告实际完成的句法核验。",
       "files": [],
       "expectations": [
-        "使用 type、case、fn 或 law、def、proof 等该语言表面",
-        "把程序写入文件后用 ohm match 对照 grammar.ohm 检查",
-        "没有把程序写成 Rust impl、Lean instance 或 Haskell typeclass",
-        "交付时说明句法检查已通过或给出 Ohm 的 Line/Expected 诊断"
+        "类型侧 map 先接收变换函数，再返回处理 Option 的函数；实例侧 map 先绑定值",
+        "Self 表示 Option[A]，改变参数的输出写 Option[B]，不使用 Self[B]",
+        "恒等律与复合律给出 funext 和分支证明，不用有限计算代替证明",
+        "新代码写入文件并通过当前 grammar.ohm 识别；不声称证明内核核验成功"
       ]
     },
     {
       "id": 2,
-      "prompt": "帮我声明 Monad[F] :> Applicative[F] :> Functor[F]，并把 map 从 ap/pure 补出来。",
-      "expected_output": "Agent 应使用 forall 与 S :> T 写子类型补全，用 self 引用源结构，并证明目标 law；不要按名字寻找全局实例。",
+      "prompt": "把一份带 encode/decode 往返定律的结构投影为 Idempotent[B]，从 round_trip 推导 idempotent。",
+      "expected_output": "用 forall[A, B] 与 <: 补全 run 和证据；保留源观察，不重定义固定方法。",
       "files": [],
       "expectations": [
-        "使用 forall 与 :> 声明泛型子类型关系",
-        "用 self 引用源结构来补 map 或 ap",
-        "为目标 law 提供 proof，而不是只补同名函数",
-        "没有根据类型名自动挑选全局 Monad 实例"
+        "使用 forall 与 <: 登记值类型关系；补全中的 self 指源值",
+        "run 用 encode(decode(value))，并用 congr_arg(encode, round_trip(decode(value))) 给出证据",
+        "构造与关系块用字段 = lambda，不用 def fn 或 def law 填字段",
+        "没有按名字选择全局实例，也没有覆盖父结构已有定义"
       ]
     },
     {
       "id": 3,
-      "prompt": "这段看起来像 Haskell typeclass，直接改成 Rust trait 和 impl 吧，跑 cargo test。",
-      "expected_output": "Agent 不应把 typed-structures 表面当成 Rust/Haskell 实现；若用户要的是该语言程序，应保持 type/case/law/:>。若用户明确只要 Rust 工程代码，则退出本 skill 的语言表面，不假装已有编译器。",
+      "prompt": "现在明确要 Rust 工程实现，不再写这份设计稿：把 Option 映射例子转成可运行的 Rust。",
+      "expected_output": "遵从用户明确的目标语言，离开 typed-structures 表面；Rust 的运行结果不能被报告为本设计稿的类型或证明核验。",
       "files": [],
       "expectations": [
-        "没有把 type/case/law/:> 静默改写成 Rust trait",
-        "没有声称存在该语言的编译器或 cargo test 入口",
-        "若继续写该语言，则仍走 ohm match 句法检查"
+        "没有以 skill 的语言偏好拒绝用户明确的 Rust 转换要求",
+        "验证针对实际 Rust 工程，不声称存在本设计稿的编译器",
+        "没有对 Rust 源码调用 typed-structures 的 Ohm 文法"
       ]
     },
     {
       "id": 4,
       "prompt": "解释一下 Option.Some 和 Option.None 的差别就行，不用写新程序。",
-      "expected_output": "Agent 可以用 skill 中的语义说明构造器，不必为行文中的短名字运行 ohm match。",
+      "expected_output": "说明两个 case，不为短名字创建验证程序或安装工具。",
       "files": [],
       "expectations": [
-        "说明 Some 与 None 是 Option 的两个 case",
-        "没有仅为短名字去安装 ohm 或创建检查文件"
+        "说明 Some 携带值而 None 不携带值",
+        "没有仅为短名字安装 Ohm 或创建检查文件"
       ]
     },
     {
       "id": 5,
-      "prompt": "本机没有 ohm，用 npx 在项目里临时跑一下 match 就行。",
-      "expected_output": "Agent 应全局安装 @ohm-js/cli（优先 pnpm add -g），不要用 npx，也不要在项目或 skill 目录再装一份。",
+      "prompt": "本机没有 ohm，我明确要求使用 npx 临时运行检查，不要全局安装。",
+      "expected_output": "用户明确指定的运行方式优先于 skill 的默认全局安装偏好；用当前 CLI 检查语法并报告真实结果。",
       "files": [],
       "expectations": [
-        "优先 pnpm add -g @ohm-js/cli，没有 pnpm 再用 npm install -g",
-        "不使用 npx 或 pnpx 调用 ohm",
-        "不在当前项目或 skill 目录安装 ohm-js / @ohm-js/cli"
+        "遵从明确的临时运行方式，不全局安装工具",
+        "依据当前 CLI help 运行 grammar.ohm 的 Module 识别",
+        "区分识别结果与类型、定律和子类型语义核验"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "给 Counter 写 value 字段、step=1 类型预定义和 next 方法。解释保存 counter.next 以及 Self 的含义，再给一个能直接继承的方法。",
+      "expected_output": "区分类型预定义与字段默认值，用隐含 self: Self 的 method；演示返回 self 的固定定义在子类型下实例化。",
+      "files": [],
+      "expectations": [
+        "step 是类型预定义，不能在 Counter 构造块中覆盖，也不能由 counter.step 访问",
+        "method 必须带 body；实例字段写 self.value，普通函数不获得隐式 self",
+        "绑定方法取值保存接收者，() 调用才执行 body；不自动新增 Counter.next 普通函数入口",
+        "Self 是完整类型；复用返回 self 的方法可以保留子类型，不能凭继承把任意父构造函数的结果收窄"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "既然 Option[B] <: Applicative[B]，是否可以让接收 Applicative[A -> B] 的 ap 由只接收 Option[A -> B] 的实现直接替换？不要新增 Family。",
+      "expected_output": "逐层分析函数变型，指出输入缩窄；明确普通函数子类型规则与整份类型族契约实例化的区别。",
+      "files": [],
+      "expectations": [
+        "结果协变不抵消参数逆变；举出父接口可接收其他实现而子实现不能处理的调用",
+        "比较 Self 相关签名前先保证两侧按相同完整实现类型实例化",
+        "没有引入 Family、Self[B]、for F 或恢复 Functor[Option] 作为已确定方案",
+        "没有把四层契约方向或 Ohm 通过冒充已完成的契约声明和机器核验"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "这段已经通过 Ohm：def law same() -> (1 ~= 2) { refl }，所以证明成立吧？",
+      "expected_output": "拒绝把句法识别当作证明；refl 要求两侧经定义归约相同。",
+      "files": [],
+      "expectations": [
+        "明确这段形状可以识别，但给出的 refl 不能证明目标",
+        "指出 1 和 2 在共同数学背景中不归约为同一项",
+        "没有编造成功的类型检查或证明核验结果"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "把 static def get(...)、proof p(...)、x#map(f) 和构造块里的 def fn 更新为这轮语法，并检查字段与方法同名的边界。",
+      "expected_output": "采用 def fn、def law、点号及字段 = lambda；按成员域区分合法同名和冲突。",
+      "files": [],
+      "expectations": [
+        "不保留 static、独立 proof、裸 def、:= 或 # 方法调用作为规范写法",
+        "类型侧函数与实例方法可同名；同一实例域的字段和方法冲突",
+        "补全只提供实例字段值，固定定义与方法不能覆盖",
+        "迁移后的程序通过 Ohm 后仍审阅成员域和证据义务"
       ]
     }
   ]
