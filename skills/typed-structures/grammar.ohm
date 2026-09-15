@@ -2,26 +2,31 @@
 // This checks syntax, not member lookup, kinds, subtyping, termination or proofs.
 TypedStructures {
   Module = TopDecl*
-  TopDecl = TypeDecl | ForallDecl | SubtypeDecl | FnDef | LawDef | ValueDef
+  TopDecl = TypeDecl | ForallDecl | SubtypeDecl | FnDef | LawDef | ValueDef | DataField
 
-  TypeDecl = typeKw ident KindSig? TypeParams? TypeTail
-  TypeTail = Inherits? TypeBody                  --structure
+  TypeDecl = typeKw ident UniverseParams? TypeParams? TypeTail
+  TypeTail = TypeRelation? TypeBody              --structure
            | "=" TypeExpr Refinement? ";"       --alias
-  KindSig = ":" TypeExpr
-  Inherits = "<:" TypeExpr
+  TypeRelation = ("<:" | ":") TypeExpr
   Refinement = whenKw Expr
+  UniverseParams = "<" NonemptyTrailingList<ident> ">"
+  UniverseArgs = "<" NonemptyTrailingList<Level> ">"
+  Level = "next" "(" Level ")"               --next
+        | "max" "(" Level "," Level ")"     --max
+        | number                              --number
+        | ident                               --variable
   TypeParams = "[" NonemptyTrailingList<TypeParam> "]"
   TypeParam = ident (":" TypeExpr)?
   TypeBody = "{" TypeMember* "}"
   TypeMember = TypeDecl | CaseDecl | FnDef | LawDef | MethodDef | FnField | LawField | ValueDef | DataField
 
-  DataField = ident ":" TypeExpr ";"
-  FnField = fnKw ident TypeParams? AnnParamList ReturnType ";"
-  LawField = lawKw ident TypeParams? AnnParamList "->" Prop ";"
-  FnDef = defKw fnKw ident TypeParams? AnnParamList ReturnType? Block
-  LawDef = defKw lawKw ident TypeParams? AnnParamList "->" Prop Block
-  MethodDef = methodKw ident TypeParams? AnnParamList ReturnType? Block
-  ValueDef = ident (":" TypeExpr)? "=" Expr ";"
+  DataField = ident UniverseParams? TypeParams? ":" TypeExpr ";"
+  FnField = fnKw ident UniverseParams? TypeParams? AnnParamList ReturnType ";"
+  LawField = lawKw ident UniverseParams? TypeParams? AnnParamList? "->" Prop ";"
+  FnDef = defKw fnKw ident UniverseParams? TypeParams? AnnParamList ReturnType? Block
+  LawDef = defKw lawKw ident UniverseParams? TypeParams? AnnParamList? "->" Prop Block
+  MethodDef = methodKw ident UniverseParams? TypeParams? AnnParamList ReturnType? Block
+  ValueDef = ident UniverseParams? TypeParams? (":" TypeExpr)? "=" Expr ";"
   CaseDecl = caseKw ident TypeParams? AnnParamList? ReturnType? CaseTail
   CaseTail = TypeBody | ";"
   ReturnType = "->" TypeExpr
@@ -35,17 +40,22 @@ TypedStructures {
   SubtypeDecl = TypeExpr "<:" TypeExpr SubtypeTail
   SubtypeTail = CtorBody | ";"
 
-  TypeExpr = TypeApp ("->" TypeExpr)?
+  TypeExpr = TypeArrow ("~=" TypeArrow)?
+  TypeArrow = TypeApp ("->" TypeExpr)?
   TypeApp = TypeApp "[" NonemptyTrailingList<TypeExpr> "]"  --index
-          | TypeApp "(" ListOf<TypeExpr, ","> ")"               --call
-          | TypeApp "." ident                                  --member
-          | TypePrimary                                        --atom
-  TypePrimary = "(" ListOf<TypeExpr, ","> ")"  --parens
+          | TypeApp UniverseArgs                                --universes
+          | TypeApp "(" TrailingList<Expr> ")"                  --call
+          | TypeApp "." Field                                   --member
+          | TypePrimary                                         --atom
+  TypePrimary = "(" TrailingList<TypeEntry> ")" --parens
               | number                         --index
               | selfTypeKw                     --self
               | ident                          --name
+  TypeEntry = ident ":" TypeExpr               --dependent
+            | Expr                             --value
 
-  Expr = Lambda | Comparison<Sum<Product<AppExpr>>>
+  Expr = Lambda | FunctionType | Comparison<Sum<Product<AppExpr>>>
+  FunctionType = TypeApp "->" TypeExpr
   Lambda = LambdaBind "=>" Expr
   LambdaBind = "(" ListOf<LambdaParam, ","> ")"  --params
              | ident                              --name
@@ -62,6 +72,7 @@ TypedStructures {
   Control = Comparison<Sum<Product<Subject>>>
   Subject = Subject "(" TrailingList<Expr> ")"             --call
           | Subject "[" NonemptyTrailingList<TypeExpr> "]" --types
+          | Subject UniverseArgs                                --universes
           | Subject "." Field                                   --member
           | Atom                                                --atom
   IfExpr = ifKw Control Block elseKw Block
@@ -70,6 +81,7 @@ TypedStructures {
 
   AppExpr = AppExpr "(" TrailingList<Expr> ")"             --call
           | AppExpr "[" NonemptyTrailingList<TypeExpr> "]" --types
+          | AppExpr UniverseArgs                                --universes
           | AppExpr "." Field                                   --member
           | TypeApp CtorBody                                     --record
           | IfExpr                                              --if
@@ -89,7 +101,8 @@ TypedStructures {
   CtorBody = "{" TrailingList<FieldAssign> "}"
   FieldAssign = ident "=" Expr
 
-  Pattern = QualifiedPattern PatternTail?  --constructor
+  Pattern = "(" NonemptyListOf<Pattern, ","> ")" --tuple
+          | QualifiedPattern PatternTail?  --constructor
           | trueKw                         --true
           | falseKw                        --false
           | number                         --number
