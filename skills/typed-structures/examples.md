@@ -309,7 +309,7 @@ def law weakening_preserves_value[A, P: A -> Prop, Q: A -> Prop](
 ```spore
 // 从普通函数组合开始，每个契约紧接一个具体结构及其证据。
 // Category 的两个层级分别约束对象和 Hom；结构自身位于 max(next(u),next(v))。
-// 1. 函数为什么能组合：Category 与 Types。
+// 1. 函数为什么能组合：Category 与 types。
 
 type Category<u, v> {
     Obj: Universe<u>;
@@ -331,39 +331,30 @@ type Category<u, v> {
     );
 }
 
-// 透明别名，不登记宇宙转换。
+// 类型与别名用大写名称；普通结构定义用小写，泛型参数沿用数学记号。
+// 透明别名，不定义新子类型，也不登记宇宙转换。
 LargeCategory<v> = Category<next(v), v>;
 
-type Types: LargeCategory<1> {
-    Obj = Type;
-    Hom[X: Obj, Y: Obj] = X -> Y;
-    id[X: Obj]: Hom[X, X] = x => x;
-    compose[X: Obj, Y: Obj, Z: Obj]:
-        (Hom[Y, Z], Hom[X, Y]) -> Hom[X, Z] = (g, f) => x => g(f(x));
+// types 是已有结构类型中的值；没有在此声明一个新的 Types 数据类型。
+// 构造块按契约补全字段：后续字段可引用此前补全，泛型字段独立绑定参数。
+types: LargeCategory<1> = LargeCategory<1> {
+    Obj = Type,
+    Hom[X: Obj, Y: Obj] = X -> Y,
+    id[X: Obj] = x => x,
+    compose[X: Obj, Y: Obj, Z: Obj] = (g, f) => x => g(f(x)),
+    left_identity[X: Obj, Y: Obj] = f => funext(x => refl),
+    right_identity[X: Obj, Y: Obj] = f => funext(x => refl),
+    associativity[W: Obj, X: Obj, Y: Obj, Z: Obj] = (f, g, h) => funext(x => refl),
+};
 
-    def law left_identity[X: Obj, Y: Obj](f: X -> Y) -> (
-        compose(id[Y], f) ~= f
-    ) { funext(x => refl) }
-
-    def law right_identity[X: Obj, Y: Obj](f: X -> Y) -> (
-        compose(f, id[X]) ~= f
-    ) { funext(x => refl) }
-
-    def law associativity[W: Obj, X: Obj, Y: Obj, Z: Obj](
-        f: W -> X, g: X -> Y, h: Y -> Z
-    ) -> (
-        compose(h, compose(g, f)) ~= compose(compose(h, g), f)
-    ) { funext(x => refl) }
-}
-
-types_category: Category<2, 1> = Types;
+types_category: Category<2, 1> = types;
 
 def law composing_integers() -> (
-    Types.compose((n: Int) => n + 1, (n: Int) => n * 2)(20) ~= 41
+    types.compose((n: Int) => n + 1, (n: Int) => n * 2)(20) ~= 41
 ) { refl }
 
-// 应拒绝：smaller: Category<1,1> = Types；Obj = Type 不在 Universe<1>。
-// 应拒绝：larger: Category<3,2> = Types；不会自动提升字段或整个结构的宇宙。
+// 应拒绝：smaller: Category<1,1> = types；Obj = Type 不在 Universe<1>。
+// 应拒绝：larger: Category<3,2> = types；不会自动提升字段或整个结构的宇宙。
 
 // 2. 保持组合的映射：Functor 与恒等构造，随后用于真实的元组。
 
@@ -377,95 +368,74 @@ type Functor[C: Category, D: Category] {
     ) -> (map(C.compose(g, f)) ~= D.compose(map(g), map(f)));
 }
 
-type IdentityFunctor[C: Category]: Functor[C, C] {
-    obj: C.Obj -> C.Obj = x => x;
-    map[X: C.Obj, Y: C.Obj]: C.Hom[X, Y] -> C.Hom[X, Y] = f => f;
-    identity[X: C.Obj]: map(C.id[X]) ~= C.id[X] = refl;
-    composition[X: C.Obj, Y: C.Obj, Z: C.Obj]: (
-        f: C.Hom[X, Y], g: C.Hom[Y, Z]
-    ) -> (map(C.compose(g, f)) ~= C.compose(map(g), map(f))) = (f, g) => refl;
-}
+identity_functor[C: Category]: Functor[C, C] = Functor[C, C] {
+    obj = x => x,
+    map[X: C.Obj, Y: C.Obj] = f => f,
+    identity[X: C.Obj] = refl,
+    composition[X: C.Obj, Y: C.Obj, Z: C.Obj] = (f, g) => refl,
+};
 
-identity_types: Functor[Types, Types] = IdentityFunctor[Types];
+identity_types: Functor[types, types] = identity_functor[types];
+// identity_functor[C] 是参数化结构值；C 提供结构参数，不引入新数据类型。
+// 应拒绝：把这份普通结构构造改写为 type IdentityFunctor[C]: Functor[C,C]。
 // 对象映射 Type -> Type 位于 Universe<2>，map/law 不提高该界。
-// 应拒绝：Functor[Types,Types]: Type；准确层级为 Universe<2>。
+// 应拒绝：Functor[types,types]: Type；准确层级为 Universe<2>。
 
-// 3. 同时变换两个分量：积范畴、Bifunctor 与 PairFunctor。
+// 3. 同时变换两个分量：积范畴、Bifunctor 与 pair_bifunctor。
 
-type ProductCategory<u, v, w, z>[C: Category<u, v>, D: Category<w, z>]:
-    Category<max(u, w), max(v, z)> {
-    Obj = (C.Obj, D.Obj);
-    Hom[P: Obj, Q: Obj] = (C.Hom[P.0, Q.0], D.Hom[P.1, Q.1]);
-    id[P: Obj]: Hom[P, P] = (C.id[P.0], D.id[P.1]);
-    compose[P: Obj, Q: Obj, R: Obj]: (Hom[Q, R], Hom[P, Q]) -> Hom[P, R] =
-        (g, f) => (C.compose(g.0, f.0), D.compose(g.1, f.1));
-
-    def law left_identity[P: Obj, Q: Obj](f: Hom[P, Q]) -> (
-        compose(id[Q], f) ~= f
-    ) {
+product_category<u, v, w, z>[C: Category<u, v>, D: Category<w, z>]:
+    Category<max(u, w), max(v, z)> = Category<max(u, w), max(v, z)> {
+    Obj = (C.Obj, D.Obj),
+    Hom[P: Obj, Q: Obj] = (C.Hom[P.0, Q.0], D.Hom[P.1, Q.1]),
+    id[P: Obj] = (C.id[P.0], D.id[P.1]),
+    compose[P: Obj, Q: Obj, R: Obj] = (g, f) => (C.compose(g.0, f.0), D.compose(g.1, f.1)),
+    left_identity[P: Obj, Q: Obj] = f => {
         match f { (fc, fd) => pair_congr(C.left_identity(fc), D.left_identity(fd)) }
-    }
-    def law right_identity[P: Obj, Q: Obj](f: Hom[P, Q]) -> (
-        compose(f, id[P]) ~= f
-    ) {
+    },
+    right_identity[P: Obj, Q: Obj] = f => {
         match f { (fc, fd) => pair_congr(C.right_identity(fc), D.right_identity(fd)) }
-    }
-    def law associativity[P: Obj, Q: Obj, R: Obj, S: Obj](
-        f: Hom[P, Q], g: Hom[Q, R], h: Hom[R, S]
-    ) -> (compose(h, compose(g, f)) ~= compose(compose(h, g), f)) {
+    },
+    associativity[P: Obj, Q: Obj, R: Obj, S: Obj] = (f, g, h) => {
         pair_congr(C.associativity(f.0, g.0, h.0), D.associativity(f.1, g.1, h.1))
-    }
-}
+    },
+};
 
-paired_types: Category<2, 1> = ProductCategory[Types, Types];
-Bifunctor[C: Category, D: Category, E: Category] = Functor[ProductCategory[C, D], E];
+paired_types: Category<2, 1> = product_category[types, types];
+// Bifunctor 是类型别名；product_category[C,D] 是该类型引用的源范畴值。
+Bifunctor[C: Category, D: Category, E: Category] = Functor[product_category[C, D], E];
 
-type PairFunctor: Bifunctor[Types, Types, Types] {
-    obj: (p: (Type, Type)) -> Type = p => (p.0, p.1);
-    map[P: (Type, Type), Q: (Type, Type)]:
-        (arrows: (P.0 -> Q.0, P.1 -> Q.1)) -> ((pair: (P.0, P.1)) -> (Q.0, Q.1)) =
-        arrows => pair => (arrows.0(pair.0), arrows.1(pair.1));
-
-    def law identity[P: (Type, Type)] -> (
-        map(ProductCategory[Types, Types].id[P]) ~= Types.id[obj(P)]
-    ) { funext(pair => match pair { (x, y) => refl }) }
-
-    def law composition[P: (Type, Type), Q: (Type, Type), R: (Type, Type)](
-        f: (P.0 -> Q.0, P.1 -> Q.1), g: (Q.0 -> R.0, Q.1 -> R.1)
-    ) -> (
-        map(ProductCategory[Types, Types].compose(g, f)) ~= Types.compose(map(g), map(f))
-    ) { funext(pair => refl) }
-}
+pair_bifunctor: Bifunctor[types, types, types] = Bifunctor[types, types, types] {
+    obj = p => (p.0, p.1),
+    map[P: (Type, Type), Q: (Type, Type)] = arrows => pair => (arrows.0(pair.0), arrows.1(pair.1)),
+    identity[P: (Type, Type)] = funext(pair => match pair { (x, y) => refl }),
+    composition[P: (Type, Type), Q: (Type, Type), R: (Type, Type)] = (f, g) => funext(pair => refl),
+};
 
 def law transforming_a_pair() -> (
-    PairFunctor.map(((n: Int) => n + 1, (n: Int) => n * 2))((20, 21)) ~= (21, 42)
+    pair_bifunctor.map(((n: Int) => n + 1, (n: Int) => n * 2))((20, 21)) ~= (21, 42)
 ) { refl }
 // map 接收一个态射对，再返回一个接收元组的函数；两次调用都只有一个实参。
-// 应拒绝：PairFunctor.map(f, g)；应写 PairFunctor.map((f, g))。
+// 应拒绝：pair_bifunctor.map(f, g)；应写 pair_bifunctor.map((f, g))。
 
-// 4. 复合已有构造：先 PairFunctor，再保持结果的 IdentityFunctor。
+// 4. 复合已有构造：先 pair_bifunctor，再保持结果的 identity_functor。
 
-type ComposeFunctor[
+compose_functors[
     C: Category, D: Category, E: Category, F: Functor[C, D], G: Functor[D, E]
-]: Functor[C, E] {
-    obj: C.Obj -> E.Obj = x => G.obj(F.obj(x));
-    map[X: C.Obj, Y: C.Obj]: C.Hom[X, Y] -> E.Hom[obj(X), obj(Y)] =
-        f => G.map(F.map(f));
-
-    def law identity[X: C.Obj] -> (map(C.id[X]) ~= E.id[obj(X)]) {
+]: Functor[C, E] = Functor[C, E] {
+    obj = x => G.obj(F.obj(x)),
+    map[X: C.Obj, Y: C.Obj] = f => G.map(F.map(f)),
+    identity[X: C.Obj] = {
         trans(congr_arg(G.map[F.obj(X), F.obj(X)], F.identity[X]),
               G.identity[F.obj(X)])
-    }
-    def law composition[X: C.Obj, Y: C.Obj, Z: C.Obj](
-        f: C.Hom[X, Y], g: C.Hom[Y, Z]
-    ) -> (map(C.compose(g, f)) ~= E.compose(map(g), map(f))) {
+    },
+    composition[X: C.Obj, Y: C.Obj, Z: C.Obj] = (f, g) => {
         trans(congr_arg(G.map[F.obj(X), F.obj(Z)], F.composition(f, g)),
               G.composition(F.map(f), F.map(g)))
-    }
-}
+    },
+};
 
-pair_then_identity: Functor[ProductCategory[Types, Types], Types] =
-    ComposeFunctor[ProductCategory[Types, Types], Types, Types, PairFunctor, IdentityFunctor[Types]];
+pair_then_identity: Functor[product_category[types, types], types] =
+    compose_functors[product_category[types, types], types, types, pair_bifunctor, identity_functor[types]];
 
 def law composing_pair_constructions() -> (
     pair_then_identity.map(((n: Int) => n + 1, (n: Int) => n * 2))((20, 21)) ~= (21, 42)
@@ -480,36 +450,34 @@ type Isomorphism[C: Category, X: C.Obj, Y: C.Obj] {
     law hom_inv -> (C.compose(hom, inv) ~= C.id[Y]);
 }
 
-type PairAssociator[A, B, C]: Isomorphism[Types, ((A, B), C), (A, (B, C))] {
-    hom: (p: ((A, B), C)) -> (A, (B, C)) = p => (p.0.0, (p.0.1, p.1));
-    inv: (p: (A, (B, C))) -> ((A, B), C) = p => ((p.0, p.1.0), p.1.1);
-    inv_hom: Types.compose(inv, hom) ~= Types.id[((A, B), C)] =
-        funext(p => match p { ((a, b), c) => refl });
-    hom_inv: Types.compose(hom, inv) ~= Types.id[(A, (B, C))] =
-        funext(p => match p { (a, (b, c)) => refl });
-}
+pair_associator[A, B, C]: Isomorphism[
+    types, ((A, B), C), (A, (B, C))
+] = Isomorphism[types, ((A, B), C), (A, (B, C))] {
+    hom = p => (p.0.0, (p.0.1, p.1)),
+    inv = p => ((p.0, p.1.0), p.1.1),
+    inv_hom = funext(p => match p { ((a, b), c) => refl }),
+    hom_inv = funext(p => match p { (a, (b, c)) => refl }),
+};
 
-type PairLeftUnitor[A]: Isomorphism[Types, (Unit, A), A] {
-    hom: (p: (Unit, A)) -> A = p => p.1;
-    inv: A -> (Unit, A) = a => (Unit.unit, a);
-    inv_hom: Types.compose(inv, hom) ~= Types.id[(Unit, A)] =
-        funext(p => match p { (Unit.unit, a) => refl });
-    hom_inv: Types.compose(hom, inv) ~= Types.id[A] = funext(a => refl);
-}
+pair_left_unitor[A]: Isomorphism[types, (Unit, A), A] = Isomorphism[types, (Unit, A), A] {
+    hom = p => p.1,
+    inv = a => (Unit.unit, a),
+    inv_hom = funext(p => match p { (Unit.unit, a) => refl }),
+    hom_inv = funext(a => refl),
+};
 
-type PairRightUnitor[A]: Isomorphism[Types, (A, Unit), A] {
-    hom: (p: (A, Unit)) -> A = p => p.0;
-    inv: A -> (A, Unit) = a => (a, Unit.unit);
-    inv_hom: Types.compose(inv, hom) ~= Types.id[(A, Unit)] =
-        funext(p => match p { (a, Unit.unit) => refl });
-    hom_inv: Types.compose(hom, inv) ~= Types.id[A] = funext(a => refl);
-}
+pair_right_unitor[A]: Isomorphism[types, (A, Unit), A] = Isomorphism[types, (A, Unit), A] {
+    hom = p => p.0,
+    inv = a => (a, Unit.unit),
+    inv_hom = funext(p => match p { (a, Unit.unit) => refl }),
+    hom_inv = funext(a => refl),
+};
 
 def law reassociating_a_pair() -> (
-    PairAssociator[Int, Int, Int].hom(((1, 2), 3)) ~= (1, (2, 3))
+    pair_associator[Int, Int, Int].hom(((1, 2), 3)) ~= (1, (2, 3))
 ) { refl }
 
-// 6. 将元组规律合成一个结构：MonoidalStructure 与 TypesMonoidal。
+// 6. 将元组规律合成一个结构：MonoidalStructure 与 types_monoidal。
 // tensor.obj/map 各接收一个配对值；结合/单位同构的自然性与相容律分别列出。
 
 type MonoidalStructure[C: Category] {
@@ -548,41 +516,18 @@ type MonoidalStructure[C: Category] {
     );
 }
 
-type TypesMonoidal: MonoidalStructure[Types] {
-    tensor = PairFunctor;
-    unit = Unit;
-    associator[A, B, C] = PairAssociator[A, B, C];
-    left_unitor[A] = PairLeftUnitor[A];
-    right_unitor[A] = PairRightUnitor[A];
-
-    def law associator_naturality[A, B, C, X, Y, Z](f: A -> X, g: B -> Y, h: C -> Z) -> (
-        Types.compose(associator[X, Y, Z].hom, tensor.map((tensor.map((f, g)), h)))
-        ~= Types.compose(tensor.map((f, tensor.map((g, h)))), associator[A, B, C].hom)
-    ) { funext(p => refl) }
-
-    def law left_unitor_naturality[A, B](f: A -> B) -> (
-        Types.compose(left_unitor[B].hom, tensor.map((Types.id[unit], f)))
-        ~= Types.compose(f, left_unitor[A].hom)
-    ) { funext(p => refl) }
-
-    def law right_unitor_naturality[A, B](f: A -> B) -> (
-        Types.compose(right_unitor[B].hom, tensor.map((f, Types.id[unit])))
-        ~= Types.compose(f, right_unitor[A].hom)
-    ) { funext(p => refl) }
-
-    def law pentagon[A, B, C, D] -> (
-        Types.compose(associator[A, B, tensor.obj((C, D))].hom,
-                      associator[tensor.obj((A, B)), C, D].hom)
-        ~= Types.compose(tensor.map((Types.id[A], associator[B, C, D].hom)),
-            Types.compose(associator[A, tensor.obj((B, C)), D].hom,
-                          tensor.map((associator[A, B, C].hom, Types.id[D]))))
-    ) { funext(p => refl) }
-
-    def law triangle[A, B] -> (
-        Types.compose(tensor.map((Types.id[A], left_unitor[B].hom)), associator[A, unit, B].hom)
-        ~= tensor.map((right_unitor[A].hom, Types.id[B]))
-    ) { funext(p => refl) }
-}
+types_monoidal: MonoidalStructure[types] = MonoidalStructure[types] {
+    tensor = pair_bifunctor,
+    unit = Unit,
+    associator[A, B, C] = pair_associator[A, B, C],
+    left_unitor[A] = pair_left_unitor[A],
+    right_unitor[A] = pair_right_unitor[A],
+    associator_naturality[A, B, C, X, Y, Z] = (f, g, h) => funext(p => refl),
+    left_unitor_naturality[A, B] = f => funext(p => refl),
+    right_unitor_naturality[A, B] = f => funext(p => refl),
+    pentagon[A, B, C, D] = funext(p => refl),
+    triangle[A, B] = funext(p => refl),
+};
 
 // 自然变换在 05 中随 Some 注入引入；自然同构随 Unit 配对与拆除引入。
 ```
@@ -591,7 +536,7 @@ type TypesMonoidal: MonoidalStructure[Types] {
 
 ```spore
 // 从 Functor → Applicative → Selective → Monad 的契约逐层构造 Option。
-// 阅读顺序与 README 配对：Functor/map → Applicative/pure、ap → Selective/select → Monad/bind。
+// 阅读顺序与 SKILL.md 配对：Functor/map → Applicative/pure、ap → Selective/select → Monad/bind。
 // 前置契约声明供唯一的 Option 类型体使用；长的通用推导放在实例与具体计算之后。
 
 // Selective 结合律需要同时保存中间上下文与最初的输入。
@@ -629,12 +574,12 @@ make_pair[A, B]: A -> B -> (A, B) = a => b => (a, b);
 
 // 这些是结构值的类型；obj/map/pure/ap 等是同一份结构中的字段。
 // Self 若出现在这里会表示完整结构值类型，不表示 obj(A)。
-type Applicative <: Functor[Types, Types] {
+type Applicative <: Functor[types, types] {
     pure[A: Type]: A -> obj(A);
     ap[A: Type, B: Type]: (obj(A -> B), obj(A)) -> obj(B);
 
     law map_from_ap[A, B](f: A -> B, x: obj(A)) -> (map(f)(x) ~= ap(pure(f), x));
-    law ap_identity[A](x: obj(A)) -> (ap(pure(Types.id[A]), x) ~= x);
+    law ap_identity[A](x: obj(A)) -> (ap(pure(types.id[A]), x) ~= x);
     law ap_homomorphism[A, B](f: A -> B, a: A) -> (ap(pure(f), pure(a)) ~= pure(f(a)));
     law ap_interchange[A, B](u: obj(A -> B), a: A) -> (
         ap(u, pure(a)) ~= ap(pure(f => f(a)), u)
@@ -648,12 +593,12 @@ type Selective <: Applicative {
     select[A: Type, B: Type]: (obj(Either[A, B]), obj(A -> B)) -> obj(B);
 
     law select_identity[A](x: obj(Either[A, A])) -> (
-        select(x, pure(Types.id[A])) ~= map(Either[A, A].fold(Types.id[A], Types.id[A]))(x)
+        select(x, pure(types.id[A])) ~= map(Either[A, A].fold(types.id[A], types.id[A]))(x)
     );
     // keep_right 展开为 ap/map；没有隐含捕获实例字段的普通预定义。
     law select_distributivity[A, B](choice: Either[A, B], first: obj(A -> B), second: obj(A -> B)) -> (
-        select(pure(choice), ap(map(_ => Types.id[A -> B])(first), second))
-        ~= ap(map(_ => Types.id[B])(select(pure(choice), first)), select(pure(choice), second))
+        select(pure(choice), ap(map(_ => types.id[A -> B])(first), second))
+        ~= ap(map(_ => types.id[B])(select(pure(choice), first)), select(pure(choice), second))
     );
     law select_associativity[A, B, C](
         choice: obj(Either[A, B]), route: obj(Either[C, A -> B]), handler: obj(C -> A -> B)
@@ -681,12 +626,16 @@ type Monad <: Selective {
     );
 }
 
-// 同一声明提供结构 Option 与数据类型族 Option[A]；obj(A) 定义展开为 Option[A]。
+// 此处 type 真正建立由 None/Some 构成的数据族，并为整个 Option 配备 Monad。
+// 先生成数据族，再把继承的 obj 指定为该族；不是 Option[A] 与 obj(A) 循环展开。
+// [A] 约束构造器与数据方法；结构操作另行量化 X/Y，不生成逐 A 的 Monad。
+// 这种附带结构的声明要求事先指定数据族与 obj 的对应规则，不推广到任意记录。
 type Option[A: Type]: Monad {
     case None;
     case Some(value: A);
 
     // Functor：None 没有值可变换；Some 将同一个变换作用于元素。
+    // 显式 obj 必须与生成的数据族定义相等；不能改成 X => (Unit, X)。
     obj: Type -> Type = X => Option[X];
 
     map[X: Type, Y: Type]: (X -> Y) -> Option[X] -> Option[Y] =
@@ -709,7 +658,7 @@ type Option[A: Type]: Monad {
     }
 
     def law identity[X] -> (
-        Option.map(Types.id[X]) ~= Types.id[Option[X]]
+        Option.map(types.id[X]) ~= types.id[Option[X]]
     ) {
         funext(value => match value {
             Option.None => refl,
@@ -752,7 +701,7 @@ type Option[A: Type]: Monad {
     }
 
     def fn keep_right[X, B](left: Option[X], right: Option[B]) -> Option[B] {
-        Option.ap(left.map(_ => Types.id[B]), right)
+        Option.ap(left.map(_ => types.id[B]), right)
     }
 
     def law map_from_ap[X, B](function: X -> B, value: Option[X]) -> (
@@ -762,7 +711,7 @@ type Option[A: Type]: Monad {
     }
 
     def law ap_identity[X](value: Option[X]) -> (
-        Option.ap(Option.pure(Types.id[X]), value) ~= value
+        Option.ap(Option.pure(types.id[X]), value) ~= value
     ) {
         match value {
             Option.None => refl,
@@ -822,8 +771,8 @@ type Option[A: Type]: Monad {
     }
 
     def law select_identity[X](choice: Option[Either[X, X]]) -> (
-        Option.select(choice, Option.pure(Types.id[X]))
-        ~= choice.map(Either[X, X].fold(Types.id[X], Types.id[X]))
+        Option.select(choice, Option.pure(types.id[X]))
+        ~= choice.map(Either[X, X].fold(types.id[X], types.id[X]))
     ) {
         match choice {
             Option.None => refl,
@@ -1003,22 +952,24 @@ def law dependent_next_step() -> (
 option_monad: Monad = Option;
 option_selective: Selective = option_monad;
 option_applicative: Applicative = option_selective;
-option_functor: Functor[Types, Types] = option_applicative;
+option_functor: Functor[types, types] = option_applicative;
 
 def law inherited_operation_view(value: Option[Int]) -> (
     (option_monad.map(inc)(value), option_functor.map(inc)(value))
     ~= (Option.map(inc)(value), Option.map(inc)(value))
 ) { refl }
 
-// 应拒绝：bad: Functor[Types,Types] = Option.Some(41)；它是数据值。
-// 应拒绝：Option[A] <: Functor[Types,Types]；本声明没有建立这样的数据值视图。
+// 应拒绝：bad: Functor[types,types] = Option.Some(41)；它是数据值。
+// 应拒绝：bad: Monad = Option[Int]；应用参数得到的是数据类型。
+// 应拒绝：type Option[A] <: Monad；构造的数据不具有 Monad 的结构字段。
+// 应拒绝：Option[A] <: Functor[types,types]；本声明没有建立这样的数据值视图。
 // 应拒绝：把 method map 的参数写成 Self -> B；需要的是元素变换 A -> B。
 // 应拒绝：继承 map[X,Y] 时只定义 map[Y]: (A -> Y) -> Option[A] -> Option[Y]。
 // Option 的结构成员不隐式固定 A；Option[Int].map 仍是全族操作，self 才固定接收者。
 // Right 不需要 handler 的内容，不意味着严格求值会跳过 handler 实参表达式。
 
 // 从已经给出的 Option.ap 回看积结构：先得到配对值，再推广其证明。
-// 在 Types 上从 Applicative 派生积操作。F 是显式结构参数，不是隐式 self。
+// 在 types 上从 Applicative 派生积操作。F 是显式结构参数，不是隐式 self。
 app_unit[F: Applicative]: F.obj(Unit) = F.pure(Unit.unit);
 app_lift2[F: Applicative, A, B, C]:
     (A -> B -> C, F.obj(A), F.obj(B)) -> F.obj(C) =
@@ -1094,46 +1045,46 @@ def law app_lift2_map_right[F: Applicative, A, B, C, D](
 def law app_zip_naturality[F: Applicative, A, B, C, D](
     f: A -> C, g: B -> D, x: F.obj(A), y: F.obj(B)
 ) -> (
-    F.map(PairFunctor.map((f, g)))(app_zip[F](x, y))
+    F.map(pair_bifunctor.map((f, g)))(app_zip[F](x, y))
     ~= app_zip[F](F.map(f)(x), F.map(g)(y))
 ) {
-    left = app_map_lift2[F](PairFunctor.map((f, g)), make_pair[A, B], x, y);
+    left = app_map_lift2[F](pair_bifunctor.map((f, g)), make_pair[A, B], x, y);
     right = trans(app_lift2_map_left[F](make_pair[C, D], f, x, F.map(g)(y)),
                   app_lift2_map_right[F](a => d => (f(a), d), g, x, y));
     trans(left, symm(right))
 }
 
 def law app_zip_left_unit[F: Applicative, A](x: F.obj(A)) -> (
-    F.map(PairLeftUnitor[A].hom)(app_zip[F](app_unit[F], x)) ~= x
+    F.map(pair_left_unitor[A].hom)(app_zip[F](app_unit[F], x)) ~= x
 ) {
     inject: A -> (Unit, A) = a => (Unit.unit, a);
     zip_pure = trans(
         congr_arg(k => F.ap(k, x), app_map_pure[F](make_pair[Unit, A], Unit.unit)),
         symm(F.map_from_ap(inject, x)));
-    trans(congr_arg(F.map(PairLeftUnitor[A].hom), zip_pure),
-        trans(app_map_twice[F](inject, PairLeftUnitor[A].hom, x),
+    trans(congr_arg(F.map(pair_left_unitor[A].hom), zip_pure),
+        trans(app_map_twice[F](inject, pair_left_unitor[A].hom, x),
               congr_arg(function => function(x), F.identity[A])))
 }
 
 def law app_zip_right_unit[F: Applicative, A](x: F.obj(A)) -> (
-    F.map(PairRightUnitor[A].hom)(app_zip[F](x, app_unit[F])) ~= x
+    F.map(pair_right_unitor[A].hom)(app_zip[F](x, app_unit[F])) ~= x
 ) {
     evaluate: (Unit -> (A, Unit)) -> (A, Unit) = k => k(Unit.unit);
     inject: A -> (A, Unit) = a => (a, Unit.unit);
     zip_pure = trans(app_ap_pure[F](F.map(make_pair[A, Unit])(x), Unit.unit),
                      app_map_twice[F](make_pair[A, Unit], evaluate, x));
-    trans(congr_arg(F.map(PairRightUnitor[A].hom), zip_pure),
-        trans(app_map_twice[F](inject, PairRightUnitor[A].hom, x),
+    trans(congr_arg(F.map(pair_right_unitor[A].hom), zip_pure),
+        trans(app_map_twice[F](inject, pair_right_unitor[A].hom, x),
               congr_arg(function => function(x), F.identity[A])))
 }
 
 def law app_zip_associativity[F: Applicative, A, B, C](x: F.obj(A), y: F.obj(B), z: F.obj(C)) -> (
-    F.map(PairAssociator[A, B, C].hom)(app_zip[F](app_zip[F](x, y), z))
+    F.map(pair_associator[A, B, C].hom)(app_zip[F](app_zip[F](x, y), z))
     ~= app_zip[F](x, app_zip[F](y, z))
 ) {
     // 两边均化到 ap(ap(map(a => b => c => (a,(b,c)))(x),y),z)。
     reassociate: (p: (A, B)) -> C -> (A, (B, C)) = p => c => (p.0, (p.1, c));
-    left = trans(app_map_lift2[F](PairAssociator[A, B, C].hom, make_pair[(A, B), C], app_zip[F](x, y), z),
+    left = trans(app_map_lift2[F](pair_associator[A, B, C].hom, make_pair[(A, B), C], app_zip[F](x, y), z),
                  congr_arg(k => F.ap(k, z), app_map_lift2[F](reassociate, make_pair[A, B], x, y)));
     u = F.map(make_pair[A, (B, C)])(x);
     v = F.map(make_pair[B, C])(y);
@@ -1151,18 +1102,18 @@ def law app_zip_associativity[F: Applicative, A, B, C](x: F.obj(A), y: F.obj(B),
 def law option_product_naturality[A, B, C, D](
     f: A -> C, g: B -> D, x: Option[A], y: Option[B]
 ) -> (
-    Option.map(PairFunctor.map((f, g)))(app_zip[option_applicative](x, y))
+    Option.map(pair_bifunctor.map((f, g)))(app_zip[option_applicative](x, y))
     ~= app_zip[option_applicative](Option.map(f)(x), Option.map(g)(y))
 ) { app_zip_naturality[option_applicative](f, g, x, y) }
 
 def law option_product_units[A](x: Option[A]) -> (
-    (Option.map(PairLeftUnitor[A].hom)(app_zip[option_applicative](app_unit[option_applicative], x)),
-     Option.map(PairRightUnitor[A].hom)(app_zip[option_applicative](x, app_unit[option_applicative])))
+    (Option.map(pair_left_unitor[A].hom)(app_zip[option_applicative](app_unit[option_applicative], x)),
+     Option.map(pair_right_unitor[A].hom)(app_zip[option_applicative](x, app_unit[option_applicative])))
     ~= (x, x)
 ) { pair_congr(app_zip_left_unit[option_applicative](x), app_zip_right_unit[option_applicative](x)) }
 
 def law option_product_associativity[A, B, C](x: Option[A], y: Option[B], z: Option[C]) -> (
-    Option.map(PairAssociator[A, B, C].hom)(app_zip[option_applicative](app_zip[option_applicative](x, y), z))
+    Option.map(pair_associator[A, B, C].hom)(app_zip[option_applicative](app_zip[option_applicative](x, y), z))
     ~= app_zip[option_applicative](x, app_zip[option_applicative](y, z))
 ) { app_zip_associativity[option_applicative](x, y, z) }
 
@@ -1174,51 +1125,50 @@ type NaturalTransformation[C: Category, D: Category, F: Functor[C, D], G: Functo
     );
 }
 
-type SomeTransformation:
-    NaturalTransformation[Types, Types, IdentityFunctor[Types], option_functor] {
-    app[X: Type]: X -> Option[X] = value => Option.Some(value);
-    def law naturality[X: Type, Y: Type](f: X -> Y) -> (
-        Types.compose(option_functor.map(f), app[X])
-        ~= Types.compose(app[Y], IdentityFunctor[Types].map(f))
-    ) { funext(value => refl) }
-}
+// alpha 是整个自然变换，alpha.app 是按源对象索引的态射族。
+// alpha.app[X]: D.Hom[F.obj(X),G.obj(X)] 选择一个分量，不把 X 传给态射。
+// 应拒绝：对一般 D 直接写 alpha.app[X](value)；Hom 未必是函数。
+some_transformation: NaturalTransformation[
+    types, types, identity_functor[types], option_functor
+] = NaturalTransformation[types, types, identity_functor[types], option_functor] {
+    app[X: Type] = value => Option.Some(value),
+    naturality[X: Type, Y: Type] = f => funext(value => refl),
+};
 
-def law injecting_a_value() -> (SomeTransformation.app[Int](41) ~= Option.Some(41)) { refl }
+// 这里目标是 types，Hom 展开为函数，才可以继续传入 Int 数据。
+some_at_int: Int -> Option[Int] = some_transformation.app[Int];
+
+def law injecting_a_value() -> (some_transformation.app[Int](41) ~= Option.Some(41)) { refl }
+def law applying_a_component() -> (some_at_int(41) ~= Option.Some(41)) { refl }
 
 // 恒等自然变换是同一结构的一个通用构造，证据来自范畴的单位律。
-type IdentityTransformation[C: Category, D: Category, F: Functor[C, D]]:
-    NaturalTransformation[C, D, F, F] {
-    app[X: C.Obj]: D.Hom[F.obj(X), F.obj(X)] = D.id[F.obj(X)];
-    def law naturality[X: C.Obj, Y: C.Obj](f: C.Hom[X, Y]) -> (
-        D.compose(F.map(f), app[X]) ~= D.compose(app[Y], F.map(f))
-    ) { trans(D.right_identity(F.map(f)), symm(D.left_identity(F.map(f)))) }
-}
+identity_transformation[C: Category, D: Category, F: Functor[C, D]]:
+    NaturalTransformation[C, D, F, F] = NaturalTransformation[C, D, F, F] {
+    app[X: C.Obj] = D.id[F.obj(X)],
+    naturality[X: C.Obj, Y: C.Obj] = f => trans(D.right_identity(F.map(f)), symm(D.left_identity(F.map(f)))),
+};
 
 // 可逆地添加 Unit：先定义该实际数据形状的函子，再给自然同构契约。
-type UnitProduct: Functor[Types, Types] {
-    obj: Type -> Type = X => (Unit, X);
-    map[X, Y]: (X -> Y) -> ((pair: (Unit, X)) -> (Unit, Y)) =
-        f => pair => (pair.0, f(pair.1));
-    identity[X]: map(Types.id[X]) ~= Types.id[(Unit, X)] =
-        funext(pair => match pair { (unit, value) => refl });
-    composition[X, Y, Z]: (f: X -> Y, g: Y -> Z) -> (
-        map(Types.compose(g, f)) ~= Types.compose(map(g), map(f))
-    ) = (f, g) => funext(pair => refl);
-}
+unit_product_functor: Functor[types, types] = Functor[types, types] {
+    obj = X => (Unit, X),
+    map[X, Y] = f => pair => (pair.0, f(pair.1)),
+    identity[X] = funext(pair => match pair { (unit, value) => refl }),
+    composition[X, Y, Z] = (f, g) => funext(pair => refl),
+};
 
-type AddUnit: NaturalTransformation[Types, Types, IdentityFunctor[Types], UnitProduct] {
-    app[X] = PairLeftUnitor[X].inv;
-    naturality[X, Y]: (f: X -> Y) -> (
-        Types.compose(UnitProduct.map(f), app[X]) ~= Types.compose(app[Y], IdentityFunctor[Types].map(f))
-    ) = f => funext(value => refl);
-}
+add_unit: NaturalTransformation[
+    types, types, identity_functor[types], unit_product_functor
+] = NaturalTransformation[types, types, identity_functor[types], unit_product_functor] {
+    app[X] = pair_left_unitor[X].inv,
+    naturality[X, Y] = f => funext(value => refl),
+};
 
-type RemoveUnit: NaturalTransformation[Types, Types, UnitProduct, IdentityFunctor[Types]] {
-    app[X] = PairLeftUnitor[X].hom;
-    naturality[X, Y]: (f: X -> Y) -> (
-        Types.compose(IdentityFunctor[Types].map(f), app[X]) ~= Types.compose(app[Y], UnitProduct.map(f))
-    ) = f => funext(pair => refl);
-}
+remove_unit: NaturalTransformation[
+    types, types, unit_product_functor, identity_functor[types]
+] = NaturalTransformation[types, types, unit_product_functor, identity_functor[types]] {
+    app[X] = pair_left_unitor[X].hom,
+    naturality[X, Y] = f => funext(pair => refl),
+};
 
 type NaturalIsomorphism[C: Category, D: Category, F: Functor[C, D], G: Functor[C, D]] {
     hom: NaturalTransformation[C, D, F, G];
@@ -1227,29 +1177,27 @@ type NaturalIsomorphism[C: Category, D: Category, F: Functor[C, D], G: Functor[C
     law hom_inv[X: C.Obj] -> (D.compose(hom.app[X], inv.app[X]) ~= D.id[G.obj(X)]);
 }
 
-type UnitProductIsomorphism: NaturalIsomorphism[Types, Types, UnitProduct, IdentityFunctor[Types]] {
-    hom = RemoveUnit;
-    inv = AddUnit;
-    inv_hom[X]: Types.compose(inv.app[X], hom.app[X]) ~= Types.id[(Unit, X)] =
-        PairLeftUnitor[X].inv_hom;
-    hom_inv[X]: Types.compose(hom.app[X], inv.app[X]) ~= Types.id[X] =
-        PairLeftUnitor[X].hom_inv;
-}
+unit_product_isomorphism: NaturalIsomorphism[
+    types, types, unit_product_functor, identity_functor[types]
+] = NaturalIsomorphism[types, types, unit_product_functor, identity_functor[types]] {
+    hom = remove_unit,
+    inv = add_unit,
+    inv_hom[X] = pair_left_unitor[X].inv_hom,
+    hom_inv[X] = pair_left_unitor[X].hom_inv,
+};
 
 def law adding_and_removing_unit() -> (
-    UnitProductIsomorphism.hom.app[Int](UnitProductIsomorphism.inv.app[Int](42)) ~= 42
+    unit_product_isomorphism.hom.app[Int](unit_product_isomorphism.inv.app[Int](42)) ~= 42
 ) { refl }
 
 // 保留通用的恒等自然同构构造；上面的 Unit 例子展示了不同形状之间的同构。
-type IdentityNaturalIsomorphism[C: Category, D: Category, F: Functor[C, D]]:
-    NaturalIsomorphism[C, D, F, F] {
-    hom = IdentityTransformation[C, D, F];
-    inv = IdentityTransformation[C, D, F];
-    inv_hom[X: C.Obj]: D.compose(inv.app[X], hom.app[X]) ~= D.id[F.obj(X)] =
-        D.left_identity(D.id[F.obj(X)]);
-    hom_inv[X: C.Obj]: D.compose(hom.app[X], inv.app[X]) ~= D.id[F.obj(X)] =
-        D.left_identity(D.id[F.obj(X)]);
-}
+identity_natural_isomorphism[C: Category, D: Category, F: Functor[C, D]]:
+    NaturalIsomorphism[C, D, F, F] = NaturalIsomorphism[C, D, F, F] {
+    hom = identity_transformation[C, D, F],
+    inv = identity_transformation[C, D, F],
+    inv_hom[X: C.Obj] = D.left_identity(D.id[F.obj(X)]),
+    hom_inv[X: C.Obj] = D.left_identity(D.id[F.obj(X)]),
+};
 ```
 
 ## 06-sequences.sp · Sequence 与实际表示
@@ -1701,7 +1649,7 @@ def law missing_and_stored_none() -> (
 
 ```spore
 // 用 Fin[n] 表达有效索引，用 Vec[A, n] 表达长度；再证明映射保持索引观察。
-// Nat 采用 README 的归纳背景。类型参数与值索引分别显式绑定。
+// Nat 采用 SKILL.md 的归纳背景。类型参数与值索引分别显式绑定。
 
 type Fin: Nat -> Type {
     case Zero[n: Nat] -> Fin[Nat.Succ(n)];

@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "按 typed-structures 写一个 Option，用类型侧 map 提升函数、实例侧 map 绑定值，并证明恒等与复合律。",
-      "expected_output": "实际使用 Functor[Types,Types] 契约，以 Option: Functor[Types,Types] 的全族结构补全 obj/map 与证据；方法绑定数据视图，句法检查与语义审阅分别报告。",
+      "expected_output": "实际使用 Functor[types,types] 契约，以 Option: Functor[types,types] 的全族结构补全 obj/map 与证据；方法绑定数据视图，句法检查与语义审阅分别报告。",
       "files": [],
       "expectations": [
         "Option 是结构，Option[A] 是数据类型，obj(X) 定义为 Option[X]；结构 map 量化整个 X/Y，不捕获固定 A 或 self",
@@ -77,7 +77,7 @@
       "expected_output": "先纠正旧前提：Applicative 是共享 obj/map 的结构契约，Option: Applicative 是归属；再分析普通函数替换时参数逆变与结果协变。",
       "files": [],
       "expectations": [
-        "没有接受 Option[B] <: Applicative[B] 作为当前关系；实际结构链是 Monad <: Selective <: Applicative <: Functor[Types,Types]",
+        "没有接受 Option[B] <: Applicative[B] 作为当前关系；实际结构链是 Monad <: Selective <: Applicative <: Functor[types,types]",
         "用 F: Applicative 的 ap[A,B]: (F.obj(A -> B), F.obj(A)) -> F.obj(B) 解释具体补全，Option.obj(X) 展开为 Option[X]",
         "结果协变不能抵消输入缩窄；区分实例化同一对象映射与用更窄函数替换原有函数",
         "不引入 Family、Self[B]、for F、Functor[Option] 或声称四份接口尚未定义",
@@ -121,15 +121,16 @@
     },
     {
       "id": 11,
-      "prompt": "从普通函数组合引入 Category 和 Types，再实际定义恒等函子。说明 Functor[Types,Types] 的宇宙，并给出定律证明。",
+      "prompt": "从普通函数组合引入 Category 和 types，再实际定义恒等函子。说明 Functor[types,types] 的宇宙，并给出定律证明。",
       "expected_output": "把契约与具体函数一起引入，声明对象和态射层级，提供恒等及复合证据，并正确推导函子结构位于 Universe<2>。",
       "files": [],
       "expectations": [
         "Category<u,v> 使用 Obj: Universe<u> 与 Hom[X,Y]: Universe<v>，id 和 compose 的起终点相符",
-        "LargeCategory<v> 是 Category<next(v),v> 的透明别名；Types.Obj = Type，Hom 为函数",
-        "Types 的对象层级为 2、态射层级为 1，解释 Functor[Types,Types]: Universe<2> 而非自动降层",
+        "LargeCategory<v> 是 Category<next(v),v> 的透明别名；types.Obj = Type，Hom 为函数",
+        "types 的对象层级为 2、态射层级为 1，解释 Functor[types,types]: Universe<2> 而非自动降层",
         "恒等函子实际提供 obj/map 和 identity/composition 证据；普通函数范畴的 law 用 funext 与归约说明",
-        "函数实参正常写 compose(g,f)，不生成粘贴转义或 <g,f> 调用形式"
+        "函数实参正常写 compose(g,f)，不生成粘贴转义或 <g,f> 调用形式",
+        "types 与 identity_functor 都以小写普通值定义并用契约类型构造块补全，不用 type 声明纯结构值"
       ]
     },
     {
@@ -138,11 +139,12 @@
       "expected_output": "读取计算示例，沿共享对象映射写出真实契约与完整 Option 实现，不再只写关系口号或把抽象接口列为待定。",
       "files": [],
       "expectations": [
-        "真实声明 Applicative <: Functor[Types,Types]、Selective <: Applicative、Monad <: Selective，继承同一 obj/map",
+        "真实声明 Applicative <: Functor[types,types]、Selective <: Applicative、Monad <: Selective，继承同一 obj/map",
         "pure: A -> obj(A)，ap 与 select 接收普通双参数，bind 接收回调后返回计算函数，不自动柯里化所有操作",
         "Option[A: Type]: Monad 同时提供结构与类型族，所有结构操作显式量化 X/Y，不捕获外层 A 或 self",
         "逐项提供 Functor、Applicative、Selective、Monad 定律和 map_from_ap、ap_from_bind、select_from_bind 证据，不使用显然成立占位",
-        "理论契约紧接实际 Option 分支行为及证明，并区分句法通过与证明核验"
+        "理论契约紧接实际 Option 分支行为及证明，并区分句法通过与证明核验",
+        "保留 type Option[A: Type]: Monad；先生成数据族再绑定 obj，Option[A] 不是 Monad，不能将 obj 替换为无关类型族"
       ]
     },
     {
@@ -152,9 +154,24 @@
       "files": [],
       "expectations": [
         "自然变换保留 app[X]，给出自然性两条复合路径及其逐点证据",
-        "不把 Some 注入误称为自然同构；使用 UnitProduct 的添加/移除 Unit 展示互逆与自然性",
+        "不把 Some 注入误称为自然同构；使用 unit_product_functor 的添加/移除 Unit 展示互逆与自然性",
         "从同一个 pure/map/ap 派生单位和配对，泛型辅助操作显式接收结构 F",
-        "配对的自然性、左右单位和结合证据与 Types 积结构方向一致；幺半契约包含五边形与三角形要求"
+        "配对的自然性、左右单位和结合证据与 types 积结构方向一致；幺半契约包含五边形与三角形要求",
+        "区分 alpha、alpha.app、alpha.app[X] 与 alpha.app[X](value)；最后一步仅在目标 Hom 为函数时成立"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "把旧的 type IdentityFunctor[C: Category]: Functor[C,C] 和 type ProductCategory[C,D]: Category 改成普通结构值，再处理 type Option[A: Type]: Monad。是不是可以一刀切删掉 type 后的冒号？解释 Bifunctor 与 pair_bifunctor 的差别。",
+      "expected_output": "普通结构定义采用小写值与泛型字段补全；Bifunctor 保留为透明类型别名；Option 真正定义数据族，保留附带结构的 type 声明并明确 obj 对应规则。",
+      "files": [],
+      "expectations": [
+        "identity_functor 和 product_category 用 name[...]: T = T { ... };，不把已有结构值伪装成新类型",
+        "map[X,Y]、identity[X] 和 composition[X,Y,Z] 在构造块中用值补全；不写 def law 或混入类型体分号语法",
+        "Bifunctor 是引用 product_category 的类型别名，pair_bifunctor 是该类型中的值；仅凭大写名称不能推出 <:",
+        "保留 type Option[A: Type]: Monad，将 Option、Option[A]、Option.Some(1) 的角色区分；不强制拆成独立 option",
+        "先生成数据族并指定 obj 的对应关系，显式 obj 需与该族定义相等，不能依赖循环展开或猜测任意记录字段",
+        "检查语法后仍审阅语义；不声称 Ohm 能验证声明角色或类型归属"
       ]
     }
   ]

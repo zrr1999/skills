@@ -7,6 +7,8 @@ TypedStructures {
   TypeDecl = typeKw ident UniverseParams? TypeParams? TypeTail
   TypeTail = TypeRelation? TypeBody              --structure
            | "=" TypeExpr Refinement? ";"       --alias
+  // ':' is retained for data-family attachment. Its role and designated obj
+  // correspondence require semantic review; it cannot construct arbitrary values.
   TypeRelation = ("<:" | ":") TypeExpr
   Refinement = whenKw Expr
   UniverseParams = "<" NonemptyTrailingList<ident> ">"
@@ -99,7 +101,7 @@ TypedStructures {
        | ident                                --name
   Block = "{" ValueDef* Expr "}"
   CtorBody = "{" TrailingList<FieldAssign> "}"
-  FieldAssign = ident "=" Expr
+  FieldAssign = ident TypeParams? "=" Expr
 
   Pattern = "(" NonemptyListOf<Pattern, ","> ")" --tuple
           | QualifiedPattern PatternTail?  --constructor

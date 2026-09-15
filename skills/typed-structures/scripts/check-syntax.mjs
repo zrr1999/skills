@@ -28,12 +28,15 @@ const accepted = [
   ['universe background rule', 'Universe<u>: Universe<next(u)>; Prop = Universe<0>; Type = Universe<1>;'],
   ['universe polymorphic function', 'def fn keep<u>[A: Universe<u>](value: A) -> A { value }'],
   ['level max and inferred level', 'type PairType<u, v> { carrier: Universe<max(u, next(v))>; } chosen: Universe<_> = Int;'],
-  ['membership after data parameters', 'type TypeFamily { obj: Type -> Type; } type Box[A: Type]: TypeFamily { case Pack(value: A); obj: Type -> Type = X => Box[X]; }'],
+  ['data family with functor attachment', 'type Box[A: Type]: Functor[types,types] { case Pack(value: A); obj = X => Box[X]; map[X,Y] = f => value => match value { Box.Pack(x) => Box.Pack(f(x)) }; identity[X] = funext(value => match value { Box.Pack(x) => refl }); composition[X,Y,Z] = (f,g) => funext(value => match value { Box.Pack(x) => refl }); }'],
   ['generic function type definition', 'Hom[X: Type, Y: Type] = X -> Y;'],
   ['dependent function type as value', 'Reflexivity<u>: Prop = (A: Universe<u>) -> (x: A) -> (x ~= x);'],
   ['proof value and proof function', 'type Evidence { law same[X] -> (X ~= X); law again[X]() -> (X ~= X); } def law reflexive[X] -> (X ~= X) { refl }'],
   ['bare equality annotation', 'def fn preserve[A, x: A, y: A](proof: x ~= y) -> (x ~= y) { proof }'],
   ['tuple function domain and pattern', 'def fn swap[A, B](pair: (A, B)) -> (B, A) { match pair { (a, b) => (b, a) } }'],
+  ['parameterized structure value', 'identity_functor[C: Category]: Functor[C,C] = Functor[C,C] { obj = x => x, map[X: C.Obj,Y: C.Obj] = f => f, identity[X: C.Obj] = refl, composition[X: C.Obj,Y: C.Obj,Z: C.Obj] = (f,g) => refl, };'],
+  ['dependent generic record completion', 'types: LargeCategory<1> = LargeCategory<1> { Obj = Type, Hom[X: Obj,Y: Obj] = X -> Y, id[X: Obj] = x => x, compose[X: Obj,Y: Obj,Z: Obj] = (g,f) => x => g(f(x)), left_identity[X: Obj,Y: Obj] = f => funext(x => refl), right_identity[X: Obj,Y: Obj] = f => funext(x => refl), associativity[W: Obj,X: Obj,Y: Obj,Z: Obj] = (f,g,h) => funext(x => refl), };'],
+  ['select then apply a component', 'some_at_int: Int -> Option[Int] = some_transformation.app[Int]; answer = some_at_int(41);'],
 ];
 const rejected = [
   ['old bare def', 'def id(x: Int) -> Int { x }'],
@@ -59,6 +62,10 @@ const rejected = [
   ['comma without a field', 'x = Empty {,};'],
   ['comma without an arm', 'def fn absurd(x: Never) -> Int { match x {,} }'],
   ['unclosed type', 'type Box { value: Int;'],
+  ['def law in generic record completion', 'f = Functor[C,C] { def law identity[X: C.Obj] -> (X ~= X) { refl } };'],
+  ['bodyless generic field completion', 'f = Functor[C,C] { map[X: C.Obj,Y: C.Obj] };'],
+  ['function declaration in generic field completion', 'f = Functor[C,C] { map[X: C.Obj,Y: C.Obj](arrow) = arrow };'],
+  ['semicolon in generic record completion', 'f = Functor[C,C] { map[X: C.Obj,Y: C.Obj] = arrow => arrow; };'],
 ];
 
 // These are deliberately recognized. Ohm has no type checker, universe solver,
@@ -67,9 +74,13 @@ const semanticErrors = [
   ['non-cumulative universe', 'def fn lift(A: Universe<1>) -> Universe<2> { A }'],
   ['reapplying complete Self', 'type Box[A] { method wrong[B]() -> Self[B] { self } }'],
   ['constructing open Self from parent fields', 'type Counter { value: Int; def fn make(value: Int) -> Self { Self { value = value } } }'],
-  ['data value used as functor structure', 'wrong: Functor[Types, Types] = Option.Some(1);'],
+  ['data value used as functor structure', 'wrong: Functor[types, types] = Option.Some(1);'],
   ['argument count mismatch', 'add: (Int, Int) -> Int = (x, y) => x + y; wrong = add((1, 2));'],
   ['false reflexivity proof', 'def law wrong() -> (1 ~= 2) { refl }'],
+  ['ordinary structure value disguised as a type', 'type IdentityFunctor[C: Category]: Functor[C,C] { obj = x => x; map[X: C.Obj,Y: C.Obj] = f => f; identity[X: C.Obj] = refl; composition[X: C.Obj,Y: C.Obj,Z: C.Obj] = (f,g) => refl; }'],
+  ['data family attachment maps a different family', 'type Option[A: Type]: Monad { case None; case Some(value: A); obj = X => (Unit,X); }'],
+  ['applied data family used as monad structure', 'wrong: Monad = Option[Int];'],
+  ['applying a morphism in an arbitrary category', 'def fn wrong[C: Category,D: Category,F: Functor[C,D],G: Functor[C,D],X: C.Obj](alpha: NaturalTransformation[C,D,F,G], value: Int) -> Int { alpha.app[X](value) }'],
 ];
 
 const directory = mkdtempSync(join(tmpdir(), 'typed-structures-syntax-'));

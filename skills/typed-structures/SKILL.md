@@ -41,7 +41,7 @@ description: >-
 
 - 字段、函数、证据都以 `:` 声明、`=` 定义；fn/law 是语法糖。def 只用于带大括号的 def fn / def law，不写裸 def、def method 或 `def law ... = ...`。普通函数和方法可以推断返回类型，law 明确写出目标。
 - 不使用 static、独立 proof 声明、`:=` 或 `#` 方法调用。没有实例字段默认值：`step: Int = 1;` 是类型预定义，构造时不能覆盖。`=` 不引入可变赋值。
-- 记录构造 `T { field = expression, ... }` 与关系补全只填写实例要求。函数和证据用值提供，不在构造块里写 def fn / def law；固定预定义和方法不参与构造补全。
+- 记录构造 `T { field = expression, ... }` 与关系补全只填写实例要求。泛型字段用 `map[X: C.Obj, Y: C.Obj] = expression`，按契约检查参数、结果与依赖；后续字段可引用此前补全，不隐式绑定 self。函数和证据用值提供，例如 `identity[X] = refl`、`composition[X,Y,Z] = (f,g) => evidence`，不在构造块里写 def fn / def law；固定预定义和方法不参与补全。
 - 没有 case 的数据类型是记录，有 case 时选择一个分支并提供公共字段及分支字段；分支专有字段只在匹配后使用。不能把这种数据构造规则误用于类型侧结构归属。
 
 ## 成员与 Self
@@ -49,18 +49,18 @@ description: >-
 - `T.name` 查找普通类型成员，`value.name` 查找实例字段或绑定方法；两域不回退。允许 T.map 与 value.map 同名，同一实例域的字段与方法不能同名，类型域没有一般重载集合。
 - `.` 先选成员，`()` 再应用函数。方法取值时保存一次求值后的接收者，调用时执行 body；method 不自动产生 T.m 普通函数入口。函数字段不额外绑定接收者。
 - method 省略 `self: Self`，字段显式写 self.field；裸名字查参数、局部绑定和外层词法定义。普通函数没有隐式 self，lambda 可捕获已有 self。law 可依赖此前字段，证据按最终字段实例化，不额外绑定接收者。
-- Self 是当前实例化的完整类型，所在宇宙由该类型确定，不固定写成 Self: Type。在 Option[A] 的数据视图中是完整的 Option[A]，不能写 Self[B]；在 Functor[C,D] 中是完整的结构值类型，不是 obj(A)。Types 这类纯结构值不额外产生一个 Self 数据载体。
+- Self 是当前实例化的完整类型，所在宇宙由该类型确定，不固定写成 Self: Type。在 Option[A] 的数据视图中是完整的 Option[A]，不能写 Self[B]；在 Functor[C,D] 中是完整的结构值类型，不是 obj(A)。types 这类纯结构值不额外产生一个 Self 数据载体。
 - 对抽象 Self 成立的定义与证明可在子类型下实例化。不能先将 Self 等同于父类型检查，再替换为任意子类型。仅凭父字段不能构造完整 Self：Counter.make 返回 Counter，keep 原样返回输入 Self；next 即使是 method，也不能自动承诺保持子类型的新增字段或约束。
 - Self.member 可以选择继承的普通操作，但不会改变固定返回类型；Self.make 不会把 Counter 提升为 Self。向上取得 T 视图后，Self 按 T 实例化，不恢复隐藏源类型。需操作父表示时先用 `value: T = self;` 取得视图，不假定调用位置自动转换。
 - 内层类型建立自己的 Self；类型体外的关系补全和 when 不因出现 self 就建立 Self。关系块的 self 是源值，when 的 self 是基础值。
 
 ## 范畴、结构归属与类型族
 
-- `:` 表示归属，`<:` 表示两个类型之间的细化关系，`=` 表示定义。`type Types: LargeCategory<1> { ... }` 补全结构值；`LargeCategory<v> = Category<next(v),v>` 是透明别名，不登记转换。
-- Category<u,v> 要求 Obj: Universe<u>、Hom[X,Y]: Universe<v>，结构自身在 Universe<max(next(u),next(v))>。Types.Obj = Type，Types.Hom[X,Y] = X -> Y；因此 Types 的对象层级是 2、态射层级是 1，Functor[Types,Types] 在 Universe<2>。
-- 使用实际的 `Functor[C,D]` 契约及其 obj/map，检查恒等和复合律。ProductCategory 的态射按分量组合；自然变换保留 app[X] 命名。核对每个同构的正逆方向、自然性方块、幺半结构的五边形和三角形起终点。
-- `type Option[A: Type]: Monad { ... }` 同时提供结构 Option 和数据类型族 Option[A]，Option.obj(A) 定义等于 Option[A]。结构补全覆盖整个类型族，不捕获某个固定 A 或实例 self；不能把 Option.Some(1) 当作函子结构。
-- 四层实际声明为 `Applicative <: Functor[Types,Types]`、`Selective <: Applicative`、`Monad <: Selective`。继承同一 obj/map；pure、ap、select、bind 都通过同一个 obj 表述，具体补全统一展开为 Option。不要恢复 `Option <: Functor`、Functor[Option]、`for F`、Family 或 Self[B]。
+- `:` 表示归属，`<:` 表示类型细化，`=` 表示定义。类型、类型族和别名用大写，普通结构定义用小写，泛型参数可沿用数学记号。`type` 用于定义新的类型或类型族；已有类型中的结构值用 `types: LargeCategory<1> = LargeCategory<1> { ... };`、`identity_functor[C: Category]: Functor[C,C] = Functor[C,C] { ... };`。不能把普通结构值伪装成 `type IdentityFunctor[C]: Functor[C,C]`。`LargeCategory` 和 `Bifunctor` 是透明别名，大写并不意味着新子类型，不登记转换。
+- Category<u,v> 要求 Obj: Universe<u>、Hom[X,Y]: Universe<v>，结构自身在 Universe<max(next(u),next(v))>。types.Obj = Type，types.Hom[X,Y] = X -> Y；因此 types 的对象层级是 2、态射层级是 1，Functor[types,types] 在 Universe<2>。
+- 使用实际的 `Functor[C,D]` 契约及其 obj/map，检查恒等和复合律。product_category 返回范畴值，pair_bifunctor 是双函子值，compose_functors 构造复合函子值。自然变换 alpha 携带分量族 `alpha.app`；`alpha.app[X]` 是 D.Hom 中的一条态射，只有 Hom 确实为函数时才能再写 `alpha.app[X](value)`。核对同构正逆方向、自然性、五边形和三角形的起终点。
+- 保留 `type Option[A: Type]: Monad { ... }`：它确实定义数据类型族，并为整个 Option 配备结构，不能一律删除 `type ... : ...` 或改成 `<:`。先生成数据族，再将指定的 obj 绑定到它，Option.obj(A) 与 Option[A] 定义相等，不循环展开。显式 obj 必须对应生成的数据族，不允许换成别的类型族；这种形式要求已指定结构字段与数据族的对应规则，不能为任意记录按名字猜测。结构补全独立量化全族，不捕获固定 A 或 self；Option: Monad，Option[A]: Type，Option[A] 与 Option.Some(1) 都不是 Monad 结构。
+- 四层实际声明为 `Applicative <: Functor[types,types]`、`Selective <: Applicative`、`Monad <: Selective`。继承同一 obj/map；pure、ap、select、bind 都通过同一个 obj 表述，具体补全统一展开为 Option。不要恢复 `Option <: Functor`、Functor[Option]、`for F`、Family 或 Self[B]。
 - 检查继承的全部证据：Functor 恒等/复合；Applicative 恒等/同态/交换/复合及 map_from_ap；Selective 恒等/分配/结合；Monad 左右单位元/结合及 ap_from_bind、select_from_bind。派生配对操作也需自然性、单位和结合证据，不能写“laws 显然成立”。
 - Option 的方法 map 接收 A -> B，返回 Option[B]；Self.map 选择全族操作，不把 Self 变成构造器。泛型辅助函数显式接收结构或操作，不引入隐式实例查找。函数的参数逆变、结果协变，不能用结果协变补救不匹配的输入或凭 map 推导容器子类型。
 
@@ -78,6 +78,6 @@ description: >-
 
 识别单位是 Module，单独表达式需包进定义。修改文法或示例后运行 [scripts/check-syntax.mjs](scripts/check-syntax.mjs)，检查各节、顺序拼接及正反语法用例；OHM_BIN 可指定 CLI 路径。错误保留 Line / Expected 诊断。
 
-退出码 0 只表示句法符合文法。脚本另列会被识别但必须语义拒绝的案例，包括自动升层、Self[B]、不完整的 Self 构造、错误结构归属、实参数量不匹配和错误 refl；识别它们不是成功验证其语义。不要声称旧 Ohm 文法、有限样例或行为评测 schema 检查验证了类型或 law。
+退出码 0 只表示句法符合文法。脚本另列会被识别但必须语义拒绝的案例，包括自动升层、Self[B]、不完整的 Self 构造、普通结构值误用 type、数据族与 obj 错配、非函数态射的应用、错误结构归属、实参数量不匹配和错误 refl；识别它们不是成功验证其语义。不要声称旧 Ohm 文法、有限样例或行为评测 schema 检查验证了类型或 law。
 
 `:>`、一般重载、类型推断与依赖转换算法、递归接受条件、视图核心展开与跨模块一致性、效果及存储模型仍待确定或实现。宇宙记法、四层契约和全族补全已在例子中给出，不再列为缺失的接口设计。
