@@ -75,3 +75,11 @@ Groups are free (no rendering cost) but add DOM complexity. Use them when:
 - Adding event handlers to a collection of shapes
 
 Don't use them just for organization in distributed icons (Lucide prohibits them entirely).
+
+## Tool selection and scope
+
+Use the project's existing optimizer and configuration when needed. Simple
+metadata or precision cleanup can be manual. Before choosing SVGO flags, read
+its current help through the project's allowed runner; do not globally install
+it for a one-off cleanup. Review-only requests do not authorize writing assets.
+Preserve meaningful IDs, animation targets, accessibility and rendered behavior.

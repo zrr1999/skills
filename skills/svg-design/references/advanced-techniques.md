@@ -4,7 +4,7 @@
 
 - Use gradients sparingly. A logo should work in flat/monochrome first.
 - Prefer 2-3 stops max. Complex gradients don't scale down well.
-- Always provide a flat-color fallback version of gradient logos.
+- Provide a flat-color fallback when the brief or target environment requires it.
 - Use `gradientUnits="userSpaceOnUse"` when applying the same gradient across multiple shapes to get a unified gradient rather than per-shape gradients.
 
 ## Clip-path vs Mask

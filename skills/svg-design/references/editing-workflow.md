@@ -19,7 +19,7 @@ Merge SVGs by placing their content into a single `<svg>` element. Adjust positi
 ```xml
 <!-- Icon + text logo composition -->
 <svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
-  <!-- Icon (scaled down from 24x24 to 32x32 area, positioned at left) -->
+  <!-- Icon (scaled up from 24x24 to 32x32 area, positioned at left) -->
   <g transform="translate(4, 4) scale(1.33)">
     <!-- paste icon paths here -->
   </g>
@@ -73,11 +73,11 @@ Use `fill-rule="evenodd"` with both shapes in a single path. Where they overlap,
 
 ## Multi-Variant Preview Page
 
-When creating multiple logo/icon options, use the data-driven preview system. This separates the static HTML scaffold from the variant data, so iterating on designs only requires updating a small data file.
+When a comparison page helps evaluate multiple options, prefer the data-driven preview system. This separates the static HTML scaffold from the variant data, so iterating on designs only requires updating a small data file.
 
 ### Setup
 
-1. **Copy `assets/preview.html`** to the project directory using `cp` with the absolute path from where this skill was loaded (e.g., `cp /path/to/this/skill/assets/preview.html ./preview.html`). Do not read it into context or modify it.
+1. **Reuse `assets/preview.html`** in the project directory using an allowed file operation. Keep project-specific data out of the scaffold.
 2. **Write `variants.js`** in the same directory with the variant data (format below).
 3. **Auto-open** with `open preview.html` (macOS) or `xdg-open preview.html` (Linux).
 
@@ -146,26 +146,13 @@ The scaffold in `assets/preview.html` reads `variants.js` and generates:
 | Add a new concept group | `variants.js` | Nothing. Live reload picks it up in 3s. |
 | Change project or brand name | `variants.js` | Nothing. Live reload picks it up in 3s. |
 
-**Do NOT rewrite `preview.html`.** It is a static scaffold copied from the skill assets. All project-specific data lives in `variants.js`.
+Keep project-specific data in `variants.js`. Routine design iterations do not need scaffold edits; template defects, accessibility fixes, or explicitly requested preview behavior may require a tested scaffold change.
 
-### Checklist
+The field table above is the preview contract. On routine design iterations edit `variants.js` and referenced SVG files, then verify the comparison refreshes. Logo variant requirements belong to `logo-techniques.md`, while this file only maps those assets into preview fields.
 
-- **Copy `assets/preview.html`** to the project directory (do not modify it)
-- **Write `variants.js`** with all variant data
-- **Group by concept** (e.g., "Geometric", "Network / Graph", "Abstract")
-- **Description per card** explaining the metaphor and what it conveys
-- If the primary logo is horizontal, **provide a dedicated square mark in `light` / `dark`** instead of shrinking the lockup into avatar previews
-- Provide `lockupLight` / `lockupDark` when you want the preview page to judge the actual combined logo or wordmark lockup
-- For colored logos, provide a `-dark.svg` variant (not CSS filters)
-- For monochrome logos, omit the `dark` field (auto-applies invert filter)
-- **Auto-open** the preview so the user sees options immediately
-- On subsequent iterations, **only edit `variants.js`** and SVG files. Live reload handles the rest.
+## Validation
 
-## Workflow Tips
-
-1. **Start with shape primitives**, convert to paths only when needed for optimization or compound operations
-2. **Use relative coordinates** (`m`, `l`, `c`) when hand-writing paths. Easier to reason about incrementally
-3. **Test at multiple sizes**: render at 16px, 24px, 48px, and 200px to verify clean scaling
-4. **Keep a monochrome version**: if using color, ensure it also works with a single `currentColor`
-5. **Validate the output**: open in a browser, not just a code editor. Check for rendering artifacts
-6. **Round coordinates to the grid**: snap to integers on 24x24 canvas for pixel-perfect rendering at 1x
+Use `svg-basics.md` for geometry, `icon-design.md` for an icon family's grid,
+`accessibility-and-pitfalls.md` for semantics, and `logo-techniques.md` for scoped
+logo acceptance. Render and inspect the target sizes and backgrounds; XML
+validation alone cannot establish visual correctness.

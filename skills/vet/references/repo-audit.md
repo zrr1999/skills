@@ -26,7 +26,7 @@
 - 最近提交/churn、最大或最常改文件，以及它们与测试覆盖的关系；
 - public-release 时的 LICENSE/NOTICE、公开 URL、示例、私密笔记、生成文件、二进制和大文件。
 
-先运行仓库已有的 lint、typecheck、test、build、package 或 smoke 命令。额外工具只在本地已有或明确值得安装时使用；工具缺失要记录原因，不能静默跳过或全局安装。
+按审计范围选择仓库已有的检查；执行主 skill 的共享验证纪律，不要求每次审计全量运行 lint、typecheck、test、build、package 和 smoke。额外工具只在本地已有或明确值得安装时使用；工具缺失要记录原因，不能静默跳过或全局安装。
 
 ## Evidence pass
 

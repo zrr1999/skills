@@ -28,12 +28,14 @@
     {
       "id": 3,
       "prompt": "Optimize this exported icon: [messy SVG with sodipodi metadata and 6 decimals on every coordinate].",
-      "expected_output": "Agent should strip editor metadata, reduce excessive coordinate precision for icon scale, and follow optimization guidance; avoid breaking semantics.",
+      "expected_output": "Agent should remove unnecessary metadata and precision while preserving rendered behavior and references. Prefer project tooling; simple cleanup may be manual. If SVGO is needed, inspect its current help through the allowed runner without a global install.",
       "files": [],
       "expectations": [
         "Mentions or removes editor cruft (e.g. sodipodi/inkscape) when applicable",
         "Addresses numeric precision appropriate to small icons",
-        "References or applies SVGO / optimization concepts without blindly minifying away semantics",
+        "Uses project tooling or a justified manual edit; checks current help when selecting SVGO",
+        "Does not globally install SVGO or assume static flags",
+        "References or applies optimization concepts without blindly minifying away semantics",
         "Keeps viewBox and meaningful structure"
       ]
     },
@@ -60,6 +62,19 @@
         "输出正方形、极简几何山峰、单色深蓝 SVG",
         "包含 xmlns、viewBox 与渲染验证",
         "不额外生成字标、批量概念或未请求的 dark variant"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "给这三个 logo 概念做一个可反复更新的对比预览：每个有 square mark 和可选横向 lockup。生成文件即可，除非视觉比较确实需要，否则不要自动打开浏览器。",
+      "expected_output": "Agent 应只从 editing-workflow 读取预览协议，优先复用 assets/preview.html，并把项目数据写入 variants.js；square mark 映射到 light/dark，横向组合映射到 lockupLight/lockupDark。只有预览有助于比较时才打开 UI，常规迭代只改 SVG 与 variants.js；模板缺陷可做有验证的修复。",
+      "files": [],
+      "expectations": [
+        "复用 assets/preview.html 且不写入项目数据",
+        "使用 variants.js 作为唯一项目数据入口",
+        "区分 square mark 与横向 lockup 字段",
+        "不把自动打开浏览器当作无条件步骤",
+        "常规设计迭代不重写 scaffold；模板修复不混入项目数据"
       ]
     }
   ]
