@@ -13,6 +13,7 @@
 - 委派子代理时，由编排层或宿主运行时根据目标、输入、范围、预期产物、验证和依赖关系组织工作，不在 skill 中固化角色体系。
 - `unix-software-design` 已退役；通用的软件设计判断由 `pilot` 内建并继任，不重新添加独立 skill。pilot 负责结合项目现场判断模块、接口、数据、状态、失败恢复和复杂度边界；单一技术或工具取舍仍交给 `tech-preferences`。
 - 需要横切技术选型、偏好基线或 Python 工程化落地（uv、ruff、ty、CI 等）时加载 `tech-preferences`；需要持久终端工作区、会话恢复、pane/tab/layout 或 Zellij 远程观察时加载 `zellij`。
+- 需要编写、改写或审阅 Spore Notation / typed-structures 的宇宙、Category、Functor/Applicative/Selective/Monad、ADT、law、method、Self 与 `<:` 时加载 `typed-structures`。区分结构归属 `:`、类型细化 `<:` 与定义 `=`；用 `ohm match` 识别句法，不把它当成类型检查器或证明内核。
 - 混合请求中，结果所有权与副作用授权分开判断：专项 skill 可以收窄允许的动作，但加载另一个 skill 不能扩大授权；若多个 skill 的权限边界不同，采用更严格且更贴近当前领域的边界。`git-workstreams` 负责兑现已经允许的 Git/PR 交付，不用其默认交付规则覆盖 `ssh-fleet` 等专项 skill 明确要求的更严格授权。
 - Git workstream 的详细拓扑、模板、验证与停止条件统一见 `skills/git-workstreams/SKILL.md`，不要在其他 skill 中复制。
 

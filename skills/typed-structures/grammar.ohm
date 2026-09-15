@@ -1,0 +1,142 @@
+// Recognition grammar for the current Spore notation draft.
+// This checks syntax, not member lookup, kinds, subtyping, termination or proofs.
+TypedStructures {
+  Module = TopDecl*
+  TopDecl = TypeDecl | ForallDecl | SubtypeDecl | FnDef | LawDef | ValueDef | DataField
+
+  TypeDecl = typeKw ident UniverseParams? TypeParams? TypeTail
+  TypeTail = TypeRelation? TypeBody              --structure
+           | "=" TypeExpr Refinement? ";"       --alias
+  TypeRelation = ("<:" | ":") TypeExpr
+  Refinement = whenKw Expr
+  UniverseParams = "<" NonemptyTrailingList<ident> ">"
+  UniverseArgs = "<" NonemptyTrailingList<Level> ">"
+  Level = "next" "(" Level ")"               --next
+        | "max" "(" Level "," Level ")"     --max
+        | number                              --number
+        | ident                               --variable
+  TypeParams = "[" NonemptyTrailingList<TypeParam> "]"
+  TypeParam = ident (":" TypeExpr)?
+  TypeBody = "{" TypeMember* "}"
+  TypeMember = TypeDecl | CaseDecl | FnDef | LawDef | MethodDef | FnField | LawField | ValueDef | DataField
+
+  DataField = ident UniverseParams? TypeParams? ":" TypeExpr ";"
+  FnField = fnKw ident UniverseParams? TypeParams? AnnParamList ReturnType ";"
+  LawField = lawKw ident UniverseParams? TypeParams? AnnParamList? "->" Prop ";"
+  FnDef = defKw fnKw ident UniverseParams? TypeParams? AnnParamList ReturnType? Block
+  LawDef = defKw lawKw ident UniverseParams? TypeParams? AnnParamList? "->" Prop Block
+  MethodDef = methodKw ident UniverseParams? TypeParams? AnnParamList ReturnType? Block
+  ValueDef = ident UniverseParams? TypeParams? (":" TypeExpr)? "=" Expr ";"
+  CaseDecl = caseKw ident TypeParams? AnnParamList? ReturnType? CaseTail
+  CaseTail = TypeBody | ";"
+  ReturnType = "->" TypeExpr
+  AnnParamList = "(" TrailingList<AnnParam> ")"
+  TrailingList<elem> = NonemptyTrailingList<elem>?
+  NonemptyTrailingList<elem> = NonemptyListOf<elem, ","> ","?
+  AnnParam = ident ":" TypeExpr
+  Prop = "(" Expr ")"
+
+  ForallDecl = forallKw TypeParams "{" SubtypeDecl+ "}"
+  SubtypeDecl = TypeExpr "<:" TypeExpr SubtypeTail
+  SubtypeTail = CtorBody | ";"
+
+  TypeExpr = TypeArrow ("~=" TypeArrow)?
+  TypeArrow = TypeApp ("->" TypeExpr)?
+  TypeApp = TypeApp "[" NonemptyTrailingList<TypeExpr> "]"  --index
+          | TypeApp UniverseArgs                                --universes
+          | TypeApp "(" TrailingList<Expr> ")"                  --call
+          | TypeApp "." Field                                   --member
+          | TypePrimary                                         --atom
+  TypePrimary = "(" TrailingList<TypeEntry> ")" --parens
+              | number                         --index
+              | selfTypeKw                     --self
+              | ident                          --name
+  TypeEntry = ident ":" TypeExpr               --dependent
+            | Expr                             --value
+
+  Expr = Lambda | FunctionType | Comparison<Sum<Product<AppExpr>>>
+  FunctionType = TypeApp "->" TypeExpr
+  Lambda = LambdaBind "=>" Expr
+  LambdaBind = "(" ListOf<LambdaParam, ","> ")"  --params
+             | ident                              --name
+  LambdaParam = ident (":" TypeExpr)?
+  Comparison<operand> = operand (CmpOp operand)?
+  CmpOp = "~=" | "==" | "!=" | "<:" | "<=" | ">=" | "<" | ">"
+  Sum<operand> = operand (AddOp operand)*
+  AddOp = "+" | "-"
+  Product<operand> = operand (MulOp operand)*
+  MulOp = "*" | "/"
+
+  // A control subject does not consume its following arm/body braces as a record.
+  // Parenthesize a record or block when it is itself the subject.
+  Control = Comparison<Sum<Product<Subject>>>
+  Subject = Subject "(" TrailingList<Expr> ")"             --call
+          | Subject "[" NonemptyTrailingList<TypeExpr> "]" --types
+          | Subject UniverseArgs                                --universes
+          | Subject "." Field                                   --member
+          | Atom                                                --atom
+  IfExpr = ifKw Control Block elseKw Block
+  MatchExpr = matchKw Control "{" TrailingList<MatchArm> "}"
+  MatchArm = Pattern "=>" Expr
+
+  AppExpr = AppExpr "(" TrailingList<Expr> ")"             --call
+          | AppExpr "[" NonemptyTrailingList<TypeExpr> "]" --types
+          | AppExpr UniverseArgs                                --universes
+          | AppExpr "." Field                                   --member
+          | TypeApp CtorBody                                     --record
+          | IfExpr                                              --if
+          | MatchExpr                                           --match
+          | Block                                               --block
+          | Atom                                                --atom
+  Field = ident | number
+  Atom = selfKw                               --self
+       | selfTypeKw                           --selfType
+       | trueKw                               --true
+       | falseKw                              --false
+       | number                               --number
+       | string                               --string
+       | "(" NonemptyListOf<Expr, ","> ")"  --parens
+       | ident                                --name
+  Block = "{" ValueDef* Expr "}"
+  CtorBody = "{" TrailingList<FieldAssign> "}"
+  FieldAssign = ident "=" Expr
+
+  Pattern = "(" NonemptyListOf<Pattern, ","> ")" --tuple
+          | QualifiedPattern PatternTail?  --constructor
+          | trueKw                         --true
+          | falseKw                        --false
+          | number                         --number
+          | ident                          --binding
+  QualifiedPattern = TypePrimary ("[" NonemptyListOf<TypeExpr, ","> "]")? ("." ident)+
+  PatternTail = "(" ListOf<Pattern, ","> ")"  --args
+              | "{" PatternFields "}"        --fields
+  PatternFields = "..."                                    --rest
+                | NonemptyListOf<ident, ","> ("," "...")? --names
+
+  space += comment
+  comment = "//" (~"\n" any)*
+  typeKw = "type" ~identPart
+  caseKw = "case" ~identPart
+  fnKw = "fn" ~identPart
+  lawKw = "law" ~identPart
+  defKw = "def" ~identPart
+  methodKw = "method" ~identPart
+  whenKw = "when" ~identPart
+  matchKw = "match" ~identPart
+  ifKw = "if" ~identPart
+  elseKw = "else" ~identPart
+  forallKw = "forall" ~identPart
+  selfKw = "self" ~identPart
+  selfTypeKw = "Self" ~identPart
+  trueKw = "true" ~identPart
+  falseKw = "false" ~identPart
+  keyword = typeKw | caseKw | fnKw | lawKw | defKw | methodKw | whenKw
+          | matchKw | ifKw | elseKw | forallKw | selfKw | selfTypeKw | trueKw | falseKw
+  ident (an identifier) = ~keyword identStart identPart*
+  identStart = letter | "_"
+  identPart = alnum | "_"
+  number (a whole number) = digit+
+  string (a string) = "\"" stringChar* "\""
+  stringChar = "\\" any         --escape
+             | ~"\"" ~"\n" any --char
+}
