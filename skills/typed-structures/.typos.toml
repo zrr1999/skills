@@ -1,0 +1,3 @@
+# Category-theory notation used by this skill, including inv_hom and hom_inv.
+[default.extend-words]
+hom = "hom"

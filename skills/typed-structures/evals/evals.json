@@ -1,0 +1,161 @@
+{
+  "skill_name": "typed-structures",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "按 typed-structures 写一个 Option，用类型侧 map 提升函数、实例侧 map 绑定值，并证明恒等与复合律。",
+      "expected_output": "实际使用 Functor[Types,Types] 契约，以 Option: Functor[Types,Types] 的全族结构补全 obj/map 与证据；方法绑定数据视图，句法检查与语义审阅分别报告。",
+      "files": [],
+      "expectations": [
+        "Option 是结构，Option[A] 是数据类型，obj(X) 定义为 Option[X]；结构 map 量化整个 X/Y，不捕获固定 A 或 self",
+        "类型侧 map 接收 X -> Y 并返回 Option[X] -> Option[Y]；实例方法接收 A -> B 并返回 Option[B]",
+        "Self 是完整类型，不使用 Self[B]；如需父表示则显式取得 Option[A] 视图",
+        "恒等律与复合律给出 funext 和 None/Some 分支证明，不用有限计算代替通用证明",
+        "新代码写入文件并用当前文法检查句法，不声称存在类型检查器或证明内核"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "把一份带 encode/decode 往返定律的结构投影为 Idempotent[B]，从 round_trip 推导 idempotent。",
+      "expected_output": "用 forall[A, B] 与 <: 补全 run 和证据；保留源观察，不重定义固定方法。",
+      "files": [],
+      "expectations": [
+        "使用 forall 与 <: 登记值类型关系；补全中的 self 指源值",
+        "run 用 encode(decode(value))，并用 congr_arg(encode, round_trip(decode(value))) 给出证据",
+        "构造与关系块用字段 = lambda，不用 def fn 或 def law 填字段",
+        "没有按名字选择全局实例，也没有覆盖父结构已有定义"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "现在明确要 Rust 工程实现，不再写这份设计稿：把 Option 映射例子转成可运行的 Rust。",
+      "expected_output": "遵从用户明确的目标语言，离开 typed-structures 表面；Rust 的运行结果不能被报告为本设计稿的类型或证明核验。",
+      "files": [],
+      "expectations": [
+        "没有以 skill 的语言偏好拒绝用户明确的 Rust 转换要求",
+        "验证针对实际 Rust 工程，不声称存在本设计稿的编译器",
+        "没有对 Rust 源码调用 typed-structures 的 Ohm 文法"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "解释一下 Option.Some 和 Option.None 的差别就行，不用写新程序。",
+      "expected_output": "说明两个 case，不为短名字创建验证程序或安装工具。",
+      "files": [],
+      "expectations": [
+        "说明 Some 携带值而 None 不携带值",
+        "没有仅为短名字安装 Ohm 或创建检查文件"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "本机没有 ohm，我明确要求使用 npx 临时运行检查，不要全局安装。",
+      "expected_output": "用户明确指定的运行方式优先于 skill 的默认全局安装偏好；用当前 CLI 检查语法并报告真实结果。",
+      "files": [],
+      "expectations": [
+        "遵从明确的临时运行方式，不全局安装工具",
+        "依据当前 CLI help 运行 grammar.ohm 的 Module 识别",
+        "区分识别结果与类型、定律和子类型语义核验"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Counter 有 value: Int 和 step: Int = 1。父定义 def fn make(value: Int) -> Self { Self { value = value } } 能继承给增加 tag 字段的 TaggedCounter 吗？请修正 make/next，并给一个仍可返回 Self 的普通 fn。",
+      "expected_output": "指出开放 Self 的构造义务；make/next 按已知表示返回 Counter，keep 返回完整输入 Self，并为保留输入提供证据。",
+      "files": [],
+      "expectations": [
+        "step 是固定类型预定义，构造时不能覆盖，也不是 counter.step 实例字段",
+        "指出 Self 可能是 TaggedCounter；只提供 value 缺少 tag，新增约束也可能被 next 破坏",
+        "make 的构造目标与返回类型都写 Counter；next 即使是 method 也不自动返回完整子类型",
+        "普通 fn 可使用 Self，例如 keep(value: Self) -> Self 原样返回 value，并以 refl 或继承的通用 law 证明保留输入",
+        "不凭 Self.make 收窄父构造结果，不假定复制字段即可维持任意子类型约束"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "既然 Option[B] <: Applicative[B]，是否可以让接收 Applicative[A -> B] 的 ap 由只接收 Option[A -> B] 的实现直接替换？不要新增 Family。",
+      "expected_output": "先纠正旧前提：Applicative 是共享 obj/map 的结构契约，Option: Applicative 是归属；再分析普通函数替换时参数逆变与结果协变。",
+      "files": [],
+      "expectations": [
+        "没有接受 Option[B] <: Applicative[B] 作为当前关系；实际结构链是 Monad <: Selective <: Applicative <: Functor[Types,Types]",
+        "用 F: Applicative 的 ap[A,B]: (F.obj(A -> B), F.obj(A)) -> F.obj(B) 解释具体补全，Option.obj(X) 展开为 Option[X]",
+        "结果协变不能抵消输入缩窄；区分实例化同一对象映射与用更窄函数替换原有函数",
+        "不引入 Family、Self[B]、for F、Functor[Option] 或声称四份接口尚未定义",
+        "区分句法识别、语义推导与实际机器证明"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "这段已经通过 Ohm：def law same() -> (1 ~= 2) { refl }，所以证明成立吧？",
+      "expected_output": "拒绝把句法识别当作证明；refl 要求两侧经定义归约相同。",
+      "files": [],
+      "expectations": [
+        "明确这段形状可以识别，但给出的 refl 不能证明目标",
+        "指出 1 和 2 在共同数学背景中不归约为同一项",
+        "没有编造成功的类型检查或证明核验结果"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "把 static def get(...)、proof p(...)、x#map(f) 和构造块里的 def fn 更新为这轮语法，并检查字段与方法同名的边界。",
+      "expected_output": "采用 def fn、def law、点号及字段 = lambda；按成员域区分合法同名和冲突。",
+      "files": [],
+      "expectations": [
+        "不保留 static、独立 proof、裸 def、:= 或 # 方法调用作为规范写法",
+        "类型侧函数与实例方法可同名；同一实例域的字段和方法冲突",
+        "补全只提供实例字段值，固定定义与方法不能覆盖",
+        "迁移后的程序通过 Ohm 后仍审阅成员域和证据义务"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "既然 Int: Universe<1>，我把它直接标成 Universe<2>；省略 <_> 就表示适用于所有宇宙，对吧？请给出本稿的正确规则，并说明 Prop 量化的边界。",
+      "expected_output": "使用非累积宇宙与宇宙多态，区分层级推断和推广；解释命题量化不附带证明擦除或任意大消去。",
+      "files": [],
+      "expectations": [
+        "不允许自动从 Universe<1> 提升到 Universe<2>，也不允许 Type: Type",
+        "层级支持 next/max；省略或 _ 由上下文推断，声明中未固定的独立层级可推广，调用时实例化",
+        "结果是命题时可对任意宇宙量化而仍在 Prop，区分 A -> P 与 A -> Prop",
+        "不从命题量化推出证明无关、自动擦除或任意从 Prop 消去到数据"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "从普通函数组合引入 Category 和 Types，再实际定义恒等函子。说明 Functor[Types,Types] 的宇宙，并给出定律证明。",
+      "expected_output": "把契约与具体函数一起引入，声明对象和态射层级，提供恒等及复合证据，并正确推导函子结构位于 Universe<2>。",
+      "files": [],
+      "expectations": [
+        "Category<u,v> 使用 Obj: Universe<u> 与 Hom[X,Y]: Universe<v>，id 和 compose 的起终点相符",
+        "LargeCategory<v> 是 Category<next(v),v> 的透明别名；Types.Obj = Type，Hom 为函数",
+        "Types 的对象层级为 2、态射层级为 1，解释 Functor[Types,Types]: Universe<2> 而非自动降层",
+        "恒等函子实际提供 obj/map 和 identity/composition 证据；普通函数范畴的 law 用 funext 与归约说明",
+        "函数实参正常写 compose(g,f)，不生成粘贴转义或 <g,f> 调用形式"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "请按现有记法展示 Functor → Applicative → Selective → Monad 的实际类型声明，结合 Option 解释各层能力，并补全继承的 law。",
+      "expected_output": "读取计算示例，沿共享对象映射写出真实契约与完整 Option 实现，不再只写关系口号或把抽象接口列为待定。",
+      "files": [],
+      "expectations": [
+        "真实声明 Applicative <: Functor[Types,Types]、Selective <: Applicative、Monad <: Selective，继承同一 obj/map",
+        "pure: A -> obj(A)，ap 与 select 接收普通双参数，bind 接收回调后返回计算函数，不自动柯里化所有操作",
+        "Option[A: Type]: Monad 同时提供结构与类型族，所有结构操作显式量化 X/Y，不捕获外层 A 或 self",
+        "逐项提供 Functor、Applicative、Selective、Monad 定律和 map_from_ap、ap_from_bind、select_from_bind 证据，不使用显然成立占位",
+        "理论契约紧接实际 Option 分支行为及证明，并区分句法通过与证明核验"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "给恒等函子到 Option 的自然变换；再用给类型配上 Unit 的包装展示自然同构，并解释 Applicative 配对和积幺半结构的联系。",
+      "expected_output": "app[X] 使用 Some 注入；Unit 包装给出互逆自然变换；通过显式 Applicative 结构参数派生配对并验证对应 law。",
+      "files": [],
+      "expectations": [
+        "自然变换保留 app[X]，给出自然性两条复合路径及其逐点证据",
+        "不把 Some 注入误称为自然同构；使用 UnitProduct 的添加/移除 Unit 展示互逆与自然性",
+        "从同一个 pure/map/ap 派生单位和配对，泛型辅助操作显式接收结构 F",
+        "配对的自然性、左右单位和结合证据与 Types 积结构方向一致；幺半契约包含五边形与三角形要求"
+      ]
+    }
+  ]
+}
