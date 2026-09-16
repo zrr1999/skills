@@ -2,7 +2,7 @@
 
 面向个人项目的代理技能合集，用于在 Cursor、Copilot 等工具中复用工作流程。
 
-## 技能分层（共 10 个）
+## 技能分层（共 9 个）
 
 `skills/<name>/` 保持平铺，兼容现有 skill manager 的发现与安装；下面的分层用于选 skill，不改变目录或安装 ID。
 
@@ -31,7 +31,6 @@
 | 技能 | 主要结果 |
 | --- | --- |
 | `get-api-docs` | 从当前第三方 SDK/API 文档取得可靠用法；OpenAI 文档走官方专用来源 |
-| `svg-design` | 创建、编辑、优化并渲染验证 SVG、图标或 Logo |
 | `zellij` | 组织、恢复、观察或分享持久终端工作区 |
 | `ssh-fleet` | 管理私有 SSH 设备事实源、host key 信任和生成配置 |
 | `writing-style` | 起草、改写和审阅六个骨头的技术博客；其他文体仅在明确要求个人文风时应用 |
@@ -46,6 +45,8 @@
 5. `gh stack` 请求统一由 `git-workstreams` 拥有结果并直接读取本机 help；外部 `gh-stack` skill 的静态命令、安装、配置、重试和权限规则不作为依赖或权威。
 
 原 `unix-software-design` 已简化并内置进 `pilot`，原 `git-worktrees` 已更名为 `git-workstreams`，原 `roles` 已退役，原 `quality-audit` 已合入 `vet`（新增 diff 级轨道），原 `spark` 已更名为 `pilot`（避免与 Spark 产品仓库混淆）。
+
+> `svg-design` 已从本仓库移除；安装脚本不会自动卸载已有副本，升级时请检查并移除来自本仓库的旧安装。通用 SVG 能力的外部替代需按任务单独选择，不随本次移除自动安装。
 
 > 升级提示：安装流程不会自动删除用户级旧 skill。重新安装后若本机仍残留 `git-worktrees`、`roles`、`quality-audit` 或 `spark`，请先用当前 skill manager 检查来源，再移除旧条目，避免过期 description 继续触发。
 
@@ -100,7 +101,6 @@ pnpx skills add zrr1999/skills -g --agent cline \
 # 领域专用能力，按需选择
 pnpx skills add zrr1999/skills -g --agent cline \
   --skill get-api-docs \
-  --skill svg-design \
   --skill zellij \
   --skill ssh-fleet \
   --skill writing-style \
