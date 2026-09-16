@@ -4,26 +4,27 @@
     {
       "id": 1,
       "prompt": "按 typed-structures 写一个 Option，用类型侧 map 提升函数、实例侧 map 绑定值，并证明恒等与复合律。",
-      "expected_output": "实际使用 Functor[types,types] 契约，以 Option: Functor[types,types] 的全族结构补全 obj/map 与证据；方法绑定数据视图，句法检查与语义审阅分别报告。",
+      "expected_output": "实际使用 Functor[types,types] 契约，以 static 为 Option 全族补全 obj/map 与证据；方法绑定数据实例，句法检查与语义审阅分别报告。",
       "files": [],
       "expectations": [
         "Option 是结构，Option[A] 是数据类型，obj(X) 定义为 Option[X]；结构 map 量化整个 X/Y，不捕获固定 A 或 self",
         "类型侧 map 接收 X -> Y 并返回 Option[X] -> Option[Y]；实例方法接收 A -> B 并返回 Option[B]",
-        "Self 是完整类型，不使用 Self[B]；如需父表示则显式取得 Option[A] 视图",
+        "Self 是完整类型，不使用 Self[B]；需要父要求时用显式类型绑定，不引入视图或类型恢复",
         "恒等律与复合律给出 funext 和 None/Some 分支证明，不用有限计算代替通用证明",
-        "新代码写入文件并用当前文法检查句法，不声称存在类型检查器或证明内核"
+        "新代码写入文件并用当前文法检查句法，不声称存在类型检查器或证明内核",
+        "None/Some 是分支类型，构造与匹配使用 Option[A].None {} 和 Option[A].Some { value: ... }，操作和证明定义带 static"
       ]
     },
     {
       "id": 2,
-      "prompt": "把一份带 encode/decode 往返定律的结构投影为 Idempotent[B]，从 round_trip 推导 idempotent。",
-      "expected_output": "用 forall[A, B] 与 <: 补全 run 和证据；保留源观察，不重定义固定方法。",
+      "prompt": "把带 encode/decode 往返定律的 RoundTrip[A,B] 显式构造为 Idempotent[B]，从 round_trip 推导 idempotent。",
+      "expected_output": "定义接收 source 的普通构造函数，返回带 run 与证据的 Idempotent[B] 记录，并显式调用。",
       "files": [],
       "expectations": [
-        "使用 forall 与 <: 登记值类型关系；补全中的 self 指源值",
-        "run 用 encode(decode(value))，并用 congr_arg(encode, round_trip(decode(value))) 给出证据",
-        "构造与关系块用字段 = lambda，不用 def fn 或 def law 填字段",
-        "没有按名字选择全局实例，也没有覆盖父结构已有定义"
+        "不使用 forall、关系补全或隐式转换来建立 RoundTrip <: Idempotent",
+        "run 用 source.encode(source.decode(value))，并以 congr_arg(source.encode, source.round_trip(source.decode(value))) 证明幂等",
+        "构造块用 run: lambda 与 idempotent: lambda，不用字段等号、def fn 或 def law",
+        "普通函数显式接收 source；不捕获不存在的 self，也不覆盖类型侧成员或方法"
       ]
     },
     {
@@ -39,11 +40,11 @@
     },
     {
       "id": 4,
-      "prompt": "解释一下 Option.Some 和 Option.None 的差别就行，不用写新程序。",
-      "expected_output": "说明两个 case，不为短名字创建验证程序或安装工具。",
+      "prompt": "解释一下 Option[Int].Some 和 Option[Int].None 的差别就行，不用写新程序。",
+      "expected_output": "说明两个分支类型及具名构造形式，不为短名字创建验证程序或安装工具。",
       "files": [],
       "expectations": [
-        "说明 Some 携带值而 None 不携带值",
+        "Some 分支要求 value 字段，None 无字段；两个名字都是类型，项需 Some { value: ... } 或 None {}",
         "没有仅为短名字安装 Ohm 或创建检查文件"
       ]
     },
@@ -60,14 +61,14 @@
     },
     {
       "id": 6,
-      "prompt": "Counter 有 value: Int 和 step: Int = 1。父定义 def fn make(value: Int) -> Self { Self { value = value } } 能继承给增加 tag 字段的 TaggedCounter 吗？请修正 make/next，并给一个仍可返回 Self 的普通 fn。",
+      "prompt": "Counter 有 value: Int 和 static step: Int = 1。父定义 static def fn make(value: Int) -> Self { Self { value: value } } 能继承给增加 tag 字段的 TaggedCounter 吗？修正 make/next，并给一个仍可返回 Self 的普通函数。",
       "expected_output": "指出开放 Self 的构造义务；make/next 按已知表示返回 Counter，keep 返回完整输入 Self，并为保留输入提供证据。",
       "files": [],
       "expectations": [
-        "step 是固定类型预定义，构造时不能覆盖，也不是 counter.step 实例字段",
+        "step 是显式 static 定义，构造时不能覆盖，counter.step 也不回退到 Counter.step",
         "指出 Self 可能是 TaggedCounter；只提供 value 缺少 tag，新增约束也可能被 next 破坏",
         "make 的构造目标与返回类型都写 Counter；next 即使是 method 也不自动返回完整子类型",
-        "普通 fn 可使用 Self，例如 keep(value: Self) -> Self 原样返回 value，并以 refl 或继承的通用 law 证明保留输入",
+        "static def fn keep(value: Self) -> Self 可原样返回 value，并以 static def law 证明保留输入",
         "不凭 Self.make 收窄父构造结果，不假定复制字段即可维持任意子类型约束"
       ]
     },
@@ -97,14 +98,15 @@
     },
     {
       "id": 9,
-      "prompt": "把 static def get(...)、proof p(...)、x#map(f) 和构造块里的 def fn 更新为这轮语法，并检查字段与方法同名的边界。",
-      "expected_output": "采用 def fn、def law、点号及字段 = lambda；按成员域区分合法同名和冲突。",
+      "prompt": "把类型体中的 def fn get(...)、proof p(...)、x#map(f) 和构造块里的字段等号更新为最新语法，并检查字段与方法同名的边界。",
+      "expected_output": "类型侧定义补上 static，采用 static def fn / static def law、点号及构造字段冒号；按成员域区分合法同名和冲突。",
       "files": [],
       "expectations": [
-        "不保留 static、独立 proof、裸 def、:= 或 # 方法调用作为规范写法",
-        "类型侧函数与实例方法可同名；同一实例域的字段和方法冲突",
-        "补全只提供实例字段值，固定定义与方法不能覆盖",
-        "迁移后的程序通过 Ohm 后仍审阅成员域和证据义务"
+        "类型体中的固定定义使用 static，顶层不加 static；没有实例字段默认值",
+        "不保留独立 proof、裸 def、:= 或 # 方法调用",
+        "类型侧函数和值与实例方法或字段可同名；同一实例域的字段与方法冲突，查找不回退",
+        "构造使用 field: expression，泛型证据写 identity[X]: refl；不能混入声明或 static 定义",
+        "迁移后检查句法，再分别审阅成员归属和证据义务"
       ]
     },
     {
@@ -130,7 +132,7 @@
         "types 的对象层级为 2、态射层级为 1，解释 Functor[types,types]: Universe<2> 而非自动降层",
         "恒等函子实际提供 obj/map 和 identity/composition 证据；普通函数范畴的 law 用 funext 与归约说明",
         "函数实参正常写 compose(g,f)，不生成粘贴转义或 <g,f> 调用形式",
-        "types 与 identity_functor 都以小写普通值定义并用契约类型构造块补全，不用 type 声明纯结构值"
+        "types 与 identity_functor 只需普通结构值，采用小写定义与冒号字段构造块；若用 type 则确实建立新数据类型并以 static 满足结构，不能把两者当同一声明含义"
       ]
     },
     {
@@ -141,7 +143,7 @@
       "expectations": [
         "真实声明 Applicative <: Functor[types,types]、Selective <: Applicative、Monad <: Selective，继承同一 obj/map",
         "pure: A -> obj(A)，ap 与 select 接收普通双参数，bind 接收回调后返回计算函数，不自动柯里化所有操作",
-        "Option[A: Type]: Monad 同时提供结构与类型族，所有结构操作显式量化 X/Y，不捕获外层 A 或 self",
+        "type Option[A: Type]: Monad 同时提供结构与数据族；static 操作和证据显式量化 X/Y，不捕获外层 A 或 self",
         "逐项提供 Functor、Applicative、Selective、Monad 定律和 map_from_ap、ap_from_bind、select_from_bind 证据，不使用显然成立占位",
         "理论契约紧接实际 Option 分支行为及证明，并区分句法通过与证明核验",
         "保留 type Option[A: Type]: Monad；先生成数据族再绑定 obj，Option[A] 不是 Monad，不能将 obj 替换为无关类型族"
@@ -153,25 +155,90 @@
       "expected_output": "app[X] 使用 Some 注入；Unit 包装给出互逆自然变换；通过显式 Applicative 结构参数派生配对并验证对应 law。",
       "files": [],
       "expectations": [
-        "自然变换保留 app[X]，给出自然性两条复合路径及其逐点证据",
+        "自然变换保留 app[X]，用 value => Option[X].Some { value: value } 注入；给出自然性复合路径及逐点证据",
         "不把 Some 注入误称为自然同构；使用 unit_product_functor 的添加/移除 Unit 展示互逆与自然性",
         "从同一个 pure/map/ap 派生单位和配对，泛型辅助操作显式接收结构 F",
         "配对的自然性、左右单位和结合证据与 types 积结构方向一致；幺半契约包含五边形与三角形要求",
-        "区分 alpha、alpha.app、alpha.app[X] 与 alpha.app[X](value)；最后一步仅在目标 Hom 为函数时成立"
+        "区分 alpha、alpha.app、alpha.app[X] 与 alpha.app[X](value)；最后一步仅在目标 Hom 为函数时成立",
+        "Unit 是空记录，值与匹配写 Unit {}，不使用 Unit.unit"
       ]
     },
     {
       "id": 14,
-      "prompt": "把旧的 type IdentityFunctor[C: Category]: Functor[C,C] 和 type ProductCategory[C,D]: Category 改成普通结构值，再处理 type Option[A: Type]: Monad。是不是可以一刀切删掉 type 后的冒号？解释 Bifunctor 与 pair_bifunctor 的差别。",
-      "expected_output": "普通结构定义采用小写值与泛型字段补全；Bifunctor 保留为透明类型别名；Option 真正定义数据族，保留附带结构的 type 声明并明确 obj 对应规则。",
+      "prompt": "把只需要结构值的 IdentityFunctor 和 ProductCategory 改为小写普通定义，再解释 type Z: X[Int].L 与 type Option[A: Type]: Monad。是不是 type 后的冒号只能用于带 obj 的类型族？",
+      "expected_output": "区分普通结构值、新类型项和数据实例；一般 type Z: T 可用 static 满足结构，Option 另有全族 obj 对应规则。",
       "files": [],
       "expectations": [
-        "identity_functor 和 product_category 用 name[...]: T = T { ... };，不把已有结构值伪装成新类型",
-        "map[X,Y]、identity[X] 和 composition[X,Y,Z] 在构造块中用值补全；不写 def law 或混入类型体分号语法",
-        "Bifunctor 是引用 product_category 的类型别名，pair_bifunctor 是该类型中的值；仅凭大写名称不能推出 <:",
-        "保留 type Option[A: Type]: Monad，将 Option、Option[A]、Option.Some(1) 的角色区分；不强制拆成独立 option",
-        "先生成数据族并指定 obj 的对应关系，显式 obj 需与该族定义相等，不能依赖循环展开或猜测任意记录字段",
-        "检查语法后仍审阅语义；不声称 Ohm 能验证声明角色或类型归属"
+        "identity_functor 和 product_category 用 name[...]: T = T { ... };；Bifunctor 是透明类型别名，pair_bifunctor 是结构值",
+        "泛型操作和证据使用 map[X,Y]: lambda、identity[X]: refl 等构造字段，不混入 def law 或分号声明",
+        "允许一般 type Z: T，不再要求 T 必有指定 obj；Z 的 static 满足 T，Z 实例字段另行定义",
+        "保留 type Option[A: Type]: Monad，先建立数据族再定义 static obj，显式 obj 与 Option 全族对应",
+        "Option、Option[A]、Option[A].Some { value: ... } 分别是全族结构、数据类型、数据项；后两者不因此属于 Monad",
+        "不声称 Ohm 能验证声明角色或类型归属"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "为 Packet[A] 写带公共 source、Data 公共 sequence、Single 和 Converted[B] 叶子的嵌套分支，给出构造、匹配和错误路径。",
+      "expected_output": "公共字段沿叶子路径累计，参数保留声明位置，模式使用具名字段和剩余字段省略。",
+      "files": [],
+      "expectations": [
+        "构造 Packet[Int].Data.Single 与 Packet[Int].Data.Converted[Str]，完整提供 source/sequence/叶子字段且只填写一次",
+        "匹配支持 field: pattern、同名绑定和 ...，分支名字单独不是数据项",
+        "拒绝直接构造 Packet 或 Data、缺公共字段、同一路径字段遮蔽和非法兄弟路径",
+        "拒绝 Packet.Data[Int] 或把父参数挪给分支；不自动生成路径别名",
+        "Ohm 只检查形状，缺字段和错误路径须语义审阅"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "Fin/Vec 的参数原本声明在 case 上。改用具名字段构造和匹配，并说明 Vec.Cons[A,n] 的长度及错误索引。",
+      "expected_output": "保留 case 泛型参数与返回索引，迁移证明中的模式和构造。",
+      "files": [],
+      "expectations": [
+        "Fin.Zero[n] 和 Fin.Succ[n] 属于 Fin[Nat.Succ { previous: n }]",
+        "Vec.Nil[A] 属于 Vec[A,0]；Vec.Cons[A,n] 提供 head 与长度 n 的 tail，结果长度 n+1",
+        "省略只在原位置推断，不改成 Vec[A,n].Cons 或 Fin[n].Zero",
+        "具名索引项可出现在泛型实参和返回类型中，空分支构造有 {}",
+        "审阅 head、vec_get 与映射证明的分支索引细化；错误索引不是句法失败"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "type Z: X[Int].L 用 static v = 1，实例只含 data: Str。能把 z: Z 当成 X[Int].L 吗？再用 ComplexUnit 说明类型项与实例相等的边界。",
+      "expected_output": "Z 满足父结构的类型项归属不推出 z 的归属，等式必须固定观察类型。",
+      "files": [],
+      "expectations": [
+        "Z.v 与 z.data 是不同成员域；z.v 不回退到 static",
+        "构造 Z { data: \"hello\" } 不需要实例 v；构造 X[Int].L { v: 1 } 仍要 v",
+        "可以把类型项 Z 绑定为 X[Int].L，但不能由此推导 Z <: X[Int].L 或 z: X[Int].L",
+        "ComplexUnit 和 TextUnit 可满足空 Unit，实例各有独立字段；在 Unit 中相等不推出数据类型或实例相等",
+        "可以同名的 static 与实例字段不通过自动生成投影函数实现"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "更新 LinkedList、VectorLayout 与 BoolMap 的接口接入，不要 type_of、恢复原始类型或视图。",
+      "expected_output": "提供显式接收源值的 Sequence/FiniteMapping 构造函数，保留证据。",
+      "files": [],
+      "expectations": [
+        "linked_sequence 和 vector_sequence 分别返回 Sequence，bool_map_finite 返回 FiniteMapping",
+        "新记录用冒号填写 len/get/bounds 或 get/keys/enumeration，绑定的方法作为函数值不重复传 self",
+        "调用点显式调用构造函数；保留 FiniteMapping <: Mapping 的字段继承",
+        "泛型代码显式使用声明的类型参数；Functor.obj 是对象映射，不是反射",
+        "没有自动适配、规范视图、类型恢复或专用 forall 关系补全"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "把 Option[Int].Some 传给 map 当作 Int -> Option[Int]，空分支直接写 Option[Int].None，是否可行？",
+      "expected_output": "两个名字都是分支类型，构造行为必须写 lambda，空分支必须构造。",
+      "files": [],
+      "expectations": [
+        "Some 不是可直接调用或传递的构造函数；写 value => Option[Int].Some { value: value }",
+        "None 是分支类型，数据项写 Option[Int].None {}",
+        "不能靠把参数从 Option[Int].Some 挪成 Option.Some[Int] 来修正",
+        "分支类型当函数的源码可被 Ohm 识别，但需语义拒绝"
       ]
     }
   ]
