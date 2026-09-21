@@ -97,7 +97,7 @@ install_profile() {
       ;;
     expo) add_skills emilkowalski/skills animate-expo ;;
     cloudflare) add_skills cloudflare/skills workers-best-practices durable-objects ;;
-    mail) add_skills https://agent.qq.com/.well-known/skills/agently-mail/SKILL.md agently-mail ;;
+    mail) add_skills https://agent.qq.com agently-mail ;;
     video) add_skills vibe-motion/skills procedural-fish-render ruler-progress-render ;;
   esac
 }

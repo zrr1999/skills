@@ -58,7 +58,7 @@ REPO_SOURCE='fixture source with spaces' run_install web mail
 grep -Fq "$(printf 'vpx\tskills\tadd\tfixture source with spaces\t-g')" "$INSTALL_TEST_LOG"
 grep -Fq -- '--skill' "$INSTALL_TEST_LOG"
 grep -Fq 'review-animations' "$INSTALL_TEST_LOG"
-grep -Fq 'agent.qq.com' "$INSTALL_TEST_LOG"
+grep -Fq "$(printf 'vpx\tskills\tadd\thttps://agent.qq.com\t-g')" "$INSTALL_TEST_LOG"
 assert_absent 'animate-expo'
 
 run_install all
