@@ -21,8 +21,9 @@ printf '\n' >> "$INSTALL_TEST_LOG"
 case "$name" in
   curl)
     cat <<'BOOTSTRAP'
-cp "$INSTALL_TEST_STUB" "$INSTALL_TEST_BIN/vp"
-cp "$INSTALL_TEST_STUB" "$INSTALL_TEST_BIN/vpx"
+mkdir -p "$VP_HOME/bin"
+cp "$INSTALL_TEST_STUB" "$VP_HOME/bin/vp"
+cp "$INSTALL_TEST_STUB" "$VP_HOME/bin/vpx"
 BOOTSTRAP
     ;;
   gh) printf 'ShigureLab/gh-llm\n' ;;
