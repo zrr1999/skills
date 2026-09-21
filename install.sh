@@ -3,6 +3,7 @@
 set -euo pipefail
 
 REPO_SOURCE="${REPO_SOURCE:-zrr1999/skills}"
+SKILLS_AGENT="${SKILLS_AGENT:-cline}"
 GH_EXTENSIONS=(
   "ShigureLab/gh-llm:gh-llm"
 )
@@ -15,8 +16,8 @@ log() {
   printf '==> %s\n' "$*"
 }
 
-ensure_node() {
-  if has node; then
+ensure_vite() {
+  if has vp && has vpx; then
     return
   fi
 
@@ -27,54 +28,10 @@ ensure_node() {
   export VP_HOME="${VP_HOME:-$HOME/.vite-plus}"
   export PATH="$VP_HOME/bin:$HOME/.local/bin:$PATH"
 
-  if ! has vp; then
-    log "error: vp not found after Vite+ install. Add $VP_HOME/bin (and ~/.local/bin if needed) to PATH."
+  if ! has vp || ! has vpx; then
+    log "error: vp/vpx not found after install. Add $VP_HOME/bin to PATH and retry."
     return 1
   fi
-
-  log "Configuring Vite+ managed Node.js (LTS)..."
-  vp env setup --refresh 2>/dev/null || vp env setup
-  vp env on 2>/dev/null || true
-  vp env default lts 2>/dev/null || true
-  if vp env print >/dev/null 2>&1; then
-    eval "$(vp env print)"
-  fi
-
-  if ! has node; then
-    vp env install lts 2>/dev/null || true
-    if vp env print >/dev/null 2>&1; then
-      eval "$(vp env print)"
-    fi
-  fi
-
-  if ! has node; then
-    log "error: node not available after Vite+ setup. Try a new shell, or run: eval \"\$(vp env print)\""
-    return 1
-  fi
-}
-
-ensure_pnpm() {
-  if has pnpm; then
-    return
-  fi
-
-  log "Installing pnpm..."
-  curl -fsSL https://get.pnpm.io/install.sh | sh -
-  export PATH="$HOME/.local/share/pnpm:$PATH"
-
-  if ! has pnpm; then
-    log "error: pnpm not found after install. Add pnpm's bin directory to PATH and retry."
-    return 1
-  fi
-}
-
-ensure_pnpx() {
-  if has pnpx; then
-    return
-  fi
-
-  log "error: pnpx not found. Ensure your pnpm installation provides pnpx and its bin directory is on PATH."
-  return 1
 }
 
 ensure_gh_extensions() {
@@ -87,8 +44,7 @@ ensure_gh_extensions() {
   for entry in "${GH_EXTENSIONS[@]}"; do
     IFS=":" read -r repo extension <<<"$entry"
     if gh extension list | grep -Fq "$repo"; then
-      log "Upgrading gh extension $extension..."
-      gh extension upgrade "$extension"
+      log "gh extension $extension is already installed."
     else
       log "Installing gh extension $repo..."
       gh extension install "$repo"
@@ -102,10 +58,10 @@ install_chub() {
   fi
 
   log "Installing chub (required by get-api-docs skill)..."
-  pnpm install -g @aisuite/chub
+  vp add -g @aisuite/chub
 
   if ! has chub; then
-    log "error: chub not found after install. Add pnpm's global bin directory to PATH and retry."
+    log "error: chub not found after install. Check Vite+ global binaries and retry."
     return 1
   fi
 }
@@ -113,28 +69,71 @@ install_chub() {
 # Pin installs to ~/.agents/skills only. `cline` (also warp/zed/dexto) uses that
 # globalSkillsDir. Do NOT use `--all`: it expands to `--agent '*'`, which fans
 # out symlinks into dozens of agent dirs.
-SKILLS_AGENT="${SKILLS_AGENT:-cline}"
+add_skills() {
+  local source="$1" skill
+  shift
+  local args=()
+  for skill in "$@"; do
+    args+=(--skill "$skill")
+  done
+  vpx skills add "$source" -g -y --agent "$SKILLS_AGENT" "${args[@]}"
+}
 
-install_skills() {
-  log "Installing skills from $REPO_SOURCE into ~/.agents/skills (--agent $SKILLS_AGENT)..."
-  pnpx skills add "$REPO_SOURCE" -g -y --agent "$SKILLS_AGENT" --skill '*'
+install_core() {
+  add_skills "$REPO_SOURCE" '*'
+  add_skills vercel-labs/skills find-skills
+  add_skills emilkowalski/skills write-swift
+  add_skills pbakaus/impeccable impeccable
+  add_skills cloudflare/skills cloudflare wrangler
+  add_skills shigurelab/gh-llm github-conversation
+  add_skills spore-lang/spore spore-language
+}
 
-  pnpx skills add anthropics/skills -g -y --agent "$SKILLS_AGENT" --skill skill-creator
-  pnpx skills add cloudflare/skills -g -y --agent "$SKILLS_AGENT" --skill workers-best-practices --skill durable-objects --skill cloudflare --skill wrangler
-  pnpx skills add shigurelab/gh-llm -g -y --agent "$SKILLS_AGENT" --skill github-conversation
-  pnpx skills add vibe-motion/skills -g -y --agent "$SKILLS_AGENT" --skill svg-assembly-animator --skill procedural-fish-render --skill ruler-progress-render
-  pnpx skills add spore-lang/spore -g -y --agent "$SKILLS_AGENT" --skill spore-language
+install_profile() {
+  case "$1" in
+    web)
+      add_skills emilkowalski/skills animate apple-design review-animations prototype \
+        pick-ui-library ask-sonner animation-vocabulary find-animation-opportunities improve-animations
+      ;;
+    expo) add_skills emilkowalski/skills animate-expo ;;
+    cloudflare) add_skills cloudflare/skills workers-best-practices durable-objects ;;
+    mail) add_skills https://agent.qq.com/.well-known/skills/agently-mail/SKILL.md agently-mail ;;
+    video) add_skills vibe-motion/skills procedural-fish-render ruler-progress-render ;;
+  esac
+}
+
+usage() {
+  cat <<'EOF'
+Usage: bash install.sh [web] [expo] [cloudflare] [mail] [video] | all
+
+Installs the core skills and any selected optional profiles.
+REPO_SOURCE overrides the repository source; SKILLS_AGENT defaults to cline.
+For routine updates, run: vpx skills update -g
+EOF
 }
 
 main() {
-  ensure_node
-  ensure_pnpm
-  ensure_pnpx
+  local profile
+  for profile in "$@"; do
+    case "$profile" in
+      -h | --help) usage; return ;;
+      web | expo | cloudflare | mail | video | all) ;;
+      *) usage >&2; return 2 ;;
+    esac
+  done
+  if [[ " $* " == *" all "* ]]; then
+    set -- web expo cloudflare mail video
+  fi
+
+  ensure_vite
   ensure_gh_extensions
   install_chub
-  install_skills
+  install_core
+  for profile in "$@"; do
+    install_profile "$profile"
+  done
 
-  log "Done."
+  log "Done. Update installed skills with: vpx skills update -g"
 }
 
 main "$@"
