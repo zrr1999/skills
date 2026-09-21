@@ -1,7 +1,7 @@
 ---
 name: vet
 description: >
-  有证据的代码质量审查与清理，按范围分两种轨道：diff 级（写完代码/提交前清扫 AI 味：comment slop、防御性过度、过度抽象、幻觉 API、重复逻辑、泛泛命名、test theater，deletion-first 收敛到最小补丁）和仓库级（维护型技术债、架构健康、测试/依赖/配置审计，以及公开发布/开源/v1.0/package publish 前的 release readiness 预检）。触发：deslop、去 AI 味、清理或 review 刚才的改动、提交前自查、PR diff 质量、技术债/质量审计、开源前检查、Scorecard、REUSE。不用于正确性 bug 调试或纯安全渗透测试；Spark 仓库的 ownership/协议问题优先 spark-code-review。
+  有证据的代码质量审查与清理，按范围分两种轨道：diff 级（写完代码/提交前清扫 AI 味：comment slop、防御性过度、过度抽象、幻觉 API、重复逻辑、泛泛命名、test theater，deletion-first 收敛到最小补丁）和仓库级（维护型技术债、架构健康、测试/依赖/配置审计，以及公开发布/开源/v1.0/package publish 前的 release readiness 预检）。触发：deslop、去 AI 味、清理或 review 刚才的改动、提交前自查、PR diff 质量、技术债/质量审计、开源前检查、Scorecard、REUSE。不用于正确性 bug 调试或纯安全渗透测试。
 ---
 
 # Vet
