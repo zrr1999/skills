@@ -71,6 +71,19 @@
         "只做本地语法和 ssh -G 验证",
         "不连接、不提交、不推送"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "在这个已发布生成器、要求 PR 交付的私有 inventory 仓库中，把 lab-dev 的端口改为 2222。不要连接、变更 host trust 或 apply；其他按仓库默认交付。",
+      "expected_output": "ssh-fleet 只拥有 inventory 修改与领域权限；git-workstreams 根据仓库证据处理隔离、验证、commit、push 和 Draft PR，不把 Git 交付当成远程连接、信任更新或 apply 授权。",
+      "files": [],
+      "expectations": [
+        "确认唯一私有 inventory 事实源并校验端口修改",
+        "Git 拓扑与交付由 git-workstreams 判断",
+        "不额外要求分别确认已经授权的默认 commit/push",
+        "不连接远端、不修改 known_hosts、不 apply",
+        "使用私有目标 remote 并避免敏感数据进入输出"
+      ]
     }
   ]
 }

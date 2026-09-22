@@ -1,14 +1,14 @@
 ---
 name: ssh-fleet
 description: >
-  管理私有 SSH 设备清单、连接元数据和已验证 host key，并通过 auto-config 安全校验和渲染 SSH、Ansible、DDNS 或 hosts 输出。只要用户要求新增、修改、查找、审计、退役远程机器，维护 devices.toml/known_hosts，处理 SSH alias/hostname/user/port/ForwardAgent，或生成、比较、应用 fleet 配置，就应使用。默认只读且不连接远端；编辑事实源、连接、应用、信任变更、提交和推送遵循各自授权边界，这些更严格的领域边界不因同时加载通用 Git/交付 skill 而放宽。
+  管理私有 SSH 设备清单、连接元数据和已验证 host key，并通过 auto-config 安全校验和渲染 SSH、Ansible、DDNS 或 hosts 输出。只要用户要求新增、修改、查找、审计、退役远程机器，维护 devices.toml/known_hosts，处理 SSH alias/hostname/user/port/ForwardAgent，或生成、比较、应用 fleet 配置，就应使用。默认只读且不连接远端；inventory、trust、连接和 apply 权限在本 skill 内彼此独立，Git 拓扑与交付统一交给 git-workstreams，二者权限互不推导。
 ---
 
 # SSH Fleet
 
 ## Goal
 
-维护一个私有、可 diff、严格校验的设备事实源；生成配置只是可审阅输出。完成时说明使用的 inventory 路径、涉及的设备名、做过的校验，以及哪些连接、应用、信任、提交或推送动作没有获得授权而保持未执行。
+维护一个私有、可 diff、严格校验的设备事实源；生成配置只是可审阅输出。完成时说明使用的 inventory 路径、涉及的设备名、做过的校验，以及哪些连接、应用或信任动作没有获得授权而保持未执行；仓库修改的 Git 交付由 `git-workstreams` 另行判定和报告。
 
 需要字段定义或 TOML 示例时读取 `references/device-schema.md`。
 
@@ -29,14 +29,14 @@ description: >
 
 ## Authorization boundaries
 
-把动作拆开，不用一个许可推导另一个许可。这里的领域边界优先于通用 Git/PR skill 的默认交付：其他 skill 可以执行本节已经允许的 Git 动作，但不能据其默认规则新增 commit、push、apply、连接或信任权限。
+把领域动作拆开，不用一个许可推导另一个许可。Git 拓扑与交付由 `git-workstreams` 按用户显式终点和仓库现场判断；本节的 inventory、trust、连接和 apply 权限不授予 Git 权限，Git 交付也不授予这些领域权限。
 
 - **本地读取和审计**：可检查 inventory、生成器代码、Git 状态、现有 SSH 配置和 `ssh -G` 解析结果；不连接设备。
 - **编辑 inventory**：用户要求新增、修改、迁移或退役设备时，才修改 `devices.toml`。这不授权连接或应用生成文件。
 - **信任更新**：只有用户要求新增或轮换 host key，且指纹已通过独立可信渠道核验时，才修改 `trust/known_hosts`。`ssh-keyscan` 只能采集候选 key，不能单独建立信任。
 - **远程连接**：只有用户明确要求连接、调查或操作目标设备时才执行 SSH；先解析精确 alias、目标与信任状态，不用 `StrictHostKeyChecking=no` 绕过缺口。
 - **应用生成配置**：只有用户明确要求 apply 时，才把已审阅输出写入 live 路径。render 或 diff 不等于 apply。
-- **Git 提交和推送**：分别需要用户请求；编辑完成不自动 commit，commit 完成不自动 push。
+- **Git 交付**：交给 `git-workstreams`，不在本 skill 另设 commit/push 默认值。用户明确要求不提交、不推送或仅本地时，仍停在该边界。
 
 任何阶段都不得输出或提交私钥、密码、token、agent socket、`.env`、临时命令输出或未筛选的密钥材料。
 

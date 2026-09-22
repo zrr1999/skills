@@ -279,7 +279,7 @@
     },
     {
       "id": 23,
-      "prompt": "我已经在确认过的 linked worktree 和 feature/fix-login 分支里。请修复登录回跳 bug，按仓库要求验证；我没有另外说要不要提 PR。",
+      "prompt": "仓库已发布正式包，且贡献规范要求通过 PR 交付。我已经在确认过的 linked worktree 和 feature/fix-login 分支里。请修复登录回跳 bug，按仓库要求验证；我没有另外说要不要提 PR。",
       "expected_output": "Agent 应把实现类仓库改动默认交付为 Draft PR：完成范围内修复和验证后按仓库规范 commit、push 到 feature/fix-login，并创建 Draft PR，不再等待一次“是否提 PR”的确认；随后回读 head/base、Draft 状态和 CI。",
       "files": [],
       "expectations": [
@@ -304,7 +304,7 @@
     },
     {
       "id": 25,
-      "prompt": "owning checkout 已确认。实现 schema、依赖它的 service，以及只依赖 service 的 docs；每层都要单独 review。完成后按默认方式交付。",
+      "prompt": "仓库已发布正式包，且贡献规范要求通过 PR 交付。owning checkout 已确认。实现 schema、依赖它的 service，以及只依赖 service 的 docs；每层都要单独 review。完成后按默认方式交付。",
       "expected_output": "Agent 应把三个真实依赖且可独立 review 的 concern 组织为 schema -> service -> docs，并自动交付为三层 stacked Draft PR；逐层验证 head/base 和 Draft 状态，不因默认交付自动 Ready 或 merge。",
       "files": [],
       "expectations": [
@@ -317,7 +317,7 @@
     },
     {
       "id": 26,
-      "prompt": "两个 owning worktree 都已确认：一个修支付重试，一个更新搜索排序，两者互不依赖。都实现并按默认方式交付。",
+      "prompt": "仓库已发布正式包，且贡献规范要求通过 PR 交付。两个 owning worktree 都已确认：一个修支付重试，一个更新搜索排序，两者互不依赖。都实现并按默认方式交付。",
       "expected_output": "Agent 应保持两个独立 workstream 和 owning worktree，各自验证、commit、push 并创建独立 Draft PR；不得把无依赖的支付与搜索改动伪造成 stacked PR，也不得自动 Ready 或 merge。",
       "files": [],
       "expectations": [
@@ -407,7 +407,7 @@
     },
     {
       "id": 33,
-      "prompt": "修复解析器并按默认方式交付。仓库只有 .github/pull_request_template.md，里面要求 Summary、Risk、Validation 和 checklist。",
+      "prompt": "仓库已发布正式包，且贡献规范要求通过 PR 交付。修复解析器并按默认方式交付。仓库只有 .github/pull_request_template.md，里面要求 Summary、Risk、Validation 和 checklist。",
       "expected_output": "Agent 应在验证、commit 和 push 后读取并使用唯一的仓库 PR 模板创建 Draft PR，保留 Summary、Risk、Validation 和 checklist 的结构，按当前 diff 与验证证据填写并回读确认；不得用自定义自由文本 body 替换模板或勾选未经验证的事项。",
       "files": [],
       "expectations": [
@@ -434,7 +434,7 @@
     },
     {
       "id": 35,
-      "prompt": "修好类型错误并默认交付，但这个仓库没有任何 PR 模板；你临时写个 Summary 和 Tests 就提 PR 吧。",
+      "prompt": "仓库已发布正式包，且贡献规范要求通过 PR 交付。修好类型错误并默认交付，但这个仓库没有任何 PR 模板；你临时写个 Summary 和 Tests 就提 PR 吧。",
       "expected_output": "Agent 应完成范围内修改、验证、commit 和 push，但把缺少仓库模板视为 PR 创建 blocker，不接受用临时自由文本 body 绕过要求；只有用户把建立或恢复模板纳入任务时，才把模板作为仓库改动后再创建 PR。",
       "files": [],
       "expectations": [
@@ -479,6 +479,31 @@
         "只修复当前 PR 范围内可复现问题",
         "相关检查通过后 commit/push 并回查当前 head 的远端检查",
         "不重复询问相同 commit/push 授权，不自动 force-push、retarget 或 merge"
+      ]
+    },
+    {
+      "id": 39,
+      "prompt": "这是没有 remote、tag、release 或发布配置的本地练习仓库。修复解析器问题并运行已有测试，我未指定 Git 交付终点。",
+      "expected_output": "完成范围内修复和验证后仅保留本地改动；不把默认 Draft PR 规则用于非规范化仓库，也不创建 worktree、commit 或 push。",
+      "files": [],
+      "expectations": [
+        "只读判断仓库缺少规范化证据",
+        "完成本地实现和验证",
+        "不 commit、不 push、不创建 PR 或 worktree",
+        "不为了默认 PR 而临时添加 remote 或模板"
+      ]
+    },
+    {
+      "id": 40,
+      "prompt": "这是尚未发布的个人仓库，但我明确要求修复后提一个 Draft PR。远端、可写权限和唯一 PR 模板均已确认。",
+      "expected_output": "显式 PR 请求优先于非规范化仓库默认仅本地；按需要使用 owning worktree，完成修复、验证、commit、push 和模板化 Draft PR，不 merge。",
+      "files": [],
+      "expectations": [
+        "识别显式 PR 交付优先",
+        "按现场创建或复用 owning worktree",
+        "完成验证、commit、push 和 Draft PR",
+        "保留仓库模板结构并回读 head/base",
+        "不自动 Ready、merge 或清理"
       ]
     }
   ]
