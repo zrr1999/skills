@@ -2,11 +2,13 @@
 // This checks syntax, not member lookup, kinds, subtyping, termination or proofs.
 TypedStructures {
   Module = TopDecl*
-  TopDecl = TypeDecl | ForallDecl | SubtypeDecl | FnDef | LawDef | ValueDef | DataField
+  TopDecl = TypeDecl | FnDef | LawDef | ValueDef | DataField
 
   TypeDecl = typeKw ident UniverseParams? TypeParams? TypeTail
   TypeTail = TypeRelation? TypeBody              --structure
            | "=" TypeExpr Refinement? ";"       --alias
+  // ':' constrains the new type item; '<:' inherits instance requirements.
+  // Membership, branch inclusion and family-wide obj correspondence are semantic.
   TypeRelation = ("<:" | ":") TypeExpr
   Refinement = whenKw Expr
   UniverseParams = "<" NonemptyTrailingList<ident> ">"
@@ -18,7 +20,9 @@ TypedStructures {
   TypeParams = "[" NonemptyTrailingList<TypeParam> "]"
   TypeParam = ident (":" TypeExpr)?
   TypeBody = "{" TypeMember* "}"
-  TypeMember = TypeDecl | CaseDecl | FnDef | LawDef | MethodDef | FnField | LawField | ValueDef | DataField
+  TypeMember = TypeDecl | CaseDecl | StaticMember | MethodDef | FnField | LawField | DataField
+
+  StaticMember = staticKw (ValueDef | FnDef | LawDef)
 
   DataField = ident UniverseParams? TypeParams? ":" TypeExpr ";"
   FnField = fnKw ident UniverseParams? TypeParams? AnnParamList ReturnType ";"
@@ -27,7 +31,7 @@ TypedStructures {
   LawDef = defKw lawKw ident UniverseParams? TypeParams? AnnParamList? "->" Prop Block
   MethodDef = methodKw ident UniverseParams? TypeParams? AnnParamList ReturnType? Block
   ValueDef = ident UniverseParams? TypeParams? (":" TypeExpr)? "=" Expr ";"
-  CaseDecl = caseKw ident TypeParams? AnnParamList? ReturnType? CaseTail
+  CaseDecl = caseKw ident TypeParams? ReturnType? CaseTail
   CaseTail = TypeBody | ";"
   ReturnType = "->" TypeExpr
   AnnParamList = "(" TrailingList<AnnParam> ")"
@@ -36,17 +40,15 @@ TypedStructures {
   AnnParam = ident ":" TypeExpr
   Prop = "(" Expr ")"
 
-  ForallDecl = forallKw TypeParams "{" SubtypeDecl+ "}"
-  SubtypeDecl = TypeExpr "<:" TypeExpr SubtypeTail
-  SubtypeTail = CtorBody | ";"
-
   TypeExpr = TypeArrow ("~=" TypeArrow)?
   TypeArrow = TypeApp ("->" TypeExpr)?
-  TypeApp = TypeApp "[" NonemptyTrailingList<TypeExpr> "]"  --index
+  TypeApp = TypeApp "[" NonemptyTrailingList<IndexArg> "]"  --index
           | TypeApp UniverseArgs                                --universes
           | TypeApp "(" TrailingList<Expr> ")"                  --call
           | TypeApp "." Field                                   --member
           | TypePrimary                                         --atom
+  IndexArg = TypeApp CtorBody --constructed
+           | TypeExpr         --type
   TypePrimary = "(" TrailingList<TypeEntry> ")" --parens
               | number                         --index
               | selfTypeKw                     --self
@@ -71,7 +73,7 @@ TypedStructures {
   // Parenthesize a record or block when it is itself the subject.
   Control = Comparison<Sum<Product<Subject>>>
   Subject = Subject "(" TrailingList<Expr> ")"             --call
-          | Subject "[" NonemptyTrailingList<TypeExpr> "]" --types
+          | Subject "[" NonemptyTrailingList<IndexArg> "]" --types
           | Subject UniverseArgs                                --universes
           | Subject "." Field                                   --member
           | Atom                                                --atom
@@ -80,7 +82,7 @@ TypedStructures {
   MatchArm = Pattern "=>" Expr
 
   AppExpr = AppExpr "(" TrailingList<Expr> ")"             --call
-          | AppExpr "[" NonemptyTrailingList<TypeExpr> "]" --types
+          | AppExpr "[" NonemptyTrailingList<IndexArg> "]" --types
           | AppExpr UniverseArgs                                --universes
           | AppExpr "." Field                                   --member
           | TypeApp CtorBody                                     --record
@@ -99,19 +101,19 @@ TypedStructures {
        | ident                                --name
   Block = "{" ValueDef* Expr "}"
   CtorBody = "{" TrailingList<FieldAssign> "}"
-  FieldAssign = ident "=" Expr
+  FieldAssign = ident TypeParams? ":" Expr
 
   Pattern = "(" NonemptyListOf<Pattern, ","> ")" --tuple
-          | QualifiedPattern PatternTail?  --constructor
-          | trueKw                         --true
-          | falseKw                        --false
-          | number                         --number
-          | ident                          --binding
-  QualifiedPattern = TypePrimary ("[" NonemptyListOf<TypeExpr, ","> "]")? ("." ident)+
-  PatternTail = "(" ListOf<Pattern, ","> ")"  --args
-              | "{" PatternFields "}"        --fields
-  PatternFields = "..."                                    --rest
-                | NonemptyListOf<ident, ","> ("," "...")? --names
+          | TypeApp "{" PatternFields "}"             --record
+          | trueKw                                     --true
+          | falseKw                                    --false
+          | number                                     --number
+          | ident                                      --binding
+  PatternFields = "..."                                            --rest
+                | NonemptyListOf<PatternField, ","> ("," "...")? ","? --fields
+                |                                                  --empty
+  PatternField = ident ":" Pattern --named
+               | ident             --binding
 
   space += comment
   comment = "//" (~"\n" any)*
@@ -125,13 +127,13 @@ TypedStructures {
   matchKw = "match" ~identPart
   ifKw = "if" ~identPart
   elseKw = "else" ~identPart
-  forallKw = "forall" ~identPart
+  staticKw = "static" ~identPart
   selfKw = "self" ~identPart
   selfTypeKw = "Self" ~identPart
   trueKw = "true" ~identPart
   falseKw = "false" ~identPart
   keyword = typeKw | caseKw | fnKw | lawKw | defKw | methodKw | whenKw
-          | matchKw | ifKw | elseKw | forallKw | selfKw | selfTypeKw | trueKw | falseKw
+          | matchKw | ifKw | elseKw | staticKw | selfKw | selfTypeKw | trueKw | falseKw
   ident (an identifier) = ~keyword identStart identPart*
   identStart = letter | "_"
   identPart = alnum | "_"
