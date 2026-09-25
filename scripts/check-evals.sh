@@ -7,21 +7,16 @@ status=0
 for skill_file in skills/*/SKILL.md; do
   skill_dir="${skill_file%/SKILL.md}"
   skill_name="${skill_dir#skills/}"
-  file="$skill_dir/evals/evals.json"
-  external_file="evals/$skill_name/evals.json"
+  file="evals/$skill_name/evals.json"
+  bundled_dir="$skill_dir/evals"
 
-  if [[ -f "$file" && -f "$external_file" ]]; then
-    printf 'Duplicate eval files: %s and %s\n' "$file" "$external_file" >&2
+  if [[ -e "$bundled_dir" ]]; then
+    printf 'Eval answers belong in %s; found %s\n' "$file" "$bundled_dir" >&2
     status=1
-    continue
-  fi
-
-  if [[ -f "$external_file" ]]; then
-    file="$external_file"
   fi
 
   if [[ ! -f "$file" ]]; then
-    printf 'Missing eval file: %s or %s\n' "$file" "$external_file" >&2
+    printf 'Missing eval file: %s\n' "$file" >&2
     status=1
     continue
   fi
@@ -47,7 +42,7 @@ done
 
 legacy_pattern='\b(git-worktrees|quality-audit|modern-python|unix-software-design|agent-cli-toolkit|new-project|maintain-project|learn-project|spark-code-review|github:yeet|github:gh-fix-ci)\b|\bSpark\b|(使用|由|加载|路由到|交给)[[:space:]]+spark\b|\bspark[[:space:]]+skill\b'
 
-if rg -n --pcre2 "$legacy_pattern" skills/*/evals/evals.json; then
+if rg -n --pcre2 "$legacy_pattern" evals/*/evals.json; then
   printf 'Legacy skill name or deleted route found in evals\n' >&2
   status=1
 fi

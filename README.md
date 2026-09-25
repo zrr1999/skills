@@ -116,7 +116,7 @@ vpx skills add zrr1999/skills -g -y --agent cline --skill '*'
 
 ## 本地开发
 
-评测用例位于 `skills/<skill-name>/evals/evals.json` 或 `evals/<skill-name>/evals.json`，两者不能同时存在。结构与完整性由 `check-evals` prek hook 校验。
+评测用例位于 `evals/<skill-name>/evals.json`，与 skill 目录分开，避免安装副本带上答案。结构与完整性由 `check-evals` prek hook 校验。
 
 ```bash
 bash scripts/check-evals.sh
