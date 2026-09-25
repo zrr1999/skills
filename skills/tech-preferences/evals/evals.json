@@ -4,22 +4,23 @@
     {
       "id": 1,
       "prompt": "我要开个新坑，后端框架和任务队列该怎么选，什么更适合我现在的习惯？",
-      "expected_output": "Agent 应先应用 tech-preferences 的偏好分析流程，对比已知偏好基线，给出选型建议。偏好分析应放在具体建议之前。",
+      "expected_output": "Agent 应先给出一个基于当前约束的明确推荐，再用 tech-preferences 的偏好基线和项目证据解释为何适合、关键取舍以及何时偏离。",
       "files": [],
       "expectations": [
-        "输出包含偏好分析流程（识别决策点、对比已知偏好）",
-        "输出包含具体选型建议",
-        "偏好分析出现在具体建议之前"
+        "输出开头先给具体选型建议",
+        "随后用已知偏好和项目证据支持或限定推荐",
+        "说明关键取舍与偏离条件"
       ]
     },
     {
       "id": 2,
       "prompt": "我要做一个 agent 友好的小 CLI / DSL 项目，应该直接选成熟外部框架，还是优先用我自己的 Spore、Volvox、skills、loom 这些东西？",
-      "expected_output": "Agent 应识别这是技术选型问题，先检查 tech-preferences 中的自研生态偏好；说明 ~/workspace 是自研仓库事实来源；按任务类型优先考虑 spore-lang/spore、basic-cli、volvox-ai/volvox、gonidium、zrr1999/skills、loom 等自研项目，同时说明若成熟度或交付约束不匹配才选择外部替代。",
+      "expected_output": "Agent 应识别这是技术选型问题，先给有条件的推荐并检查 ~/workspace 的项目证据；区分 zrr1999/skills 的可安装 agent 行为/路由与 marrow-lab/loom 的 filesystem-first 协作状态面，再按 CLI/DSL/计算需求评估 Spore、basic-cli、Volvox 或 Gonidium；成熟度或交付约束不匹配时选择外部替代。",
       "files": [],
       "expectations": [
         "输出明确提到先检查 ~/workspace 下的自研仓库事实",
-        "输出至少覆盖以下两个方向：Spore 或 basic-cli、Volvox 或 Gonidium、zrr1999/skills 或 loom",
+        "输出至少覆盖以下两个方向：Spore 或 basic-cli、Volvox 或 Gonidium",
+        "明确 zrr1999/skills 管 agent 行为/路由，marrow-lab/loom 管 human request、agent task 与共享文件状态，二者不互相替代",
         "输出说明自研优先不是绝对规则，需要按成熟度、交付约束和任务匹配度判断"
       ]
     },
@@ -37,23 +38,26 @@
     {
       "id": 4,
       "prompt": "新开一个 Python CLI 小工具目录，想用 uv、ruff、ty，帮我写 pyproject 和本地怎么检查。",
-      "expected_output": "Agent 应加载 tech-preferences 的 Python 工程化落地：给出 uv 初始化思路、pyproject 中 ruff/ty 的配置方向、以及 ruff/ty/pytest 等本地验证命令；与 uv+ruff+ty 基线一致。",
+      "expected_output": "Agent 应加载 tech-preferences 的 Python 工程化落地：用 uv 初始化，只把 pytest 加入 dev dependency，在 pyproject 配置 ruff/ty；本地、prek 和 CI 用 uvx ruff、uvx ty 与项目环境中的 uv run pytest。",
       "files": [],
       "expectations": [
         "输出包含 uv 或等价的项目初始化步骤",
         "输出包含 ruff 与 ty 的配置或明确引用 pyproject 片段",
-        "输出包含可执行的本地检查命令"
+        "只用 uv add --dev pytest 添加测试依赖，不把 ruff/ty 加入项目依赖",
+        "本地检查明确使用 uvx ruff、uvx ty 和 uv run pytest"
       ]
     },
     {
       "id": 5,
       "prompt": "这个仓库还在用 black、mypy、requirements.txt，想迁到 ruff 和 ty，并改用 uv，步骤怎么安排？",
-      "expected_output": "Agent 应给出迁移顺序：依赖与锁文件迁移、ruff 替代 black、ty 替代 mypy 的注意事项、双跑/回滚策略；避免只列工具名而无步骤。",
+      "expected_output": "Agent 应给出迁移顺序：依赖与锁文件迁移、pytest 进入 dev dependency、ruff 替代 black、ty 替代 mypy 的注意事项、双跑/回滚策略；ruff/ty 通过 uvx 运行，pytest 通过 uv run 使用项目环境。",
       "files": [],
       "expectations": [
         "输出包含从旧栈到新栈的分阶段或有序步骤",
         "输出提及 mypy/插件或复杂配置时保留或并行检查的风险",
-        "输出提及 requirements.txt 与 uv.lock 的单源化方向"
+        "输出提及 requirements.txt 与 uv.lock 的单源化方向",
+        "明确 ruff/ty 不加入项目依赖，pytest 加入 dev dependency",
+        "明确 uvx ruff、uvx ty、uv run pytest 的命令边界"
       ]
     },
     {
@@ -78,6 +82,19 @@
         "先检查现有仓库、数据流或状态归属证据",
         "没有虚构新的框架或工具选型问题",
         "保持在设计层，不直接修改代码"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "给这个 uv 项目统一本地、prek 和 CI 的 Python 检查。ruff 和 ty 不想污染项目依赖，但 pytest 必须能加载项目依赖和插件。",
+      "expected_output": "Agent 应只把 pytest 添加为 dev dependency，并在三个环境统一使用 uvx ruff、uvx ty、uv run pytest；不得把 ruff/ty 加入 dependency groups，也不得用 uvx pytest。",
+      "files": [],
+      "expectations": [
+        "使用 uv add --dev pytest",
+        "ruff 命令使用 uvx ruff",
+        "ty 命令使用 uvx ty",
+        "pytest 命令使用 uv run pytest",
+        "本地、prek 和 CI 使用同一命令边界"
       ]
     }
   ]

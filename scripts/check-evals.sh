@@ -45,4 +45,11 @@ for skill_file in skills/*/SKILL.md; do
   fi
 done
 
+legacy_pattern='\b(git-worktrees|quality-audit|modern-python|unix-software-design|agent-cli-toolkit|new-project|maintain-project|learn-project|spark-code-review|github:yeet|github:gh-fix-ci)\b|\bSpark\b|(使用|由|加载|路由到|交给)[[:space:]]+spark\b|\bspark[[:space:]]+skill\b'
+
+if rg -n --pcre2 "$legacy_pattern" skills/*/evals/evals.json; then
+  printf 'Legacy skill name or deleted route found in evals\n' >&2
+  status=1
+fi
+
 exit "$status"

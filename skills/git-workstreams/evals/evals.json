@@ -279,11 +279,11 @@
     },
     {
       "id": 23,
-      "prompt": "仓库已发布正式包，且贡献规范要求通过 PR 交付。我已经在确认过的 linked worktree 和 feature/fix-login 分支里。请修复登录回跳 bug，按仓库要求验证；我没有另外说要不要提 PR。",
-      "expected_output": "Agent 应把实现类仓库改动默认交付为 Draft PR：完成范围内修复和验证后按仓库规范 commit、push 到 feature/fix-login，并创建 Draft PR，不再等待一次“是否提 PR”的确认；随后回读 head/base、Draft 状态和 CI。",
+      "prompt": "这个仓库的 CONTRIBUTING 写明 main 禁推且所有改动必须走 PR。我已经在确认过的 linked worktree 和 feature/fix-login 分支里。请修复登录回跳 bug，按仓库要求验证；我没有另外说交付终点。",
+      "expected_output": "Agent 应先用 main 禁推和 PR 要求判定为规范化仓库，再应用默认 Draft PR 交付：完成范围内修复和验证后按仓库规范 commit、push 到 feature/fix-login，并创建 Draft PR，不再等待一次“是否提 PR”的确认；随后回读 head/base、Draft 状态和 CI。",
       "files": [],
       "expectations": [
-        "识别为会触发默认 Draft PR 交付的实现请求，而不是只读或规划请求",
+        "用 main 禁推和 PR 要求判定规范化仓库，并识别会触发默认 Draft PR 的实现请求",
         "复用已确认的 linked worktree 和 owning branch，不切换主工作区或创建替代分支",
         "验证后按仓库规范 commit、push 并创建 Draft PR",
         "不为是否提 PR 单独请求第二次确认",
@@ -292,8 +292,8 @@
     },
     {
       "id": 24,
-      "prompt": "把这个解析器 bug 修好并跑测试，但只保留本地改动：不要 commit、不要 push，也不要提 PR。",
-      "expected_output": "Agent 应完成范围内本地修复与验证，但用户明确覆盖了默认 Draft PR 交付，因此不得 commit、push 或创建 PR；应报告本地 diff、验证结果和未执行的交付动作。",
+      "prompt": "这是个 main 禁推、改动必须走 PR 的规范化仓库。把这个解析器 bug 修好并跑测试，但只保留本地改动：不要 commit、不要 push，也不要提 PR。",
+      "expected_output": "Agent 应识别规范化仓库默认允许 owning worktree，但用户显式仅本地终点覆盖默认 Draft PR 交付；完成范围内修复与验证后不得 commit、push 或创建 PR，并报告本地 diff、验证结果和未执行的交付动作。",
       "files": [],
       "expectations": [
         "识别用户的仅本地交付边界优先于默认 Draft PR",
@@ -304,8 +304,8 @@
     },
     {
       "id": 25,
-      "prompt": "仓库已发布正式包，且贡献规范要求通过 PR 交付。owning checkout 已确认。实现 schema、依赖它的 service，以及只依赖 service 的 docs；每层都要单独 review。完成后按默认方式交付。",
-      "expected_output": "Agent 应把三个真实依赖且可独立 review 的 concern 组织为 schema -> service -> docs，并自动交付为三层 stacked Draft PR；逐层验证 head/base 和 Draft 状态，不因默认交付自动 Ready 或 merge。",
+      "prompt": "这是一个 main 禁推、所有改动走 PR 的规范化仓库，owning checkout 已确认。实现 schema、依赖它的 service，以及只依赖 service 的 docs；每层都要单独 review，按默认方式交付。",
+      "expected_output": "Agent 应把三个真实依赖且可独立 review 的 concern 组织为 schema -> service -> docs；由于仓库规范化且未指定更窄终点，自动交付为三层 stacked Draft PR，逐层验证 head/base 和 Draft 状态，不因默认交付自动 Ready 或 merge。",
       "files": [],
       "expectations": [
         "识别三个 concern 的真实依赖和独立 review 价值",
@@ -317,8 +317,8 @@
     },
     {
       "id": 26,
-      "prompt": "仓库已发布正式包，且贡献规范要求通过 PR 交付。两个 owning worktree 都已确认：一个修支付重试，一个更新搜索排序，两者互不依赖。都实现并按默认方式交付。",
-      "expected_output": "Agent 应保持两个独立 workstream 和 owning worktree，各自验证、commit、push 并创建独立 Draft PR；不得把无依赖的支付与搜索改动伪造成 stacked PR，也不得自动 Ready 或 merge。",
+      "prompt": "两个仓库都要求 main 禁推且改动走 PR，两个 owning worktree 也已确认：一个修支付重试，一个更新搜索排序，两者互不依赖。都实现并按默认方式交付。",
+      "expected_output": "Agent 应根据规范化证据保持两个独立 workstream 和 owning worktree，各自验证、commit、push 并创建独立 Draft PR；不得把无依赖的支付与搜索改动伪造成 stacked PR，也不得自动 Ready 或 merge。",
       "files": [],
       "expectations": [
         "保持两个独立 owning worktree 和 branch，不共享可变 checkout",
@@ -344,7 +344,7 @@
     },
     {
       "id": 28,
-      "prompt": "修好配置加载问题并跑测试，然后 commit、push；这次交付到这里。",
+      "prompt": "这是个已有正式发布、默认走 PR 的规范化仓库。修好配置加载问题并跑测试，然后 commit、push；这次交付到这里，不提 PR。",
       "expected_output": "Agent 应把 commit+push 识别为用户明确指定的交付终点：完成范围内修复和验证后按仓库规范 commit、push，并在这里停止，不因默认 Draft PR 规则额外创建 PR。",
       "files": [],
       "expectations": [
@@ -369,7 +369,7 @@
     },
     {
       "id": 30,
-      "prompt": "在当前主工作区的 main 上实现登录超时修复，验证后 commit、push 并创建 draft PR。",
+      "prompt": "这是刚初始化、没有 remote rule、tag、release 或发布包的非规范化仓库。在当前主工作区的 main 上实现登录超时修复，验证后 commit、push 并创建 draft PR。",
       "expected_output": "Agent 应把创建 draft PR 视为默认允许使用 worktree：检查现场后按需要创建或复用 owning worktree，在其中实现、验证和发布，不再询问是否启用 worktree，也不隐式切换主工作区分支；如果当前已经是安全的 owning checkout，则可以直接复用而不强制创建第二个 worktree。",
       "files": [],
       "expectations": [

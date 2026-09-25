@@ -1,7 +1,7 @@
 ---
 name: vet
 description: >
-  有证据的代码质量审查与清理，按范围分两种轨道：diff 级（写完代码/提交前清扫 AI 味：comment slop、防御性过度、过度抽象、幻觉 API、重复逻辑、泛泛命名、test theater，deletion-first 收敛到最小补丁）和仓库级（维护型技术债、架构健康、测试/依赖/配置审计，以及公开发布/开源/v1.0/package publish 前的 release readiness 预检）。触发：deslop、去 AI 味、清理或 review 刚才的改动、提交前自查、PR diff 质量、技术债/质量审计、开源前检查、Scorecard、REUSE。不用于正确性 bug 调试或纯安全渗透测试。
+  有证据的代码质量审查与清理，按范围分两种轨道：diff 级（写完代码/提交前清扫 AI 味：comment slop、防御性过度、过度抽象、幻觉 API、重复逻辑、泛泛命名、test theater，deletion-first 收敛到最小补丁）和仓库级（维护型技术债、architecture findings、测试/依赖/配置审计，以及公开发布/开源/v1.0/package publish 前的 release readiness 预检）。触发：deslop、去 AI 味、清理或 review 刚才的改动、提交前自查、PR diff 质量、技术债/质量/架构审计、开源前检查、Scorecard、REUSE。不用于正确性 bug 调试、纯安全渗透测试或设计未来方案；设计取舍与推进顺序交给 pilot，目标仓库自己的 review/ownership 指南优先。
 ---
 
 # Vet
@@ -52,7 +52,7 @@ description: >
 写完代码立刻自己宣布"质量很好"等于没审。
 
 - 同会话自查：当作独立一轮——从 diff 重新读起，不依赖写代码时的记忆和假设。
-- 有子代理可用：优先把 diff 交给独立子代理做 verifier 式审查，输入是 diff 和本清单；reviewer 只报告，取舍由编排层决定。
+- 需要独立审查时由宿主编排层根据当前任务决定 reviewer 和调度方式；本 skill 不要求或优先指定子代理。
 - review-only 模式下不动手；修改模式下改完后必须重跑检查收尾，不允许"我改的就是对的"直接宣布通过。
 
 ### Do not flag
@@ -63,8 +63,9 @@ description: >
 
 ## Output
 
-- diff 轨道：findings 按 `delete` / `consolidate` / `consider` 分组（每条带 `file:line`、smell 类别、一句话理由）+ 最小 patch + 验证证据。
-- repo 轨道：按 `references/repo-audit.md` 的输出约定；默认在对话中完成，不生成报告文件。
+- 两条轨道的 findings 都标记为 `delete` / `consolidate` / `fix` / `consider`，每条带定位、具体 failure mode 或仓库约定、证据和最小处理建议。
+- review-only 只输出 findings 与验证证据，不要求或暗示 patch；用户要求修改时才交付最小 patch，并报告修复后检查。
+- repo 轨道同时遵守 `references/repo-audit.md` 的范围、优先级和 release-readiness 输出约定；默认在对话中完成，不生成报告文件。
 
 ## Stop
 

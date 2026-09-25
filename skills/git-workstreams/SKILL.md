@@ -70,7 +70,7 @@ gh stack --help  # GitHub stack 请求；用于发现本地扩展是否可用
 5. **执行最小动作**：按用户选择和仓库分类复用已有隔离环境或创建 owning worktree；新实现从明确基准创建 branch，只有已 opt-in 才创建、进入或交接 worktree。规范化仓库和创建 PR 的请求已经提供这一 opt-in；非规范化仓库中的单独 `commit+push` 没有。发布前应用下方主工作区保护；不要把任何发布请求当成隐式切换主工作区的授权。临时只读检查需要新 detached worktree 时也先取得选择。不要用 force 绕过 branch 占用或目标路径保护。
 6. **准备和验证**：读取 `AGENTS.md` 和项目 setup，运行覆盖受影响行为的必要检查及仓库必需检查；通过后仅因新改动、失败或未解决的具体疑点扩大或重复验证，不以改动行数判断风险。不自动复制 `.env`、凭据、ignored 文件或缓存，也不无条件安装依赖。
 7. **处理 PR follow-up**：当前 workstream 已有确认过的 PR，且用户要求实现、修复、跟进或保持可合并时，按下方闭环处理范围内冲突与 CI，并把验证过的本地修复小步 commit、及时 push 到已解析的 PR head。只读诊断不获得这些写权限。
-8. **选择交付终点**：按下方唯一优先级决定仅本地、commit、push 或 Draft PR；创建 PR 时使用仓库模板。force-push、retarget、Ready、merge、deploy 和 release 仍需各自明确授权；先解析精确 refs、PR base 和受影响层，再从本机 help 选择所需原生命令。
+8. **选择交付终点**：按下方唯一优先级决定仅本地、commit、push 或 Draft PR：先服从用户明确指定的仅本地、commit、commit+push 或 PR；未指定时，规范化仓库的普通实现 commit、push 并创建 Draft PR，非规范化仓库只保留已验证的本地改动。创建 PR 时使用仓库模板。force-push、retarget、Ready、merge、deploy 和 release 仍需各自明确授权；先解析精确 refs、PR base 和受影响层，再从本机 help 选择所需原生命令。
 9. **报告并停止**：达到隔离、stack 或 PR-ready 目标后，报告拓扑、所有权、commit/push、checks 与剩余 blocker；不顺带清理、合并或改写其他 workstream。
 
 ## Delivery endpoint
@@ -110,7 +110,7 @@ gh stack --help  # GitHub stack 请求；用于发现本地扩展是否可用
 2. 如果当前位于主工作区的默认分支，且用户没有明确选择“在当前 checkout 切分支”，不得执行 `git switch -c`、`git checkout -b` 或等价 branch-changing 命令。规范化仓库或用户要求创建 PR 时，默认使用 owning worktree，不再询问是否启用；若现有 WIP 无法安全迁入，只针对 WIP 的处理方式询问。其他发布请求则说明现有 WIP 不能安全地隐式迁移，并询问是启用 owning worktree，还是明确允许当前 checkout 的临时分支流程。
 3. 如果用户明确选择当前 checkout，可以从确认过的基准创建分支，但必须记录返回点；发布完成且工作树干净后，默认回到起始分支并核对 HEAD/upstream。无法安全返回时停止并报告，不 stash、reset 或覆盖文件。
 4. 如果主工作区已经位于目标非默认分支，或当前是已确认的 linked worktree，留在原 branch 完成发布；不要为了符合命名约定再次切分支。
-5. `github:yeet` 等发布 workflow 可以负责 stage/commit/push/PR，但 checkout/worktree 拓扑先由本 skill 解析；发布 workflow 不得覆盖这里的主工作区保护。
+5. 宿主实际提供的 GitHub 发布能力可以在已选交付范围内负责 stage/commit/push/PR，但 checkout/worktree 拓扑和权限先由本 skill 解析；任何执行能力都不得覆盖这里的主工作区保护或扩大授权。
 6. 最终报告主工作区的起始与结束 branch、当前 dirty 状态，以及创建或复用的 owning checkout。主工作区分支变化若未经明确选择，任务不得标记完成。
 
 ## Branch and PR stacks
@@ -167,7 +167,7 @@ ui         -> api
 
 1. **解析目标与所有权**：确认精确 PR、head repo/branch、base、当前 checkout/worktree 管理者、dirty 内容、冲突、checks 和 push 权限。不要把用户或其他任务的未提交改动混入 PR。
 2. **解决冲突**：按仓库约定选择 merge 或 rebase，逐项理解冲突双方意图并运行相关验证。stack 从 bottom 向 top 处理；低层变化重放到后继层后分别验证。已发布 branch 需要重写时，在 force-push 前停止并取得明确授权。
-3. **定位 CI**：从当前 CLI 的 PR/check/run help 发现精确命令；读取失败 job 与日志，区分本次改动导致的问题、flaky/infrastructure failure 和无关失败。GitHub Actions 可路由到可用的 `github:gh-fix-ci` workflow；只修复当前 PR 范围内可复现的问题。
+3. **定位 CI**：从当前 CLI 的 PR/check/run help 发现精确命令；读取失败 job 与日志，区分本次改动导致的问题、flaky/infrastructure failure 和无关失败。若宿主提供适用的 GitHub CI 能力，可在本 skill 已确认的目标与权限内使用；只修复当前 PR 范围内可复现的问题。
 4. **及时提交并推送**：一个聚焦修复完成且相关检查通过后，按仓库 commit 规范创建小步 commit 并立即 push 到已确认的 PR head；不要把已验证修复长期留在本地，也不要用 `--no-verify` 掩盖 hook 失败。
 5. **重新检查**：push 后重新读取冲突与 checks；继续处理新出现且仍在范围内的问题，直到 PR conflict-free 且 required checks 通过，或出现需要用户、权限或外部系统处理的明确 blocker。
 
@@ -186,10 +186,10 @@ ui         -> api
 ## Boundaries
 
 - 本 skill 管 worktree 生命周期、依赖 branch/PR 拓扑，以及目标 PR 的冲突、范围内 CI 修复和 head branch 连续交付；不替用户做 merge 决策，但在明确 landing 授权后负责 preflight、工具路由、停止条件和完成验证。不接管纯 review comment 处理、无关 CI 或 release 编排。
-- PR metadata、GitHub Actions logs 和 review threads 可路由到 GitHub 专项 workflow；原生 stack 的精确 CLI 操作由本 skill 从本机 help 发现。创建/发布阶段明确不支持时可退回普通 chained PR，official stack landing 不可退回逐 PR merge。
+- PR metadata、GitHub Actions logs 和 review threads 可使用宿主实际提供的 GitHub 能力；原生 stack 的精确 CLI 操作由本 skill 从本机 help 发现。创建/发布阶段明确不支持时可退回普通 chained PR，official stack landing 不可退回逐 PR merge。
 - 依赖、端口、数据库和容器隔离属于项目环境。只有仓库已有明确 setup 机制时才复用，不在通用 worktree skill 中发明一套。
 - Codex 托管 worktree 的 ignored 文件复制与快照由 Codex 处理；手工 Git worktree 不假设具有同样能力。
 
 ## Output
 
-worktree 请求先报告规范化判定证据和用户是否已 opt-in；启用后报告管理者、绝对路径、基准 ref、branch/HEAD、setup 与验证。发布请求报告主工作区起始/结束 branch、owning checkout、commit、push 和 PR。stack 请求报告唯一结果所有者、owning checkout、worktree 启用状态、执行路线、trunk、bottom-to-top branch 顺序和每层 PR base/head；landing 还要报告 official stack number、选定范围、每层最终状态和剩余 blocker。PR follow-up 报告冲突状态、失败 checks 与判断、创建的 commit、push 目标、重新检查结果和 blocker。清理请求报告保留与可安全移除的精确目标。
+worktree 请求先报告规范化判定证据和用户是否已 opt-in；启用后报告管理者、绝对路径、基准 ref、branch/HEAD、setup 与验证。仓库修改报告交付优先级命中的终点，以及实际本地改动、commit、push 和 PR；未执行的后续动作也要明确。stack 请求报告唯一 Git 结果所有者、owning checkout、worktree 启用状态、执行路线、trunk、bottom-to-top branch 顺序和每层 PR base/head；landing 还要报告 official stack number、选定范围、每层最终状态和剩余 blocker。PR follow-up 报告冲突状态、失败 checks 与判断、创建的 commit、push 目标、重新检查结果和 blocker。清理请求报告保留与可安全移除的精确目标。

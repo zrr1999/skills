@@ -11,6 +11,7 @@
         "先读取 README、manifest、目录结构、git churn 或等价现场证据",
         "工具结果按类别组织，而不是简单堆命令输出",
         "每个具体 finding 有 file:line 或明确工具证据",
+        "每个 finding 使用 delete/consolidate/fix/consider 处理类别",
         "输出包含 Top priorities、quick wins、things that look bad but are actually fine 或等价误报排除",
         "默认不生成或更新报告文件"
       ]
@@ -96,6 +97,7 @@
         "明确这是 PR/diff review，不是全仓库审计",
         "审查范围保持在 diff 和必要相关上下文",
         "可以使用架构、重复、测试、类型等质量维度作为 review lens",
+        "review-only 只报告 findings 和证据，不要求 patch",
         "不生成全仓审计报告文件"
       ]
     },
@@ -118,7 +120,7 @@
       "expectations": [
         "范围限定在本次 diff/改动文件，不扩散到全仓",
         "修改前先运行项目已有的 typecheck/test 拿基线",
-        "finding 带 file:line 与一句话理由，并按 delete/consolidate/consider 或等价分类",
+        "finding 带 file:line 与一句话理由，并按 delete/consolidate/fix/consider 分类",
         "修复以删除和收敛为主，不新增抽象层或依赖",
         "修改后重跑同一组检查验证"
       ]
@@ -132,6 +134,31 @@
         "不直接在全目录范围执行删除式改写",
         "明确区分 diff 轨道默认范围与全仓审计",
         "转向 repo maintenance audit 流程或要求用户确认范围后再动手"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "只 review 这段混合 diff 的 AI 味：Python 用了 os.path，TypeScript 有一段 .then()，shell 没写 set -euo pipefail。仓库没有禁止这些写法，测试也没有显示相关 failure。不要改代码。",
+      "expected_output": "Agent 应保持 review-only，并认定这些语法或风格信号在没有具体 failure mode、工具证据或仓库约定时都不是 finding；不得为了现代化口味制造 patch。",
+      "files": [],
+      "expectations": [
+        "不把 os.path 本身判为 slop",
+        "不把 .then() 本身判为 slop",
+        "不把缺少 set -euo pipefail 本身判为 slop",
+        "只有出现具体行为风险或违反仓库约定时才升级为 finding",
+        "review-only 不提供或要求 patch"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "审计这个仓库当前架构，重点找依赖环、重复状态机和跨边界写入。我要有证据的 findings，不要未来重构蓝图，也不要改文件。",
+      "expected_output": "Agent 应使用 vet 的 repo maintenance 轨道拥有 architecture findings，给出定位、failure mode、证据、严重度和 delete/consolidate/fix/consider 类别；设计方案与推进顺序留给 pilot，review-only 不产出 patch。",
+      "files": [],
+      "expectations": [
+        "把 architecture findings 归给 vet 而不是 pilot",
+        "每条 finding 有定位和具体 failure mode",
+        "使用 delete/consolidate/fix/consider 处理类别",
+        "不扩写未来设计方案，不修改文件"
       ]
     }
   ]

@@ -77,7 +77,7 @@ public-release 或 mixed 必须先给：
 
 ## Synthesis
 
-维护 finding 使用 `Critical/High/Medium/Low` 和 `S/M/L` 工作量；按影响、证据强度和修复顺序排序，去重后通常不超过 50 条。输出默认在对话中完成，不创建 `QUALITY_AUDIT.md` 或其他报告文件。
+维护 finding 使用 `Critical/High/Medium/Low`、`S/M/L` 工作量，以及与主 skill 一致的 `delete` / `consolidate` / `fix` / `consider` 处理类别；按影响、证据强度和修复顺序排序，去重后通常不超过 50 条。输出默认在对话中完成，不创建 `QUALITY_AUDIT.md` 或其他报告文件。
 
 输出至少保留与当前模式相关的：结论、模式/范围/基线、mental model、关键证据、findings（带定位）、Top priorities、quick wins、误报排除、开放问题和未运行命令。仅 public-release 或 mixed 时加入 Readiness、发布分类和 Decisions needed；maintenance-only 不要凭模板生成发布结论。
 

@@ -21,7 +21,7 @@
 | 技能 | 主要结果 | 典型边界 |
 | --- | --- | --- |
 | `tech-preferences` | 技术栈/工具取舍与 Python 工具链落地 | 项目级模块、接口和状态边界仍由 `pilot` 统筹 |
-| `vet` | diff 级 AI slop 清理，或全仓质量审计与公开发布就绪预检 | 不替代正确性调试或纯安全渗透测试 |
+| `vet` | diff 级 AI slop 清理、证据化 architecture findings，或全仓质量审计与公开发布就绪预检 | 不替代正确性调试、纯安全渗透测试或未来方案设计 |
 | `git-workstreams` | checkout/worktree、依赖 PR 拓扑与持续交付权限边界 | 规范化仓库或创建 PR 时可默认使用 owning worktree；其他场景显式 opt-in |
 
 ### 领域专用能力
@@ -42,7 +42,7 @@
 1. 请求横跨目标、现场证据、设计和下一步，或主要结果是组织子代理 brief 与依赖时，以 `pilot` 为主；遇到明确专项再加载更窄的 skill。
 2. 主要交付只是技术选择、审计、Git workstream 或领域产物时，直接使用对应 skill。
 3. `pilot` 负责明确委派 brief 与依赖；实际调度由宿主编排层完成，不加载单独的 role skill。
-4. 混合请求分三层所有权：`pilot` 管项目结论与顺序，领域 skill 管产物与领域权限，`git-workstreams` 管 Git 拓扑与交付；每层只有一个所有者，权限互不推导。
+4. 混合请求分三层所有权：`pilot` 管项目结论与顺序，领域 skill 管产物与领域权限，`git-workstreams` 管 Git 拓扑与交付；每层只有一个所有者，权限互不推导。现有架构的证据化 findings 归 `vet`，比较未来方案和推进顺序归 `pilot`。
 5. `gh stack` 请求统一由 `git-workstreams` 拥有结果并直接读取本机 help；外部 `gh-stack` skill 的静态命令、安装、配置、重试和权限规则不作为依赖或权威。
 6. Git 交付以用户显式终点为先；未指定时，规范化仓库默认 Draft PR，非规范化仓库默认仅本地。审查、设计和咨询不触发实现或 Git 交付。
 

@@ -16,7 +16,7 @@ description: >
 - 需要委派时，已明确每个工作单元的目标、输入、范围、预期产物、验证和依赖；
 - 只有长期项目意图值得维护时，才创建或更新 `SPARK.md`。
 
-pilot 只拥有项目级结论和推进顺序；专项 skill 拥有自己的技术方法或领域产物。
+pilot 只拥有项目级结论和推进顺序；专项 skill 拥有自己的技术方法或领域产物，`git-workstreams` 统一拥有 Git 拓扑与交付终点。
 
 ## Decision rules
 
@@ -31,7 +31,7 @@ pilot 只拥有项目级结论和推进顺序；专项 skill 拥有自己的技�
 9. **交给更窄的 skill。** pilot 继续拥有整体推进，但不复制专项方法：
    - 技术栈、工具、仓库边界取舍或 Python 工具链：`tech-preferences`
    - 第三方 SDK/API 文档：`get-api-docs`
-   - 代码质量审查：diff 级 AI slop 清理或全仓维护质量/公开发布预检：`vet`
+   - 代码质量审查：diff 级 AI slop 清理、证据化 architecture findings 或全仓维护质量/公开发布预检：`vet`
    - worktree、branch/PR stack 或目标 PR 跟进：`git-workstreams`
    - 私有 SSH 设备事实源和信任：`ssh-fleet`
    - 持久终端工作区与会话：`zellij`
@@ -48,7 +48,7 @@ pilot 只拥有项目级结论和推进顺序；专项 skill 拥有自己的技�
 
 ## Built-in design judgment
 
-基于当前代码、数据流和运行证据做设计，不让抽象原则替代现场：
+当请求需要设计方案、模块边界取舍或推进顺序时，基于当前代码、数据流和运行证据做设计，不让抽象原则替代现场。若主要结果是审计现有架构并列出 findings，交给 `vet`；pilot 可以消费 findings 形成方案，但不重复拥有审计结果。
 
 - 只检查会改变结果的边界：模块与接口、数据表示、状态所有者与写入权、失败与恢复入口、策略与机制。
 - 优先小而可组合的部件、单一明确的状态所有者、可检查的数据或 schema，以及尽早暴露且可修复的失败；只引入当前问题需要的复杂度。

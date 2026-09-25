@@ -36,7 +36,7 @@ description: >
 - **信任更新**：只有用户要求新增或轮换 host key，且指纹已通过独立可信渠道核验时，才修改 `trust/known_hosts`。`ssh-keyscan` 只能采集候选 key，不能单独建立信任。
 - **远程连接**：只有用户明确要求连接、调查或操作目标设备时才执行 SSH；先解析精确 alias、目标与信任状态，不用 `StrictHostKeyChecking=no` 绕过缺口。
 - **应用生成配置**：只有用户明确要求 apply 时，才把已审阅输出写入 live 路径。render 或 diff 不等于 apply。
-- **Git 交付**：交给 `git-workstreams`，不在本 skill 另设 commit/push 默认值。用户明确要求不提交、不推送或仅本地时，仍停在该边界。
+- **Git 交付**：交给 `git-workstreams`，不在本 skill 另设 commit/push 默认值。领域授权与 Git 交付互不推导。用户明确要求不提交、不推送或仅本地时，仍停在该边界；否则由 `git-workstreams` 按显式终点和仓库现场决定仅本地、commit、push 或 Draft PR。
 
 任何阶段都不得输出或提交私钥、密码、token、agent socket、`.env`、临时命令输出或未筛选的密钥材料。
 
@@ -76,4 +76,4 @@ description: >
 
 ## Output
 
-更新类请求报告：事实源、设备 name、字段变化、整文件校验、render 目录、受影响输出与 `ssh -G` 结果。审计类请求报告：现状、风险和建议，不制造改动。明确列出未执行的远程连接、live apply、trust 变更、commit 和 push。
+更新类请求报告：事实源、设备 name、字段变化、整文件校验、render 目录、受影响输出与 `ssh -G` 结果。审计类请求报告：现状、风险和建议，不制造改动。明确列出未执行的远程连接、live apply 和 trust 变更；Git 交付终点及未执行的 commit/push/PR 由 `git-workstreams` 报告。

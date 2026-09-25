@@ -41,9 +41,10 @@
 3. **依赖**：
    ```bash
    uv add <runtime-dep>
-   uv add --dev ruff pytest
-   # ty：按 Astral 文档选择包名/版本；通常作为 dev 依赖
+   uv add --dev pytest
    ```
+
+   `pytest` 必须进入 dev dependency，才能在项目环境中加载被测包和测试插件。`ruff` 与 `ty` 使用 `uvx` 的隔离工具环境，不加入项目依赖。
 
 4. **在 `pyproject.toml` 配置 ruff 与 ty**（见下节「配置片段」）。
 
@@ -54,7 +55,7 @@
    uvx ruff check .
    uvx ruff format --check .
    uvx ty check .
-   uvx pytest
+   uv run pytest
    ```
 
 ## 独立脚本（单文件或小型目录）
@@ -143,7 +144,7 @@ uvx ty check .
 
 ### 预提交（本仓库偏好：prek）
 
-用 **prek** 配置在提交前跑 `ruff`、`ty`、`pytest` 中与团队约定的子集。若用户环境无 prek，可暂用 **pre-commit** 或直接依赖 CI，并在文档中说明差异。
+用 **prek** 配置在提交前运行与本地一致的 `uvx ruff ...`、`uvx ty ...` 和 `uv run pytest` 子集。若用户环境无 prek，可暂用 **pre-commit** 或直接依赖 CI，并在文档中说明差异。
 
 最小思路：**同一组命令**在本地钩子与 GitHub Actions 中各跑一遍，避免「本地绿、CI 红」。
 
@@ -180,7 +181,7 @@ jobs:
 2. 读现有 `pyproject.toml` 与锁文件；识别旧工具残留配置。
 3. 确认 `requires-python` 下限（默认 **>=3.12**）与是否采用最新稳定小版本；按「Python 版本与新特性」列出应阅读的 What's New 版本区间（3.12 起至该下限）。
 4. 给出或修改 `pyproject.toml` 片段（`[project]`、`[tool.ruff]`、`[tool.ty]`、可选 `[tool.pytest.ini_options]`），保证 ruff/ty 的目标版本与上一致。
-5. 给出本地验证命令（`uv sync`、`ruff`、`ty`、`pytest`）。
+5. 给出本地验证命令：`uv sync`、`uvx ruff ...`、`uvx ty ...`、`uv run pytest`；不要把 ruff/ty 加入项目依赖，也不要用隔离环境运行 pytest。
 6. 若需 CI：添加或更新 workflow；若需钩子：prek 或等价方案。
 7. 若存在类型检查迁移或双工具并行，说明**临时双跑**策略及退出条件。
 

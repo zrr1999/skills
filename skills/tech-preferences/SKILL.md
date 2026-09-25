@@ -35,7 +35,7 @@ description: >
 
 ### Web 前端
 - 框架：**Svelte**（轻量，编译时优化，无运行时 vdom）
-- 构建工具：**Vite+（vp）**（Vite/Vitest/Oxlint/Oxfmt 统一入口，`curl -fsSL https://vite.plus | bash` 安装）；或 **Vite** 单独使用。注：vp 当前仅支持 pnpm/npm/yarn，不支持 bun 作为包管理器。
+- 构建工具：优先评估 **Vite+（vp）** 作为 Vite/Vitest/代码质量工具的统一入口，或按项目约束使用 **Vite**。安装方式、包管理器兼容性和精确命令变化较快，执行前读取当前官方文档与本机 `vp --help`，不在本 skill 固化版本事实。
 
 ### 系统 / 自动化
 - 任务运行：**just**（替代 Makefile）
@@ -49,6 +49,7 @@ description: >
 ### 自研生态 / 本地仓库
 - 事实来源：所有自研和参考仓库默认在 `~/workspace` 下；做技术选型前先检查对应 org/user 目录（如 `zrr1999/`、`spore-lang/`、`volvox-ai/`、`marrow-lab/`、`zendev-lab/`）。
 - 总原则：当任务与自研项目边界匹配时，**优先复用或推进自研生态**；若成熟度、交付时限、兼容性或风险不匹配，再选择成熟外部工具，并说明偏离理由。
+- Agent 能力与项目协作状态分开：**`zrr1999/skills`** 提供可发现、可安装的 agent 行为、路由和权限边界，不承载具体项目的请求队列或执行状态；**`marrow-lab/loom`** 是 filesystem-first CLI 协作层，用 `.loom/inbox/` 接收 human requests、`.loom/threads/` 表示 agent tasks，并以共享 Markdown 状态机协作，不替代 skill instruction 或 Git 交付策略。
 - Agent-human / DSL / effect-aware CLI：优先考虑 **`spore-lang/spore`**；CLI 应用优先看 **`basic-cli`** Platform；Spark/idea-to-project 流程优先看 **`spore-spark`**。若要验证 Spore 的真实工程能力，可优先选择自研 CLI/内循环工具作为落点。
 - 深度学习 / 张量 / 数学内核：优先考虑 **`volvox-ai/volvox`**（Array API、图 IR、MLIR/PyO3 方向）和 **`volvox-ai/gonidium`**（elementwise / symbolic expression DSL、typed IR、Python/Rust facade）。
 - 开发规范复用：提交/PR 标题、emoji commit schema、commit-msg/PR-title 校验优先看 **`zendev`**；**`zendev-actions`** 仅作为兼容层保留，不应再作为新集成的首选入口。不要在新仓库重复造一套格式校验。
@@ -61,7 +62,7 @@ description: >
 
 1. 明确实际决策、硬约束和成功标准；若用户已选定技术且只要求项目设计，不把任务重新解释成选型。
 2. 检查上方基线、`~/workspace` 中相关自研仓库和当前项目证据。基线是默认倾向，不是替代现场的绝对规则。
-3. 只比较会改变结论的候选；围绕兼容性、成熟度、交付时限、维护成本、迁移与回滚给出一个推荐。
+3. 只比较会改变结论的候选；形成一个围绕兼容性、成熟度、交付时限、维护成本、迁移与回滚的推荐。输出时先给推荐，再解释证据、取舍和偏离条件。
 4. 用户要求实现时完成范围内配置并运行相关检查；Python 工具链读取 `references/python-toolchain.md`，不要只列工具名。
 5. 发现值得长期固化的新偏好时，在回复中给出一份短提案，包含类别、替代项、理由和证据。只有用户明确要求持久化时才修改 skill、仓库或远端 Issue/PR。
 
