@@ -74,6 +74,7 @@ curl -fsSL https://raw.githubusercontent.com/zrr1999/skills/main/install.sh | ba
 | `cloudflare/skills` | `cloudflare`、`wrangler` |
 | `shigurelab/gh-llm` | `github-conversation` |
 | `spore-lang/spore` | `spore-language` |
+| `kucherenko/jscpd` | `dry-refactoring` |
 
 其他能力按用途选择；每次安装都会包含默认集合：
 

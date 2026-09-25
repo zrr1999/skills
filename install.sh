@@ -87,6 +87,7 @@ install_core() {
   add_skills cloudflare/skills cloudflare wrangler
   add_skills shigurelab/gh-llm github-conversation
   add_skills spore-lang/spore spore-language
+  add_skills kucherenko/jscpd dry-refactoring
 }
 
 install_profile() {

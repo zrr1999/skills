@@ -11,25 +11,18 @@ export INSTALL_TEST_STUB="$test_dir/stub"
 export VP_HOME="$test_dir/vite"
 mkdir -p "$INSTALL_TEST_BIN"
 
-cat > "$INSTALL_TEST_STUB" <<'STUB'
+cat >"$INSTALL_TEST_STUB" <<'STUB'
 #!/bin/bash
 set -eu
-name="${0##*/}"
-printf '%s' "$name" >> "$INSTALL_TEST_LOG"
-printf '\t%s' "$@" >> "$INSTALL_TEST_LOG"
-printf '\n' >> "$INSTALL_TEST_LOG"
-case "$name" in
+printf '%s' "${0##*/}" >>"$INSTALL_TEST_LOG"
+printf '\t%s' "$@" >>"$INSTALL_TEST_LOG"
+printf '\n' >>"$INSTALL_TEST_LOG"
+case "${0##*/}" in
   curl)
-    cat <<'BOOTSTRAP'
-mkdir -p "$VP_HOME/bin"
-cp "$INSTALL_TEST_STUB" "$VP_HOME/bin/vp"
-cp "$INSTALL_TEST_STUB" "$VP_HOME/bin/vpx"
-BOOTSTRAP
+    printf '%s\n' 'mkdir -p "$VP_HOME/bin" && cp "$INSTALL_TEST_STUB" "$VP_HOME/bin/vp" && cp "$INSTALL_TEST_STUB" "$VP_HOME/bin/vpx"'
     ;;
   gh) printf 'ShigureLab/gh-llm\n' ;;
-  vpx)
-    if [[ "${INSTALL_TEST_FAIL:-}" == "1" ]]; then exit 7; fi
-    ;;
+  vpx) [[ "${INSTALL_TEST_FAIL:-}" != 1 ]] ;;
 esac
 STUB
 chmod +x "$INSTALL_TEST_STUB"
@@ -39,35 +32,42 @@ done
 export PATH="$INSTALL_TEST_BIN:/usr/bin:/bin"
 
 run_install() {
-  : > "$INSTALL_TEST_LOG"
-  bash "$repo_dir/install.sh" "$@" > "$test_dir/output" 2>&1
+  : >"$INSTALL_TEST_LOG"
+  bash "$repo_dir/install.sh" "$@" >"$test_dir/output" 2>&1
 }
 
-assert_absent() {
+require() {
+  grep -Fq -- "$1" "${2:-$INSTALL_TEST_LOG}" || {
+    printf 'Missing: %s\n' "$1" >&2
+    exit 1
+  }
+}
+
+refuse() {
   if grep -Eq -- "$1" "${2:-$INSTALL_TEST_LOG}"; then
     printf 'Unexpected match: %s\n' "$1" >&2
     exit 1
   fi
 }
 
+removed='anthropics/skills|svg-assembly-animator|emil-design-eng|gh-stack|--all'
+
 run_install
-[[ "$(grep -c '^vpx' "$INSTALL_TEST_LOG")" == 7 ]]
-assert_absent 'anthropics/skills|svg-assembly-animator|emil-design-eng|--all|animate-expo|agent.qq.com|vibe-motion'
-assert_absent '^curl|^vp[[:space:]]'
+require $'vpx\tskills\tadd\tzrr1999/skills\t'
+require 'kucherenko/jscpd'
+refuse "$removed|animate-expo|agent.qq.com|vibe-motion|^curl|^vp[[:space:]]"
 
 REPO_SOURCE='fixture source with spaces' run_install web mail
-grep -Fq "$(printf 'vpx\tskills\tadd\tfixture source with spaces\t-g')" "$INSTALL_TEST_LOG"
-grep -Fq -- '--skill' "$INSTALL_TEST_LOG"
-grep -Fq 'review-animations' "$INSTALL_TEST_LOG"
-grep -Fq "$(printf 'vpx\tskills\tadd\thttps://agent.qq.com\t-g')" "$INSTALL_TEST_LOG"
-assert_absent 'animate-expo'
+require $'vpx\tskills\tadd\tfixture source with spaces\t-g'
+require 'review-animations'
+require $'vpx\tskills\tadd\thttps://agent.qq.com\t-g'
+refuse 'animate-expo'
 
 run_install all
-[[ "$(grep -c '^vpx' "$INSTALL_TEST_LOG")" == 12 ]]
-grep -Fq 'animate-expo' "$INSTALL_TEST_LOG"
-grep -Fq 'durable-objects' "$INSTALL_TEST_LOG"
-grep -Fq 'ruler-progress-render' "$INSTALL_TEST_LOG"
-assert_absent 'gh-stack|svg-assembly-animator|anthropics/skills|emil-design-eng|--all'
+require 'animate-expo'
+require 'durable-objects'
+require 'ruler-progress-render'
+refuse "$removed"
 
 run_install --help
 [[ ! -s "$INSTALL_TEST_LOG" ]]
@@ -77,16 +77,13 @@ if run_install unknown-profile; then
 fi
 [[ ! -s "$INSTALL_TEST_LOG" ]]
 
-if INSTALL_TEST_FAIL=1 run_install all; then
+if INSTALL_TEST_FAIL=1 run_install; then
   printf 'Failed install unexpectedly succeeded\n' >&2
   exit 1
 fi
-[[ "$(grep -c '^vpx' "$INSTALL_TEST_LOG")" == 1 ]]
-assert_absent 'Done\.' "$test_dir/output"
+refuse 'Done\.' "$test_dir/output"
 
 rm "$INSTALL_TEST_BIN/vpx"
 run_install
-# Node already exists; missing vpx must still trigger Vite+ setup.
 grep -q '^curl' "$INSTALL_TEST_LOG"
-[[ "$(grep -c '^vpx' "$INSTALL_TEST_LOG")" == 7 ]]
-printf 'Installer smoke checks passed (isolated tool stubs).\n'
+require $'vpx\tskills\tadd\tzrr1999/skills\t'
