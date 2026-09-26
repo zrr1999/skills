@@ -46,7 +46,7 @@
 5. `gh stack` 请求统一由 `git-workstreams` 拥有结果并直接读取本机 help；外部 `gh-stack` skill 的静态命令、安装、配置、重试和权限规则不作为依赖或权威。
 6. Git 交付以用户显式终点为先；未指定时，规范化仓库默认 Draft PR，非规范化仓库默认仅本地。审查、设计和咨询不触发实现或 Git 交付。
 
-原 `unix-software-design` 已简化并内置进 `pilot`，原 `git-worktrees` 已更名为 `git-workstreams`，原 `roles` 已退役，原 `quality-audit` 已合入 `vet`（新增 diff 级轨道），原 `spark` 已更名为 `pilot`（避免与 Spark 产品仓库混淆）。
+原 `unix-software-design` 已简化并内置进 `pilot`，原 `git-worktrees` 已更名为 `git-workstreams`，原 `roles` 已退役，原 `quality-audit` 已合入 `vet`（新增 diff 级轨道），原 `spark` 已更名为 `pilot`（避免与 Spark 产品仓库混淆）。`SPARK.md` 已由 zendev 的 `EVOLUTION.md` 取代，对应的 `evolution` skill 在 zendev 维护。
 
 > `svg-design` 已从本仓库移除；安装脚本不会自动卸载已有副本，升级时请检查并移除来自本仓库的旧安装。通用 SVG 能力的外部替代需按任务单独选择，不随本次移除自动安装。
 

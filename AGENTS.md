@@ -61,7 +61,7 @@
 
 ## Learned Workspace Facts
 
-- `pilot` 现为统一项目工作流与软件设计入口：内建需求澄清、简化的软件设计判断、按依赖组织的 brief 编排、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`get-api-docs`；非平凡经验沉淀迁移到 pi-spark 的 `spark-learnings` 工具链。
+- `pilot` 现为统一项目工作流与软件设计入口：内建需求澄清、简化的软件设计判断、按依赖组织的 brief 编排、CLI-first 工作法，并显式说明何时调用 `tech-preferences`、`get-api-docs`。项目初始意图和方向变化记在 `EVOLUTION.md`，由 zendev 的 `evolution` skill 维护；pilot 只读取，不拥有该格式。非平凡经验沉淀迁移到 pi-spark 的 `spark-learnings` 工具链。
 - `tech-preferences` 同时承载选型基线与 Python 工具链落地（原独立 `modern-python` 已合入）。
 - `git-workstreams` 由 `git-worktrees` 更名并扩展而来：规范化仓库与创建 PR 的请求默认允许按需启用 worktree，其他情况才是显式 opt-in；启用后独立任务使用独立 worktree，同一依赖 review stack 在一个 owning worktree 内形成线性 branch chain。它拥有 workstream 拓扑、统一交付终点、PR 模板、fallback 和停止条件，并直接从本机 help 驱动可选 `gh stack` CLI；外部同名 skill 不再是 workflow 依赖。创建/发布阶段若 GitHub 明确不支持、仓库不在 GitHub 或用户明确退出，可回退普通 chained PR；official stack landing 不回退逐 PR merge。PR 创建必须使用仓库模板；PR follow-up 负责冲突、范围内 CI、及时 commit/push 和重新检查。
 - 各 skill 的评测用例放在仓库级 `evals/<skill-name>/evals.json`，与 skill 目录分开，避免安装副本带上答案。

@@ -3,52 +3,51 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "我有个想法，想做一个把零散项目灵感整理成 SPARK.md 的工具，帮我先聊清楚，不要一上来让我填表。",
-      "expected_output": "Agent 应使用 pilot 的 Capture 模式，用中文按批次提出当前必要且互不依赖的问题，等待反馈后再推进依赖答案的事项，并明确后续会按中文 SPARK.md 结构起草。",
+      "prompt": "我有个想法，想做一个把零散项目灵感整理成持久记录的工具，帮我先聊清楚，不要一上来让我填表。",
+      "expected_output": "Agent 应使用 pilot 澄清项目方向：用中文按批次提出当前必要且互不依赖的问题，等待反馈后再推进依赖答案的事项。不起草 SPARK.md；若要落成持久意图记录，交给 evolution skill 写 EVOLUTION.md。",
       "files": [],
       "expectations": [
         "输出使用中文作为工作语言",
         "没有要求用户填写表单式字段清单",
-        "同一批问题互不依赖，并覆盖核心洞察、目标体验、目标用户、Non-goals、启发来源或成功信号中的关键缺口",
+        "同一批问题互不依赖，并覆盖目标、约束、非目标或成功标准中的关键缺口",
         "说明或体现会等待当前批次反馈后再继续",
-        "提到会使用中文 SPARK.md 结构或等价说明"
+        "不起草 SPARK.md，也不把 EVOLUTION.md 的格式校验当成 pilot 的产物"
       ]
     },
     {
       "id": 2,
       "prompt": "I have an idea for a developer tool that turns messy terminal history into reusable runbooks. Help me write a SPARK.md and ask whatever is missing.",
-      "expected_output": "Agent should use pilot Capture mode in English, ask a batch of necessary, mutually independent conversational questions, wait for the batch response, and preserve English for the future SPARK.md draft.",
+      "expected_output": "Agent should not draft a SPARK.md. The durable intent record belongs to the evolution skill as EVOLUTION.md. Pilot may clarify the project, but it does not own the document format.",
       "files": [],
       "expectations": [
         "Output uses English as the working language",
-        "Does not include Chinese-only confirmation text such as 有没有明显偏差的地方",
-        "Asks necessary, mutually independent questions in the current batch",
-        "Waits for the current batch response before asking dependent follow-ups or taking dependent actions",
-        "Mentions or implies the English SPARK.md structure"
+        "Does not draft SPARK.md frontmatter or SPARK sections",
+        "Routes the intent document to the evolution skill or EVOLUTION.md",
+        "Does not invent a replacement document format inside pilot"
       ]
     },
     {
       "id": 3,
-      "prompt": "这里有一个现成 SPARK.md，方向已经变了：现在不做 UI，只做 CLI。帮我更新一下。文件内容：---\ndescription: 一个项目灵感整理工具\nowner: zrr1999\ncreated: 2026-04-20\nupdated: 2026-04-20\ninspired_by: []\n---\n\n## 起源\n我想把零散想法收起来。\n\n## 产品/设计目标\n先做一个网页。\n\n## 开放问题\nUI 复杂度怎么控制？",
-      "expected_output": "Agent 应进入 Refine 模式，先中文总结理解，再提出具体中文修改，并说明需要 bump updated 与补充修订记录。",
+      "prompt": "这里有一份旧的 SPARK.md，方向已经变了：现在不做 UI，只做 CLI。请按现在的演进记录方式更新，不要继续维护 SPARK 格式。",
+      "expected_output": "Agent 应把文档结果交给 evolution skill：方向变化记入 EVOLUTION.md 的日期条目（触发、变化、理由），而不是修改 SPARK frontmatter、updated 或修订记录。",
       "files": [],
       "expectations": [
         "输出使用中文",
-        "识别这是已有 SPARK.md 的 Refine 场景",
-        "提出实际可写入的中文改动，而不只是抽象建议",
-        "说明需要更新 updated 并添加 修订记录"
+        "不按 SPARK.md 的 Refine 规则修改 updated 或修订记录",
+        "把方向变化交给 evolution skill，记入 EVOLUTION.md",
+        "不编造日期，也不把当前目标写成初始意图"
       ]
     },
     {
       "id": 4,
-      "prompt": "Given this SPARK.md, turn it into what I should do this week, not a roadmap. ---\ndescription: A tool that turns project sparks into structured decisions\nowner: zrr1999\ncreated: 2026-04-26\nupdated: 2026-04-26\ninspired_by: []\n---\n\n## Origin\nProject ideas get lost before they become repos.\n\n## Capability map (directional)\n- Capture a raw idea through conversation\n- Draft a SPARK.md in the user's language\n\n## Success signals\nA first-time user can get a useful first draft without reading docs.\n\n## Open questions\nShould this be a CLI or a chat-only workflow?",
-      "expected_output": "Agent should enter Advance mode, output English next steps with size tags, tie actions back to capabilities or success signals, and avoid producing a full roadmap.",
+      "prompt": "Given this project intent, turn it into what I should do this week, not a roadmap. Origin: project ideas get lost before they become repos. Capabilities: capture a raw idea through conversation, and keep a durable intent record. Success: a first-time user can get a useful first draft without reading docs. Open question: should this be a CLI or a chat-only workflow?",
+      "expected_output": "Agent should use Advance, output English next steps with size tags, tie actions back to the stated capabilities or success signal, and avoid producing a full roadmap or rewriting EVOLUTION.md.",
       "files": [],
       "expectations": [
         "Output uses English",
         "Produces concrete next actions tagged [small], [medium], or [large]",
-        "Ties actions back to capability map or success signals",
-        "Does not produce a long roadmap or implementation schedule"
+        "Ties actions back to the stated capabilities or success signal",
+        "Does not produce a long roadmap, and does not rewrite an evolution document"
       ]
     },
     {
@@ -116,7 +115,7 @@
       "expectations": [
         "明确使用 tech-preferences 或等价的个人技术偏好基线做选择",
         "围绕兼容性、现有项目证据和迁移成本给出推荐",
-        "没有扩写 SPARK.md、项目路线或模块设计"
+        "没有扩写 EVOLUTION.md、项目路线或模块设计"
       ]
     },
     {
