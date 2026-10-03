@@ -1,39 +1,35 @@
-# Language-specific slop
+# Language-specific failure signals
 
-按 diff 实际涉及的语言加载本节。通用清单见 `SKILL.md`；这里只补各语言特有、且通用清单盖不住的信号。
+按 diff 实际涉及的语言加载。这里的写法只是调查线索：只有能指出具体 failure mode、无效复杂度、已验证的兼容性问题，或违反目标仓库明确约定时，才形成 finding。单独出现某种语法、标准库选择或风格差异不是 slop。
 
 ## Rust
 
-- **Clone abuse**：为逃 borrow checker 到处 `.clone()`——最典型的 AI Rust 信号。先重新想所有权/借用设计，clone 是最后手段。
-- **Error type proliferation**：每个模块自定义 error enum。应用层用 `anyhow`，库用 `thiserror`。
-- **Trait bound 堆砌**：`T: Display + Debug + Clone + Send + Sync` 实际只用了 `Display`。
-- **Verbose**：两臂 `match` 该用 `if let`；函数末尾显式 `return`；手动 match Option/Result 而不用 combinator。
-- **Stale**：`extern crate`、`#[macro_use]`、`try!()`、`lazy_static`（1.80+ 用 `std::sync::LazyLock`）。
+- `.clone()` 只有在造成可测的内存/性能问题、掩盖错误的所有权边界或违反仓库约定时才报告；先证明该借用关系可安全简化。
+- 未使用的 trait bound、不可达 error variant 或纯转发抽象可以作为 `delete` / `consolidate`，但必须定位真实使用点。
+- 旧 API 只有在违反仓库 MSRV、触发 warning、造成兼容问题或已有迁移约定时才是 finding。
+- `anyhow`、`thiserror` 或自定义 error enum 是架构选择；没有传播、分类、恢复或公共 API 的具体问题时不评价偏好。
 
 ## Python
 
-- **Class-for-everything**：无状态类应是函数或模块级代码。
-- **Exception**：裸 `except:`（吞 KeyboardInterrupt/SystemExit）；`except Exception as e: logger.error(e); raise` 零信息；对签名已声明类型的参数做 None check。
-- **Stale**：`os.path` 而非 `pathlib`；`.format()` 而非 f-string；`typing.Optional[X]` 而非 `X | None`（3.10+）。
-- **Type hints**：用 `Any` 绕过类型错误；显然可推断处的冗余标注。
-- **Dep creep**：为单个 GET 引入 `requests`。
-- **Tells**：`dict.get(..., {})` 链式兜底洗 missing invariant；mock 重度测试无行为断言。
+- 裸 `except:`、吞异常或 catch-log-reraise 只有在改变中断语义、丢失上下文或制造重复日志时报告。
+- `Any`、默认 `{}` 链或额外 `None` 检查只有在绕过已声明 invariant、隐藏缺失配置或让类型错误逃逸时报告。
+- 为一个小能力引入依赖、无状态 class 或重 mock 测试，按主清单证明维护成本或 test theater 后再报告。
+- `os.path`、`.format()`、`typing.Optional` 等写法本身不是 finding；仅在违反项目最低版本与明确规范，或造成真实可读性、类型或平台错误时处理。
 
 ## TypeScript / JavaScript
 
-- **Type abuse**：可推断处冗余标注；`any` 代替 `unknown`；enum 代替 const object/union。
-- **Stale**：ESM 里 `require()`；`var`；`React.FC`；`.then()` 链代替 async/await。
-- **Barrel files**：小目录里 `index.ts` 纯 re-export，徒增 import 间接层。
-- **Dep creep**：`node-fetch`（fetch 已全局）、`uuid`（有 `crypto.randomUUID()`）、两个库干同一件事。
-- **Tells**：确定性本地代码包 try/catch；`new Promise(async ...)`；必需 env/config 给兜底默认值。
+- `any`、断言和 optional chaining 只有在绕过边界校验、掩盖不可能状态或让错误延迟到运行时才报告。
+- `new Promise(async ...)` 在 executor 的异常/完成语义不正确时是 `fix`；确定性代码中的 try/catch 在确实吞错或伪造 fallback 时报告。
+- 重复用途依赖、平台已有能力的冗余 polyfill，或无价值的 barrel 可以在能证明 bundle、版本或依赖边界成本时报告。
+- `.then()`、`React.FC`、enum、barrel 或显式类型本身不是 finding；服从仓库约定和当前 API 语义。
 
 ## Shell
 
-- 缺 `set -euo pipefail`；变量不加引号。
-- `cat file | grep`；反引号代替 `$()`；解析 `ls` 输出。
-- 每行 `if cmd; then ... fi` 代替 `set -e`；手动查 `$?`。
-- `2>/dev/null || true` 掩盖不确定；幻觉 flag——一律对 `--help` 验证。
+- 未引用变量只有在 word splitting、glob 展开或空值会改变命令目标时报告；给出具体输入或路径风险。
+- pipeline 或子命令失败被忽略、错误码被重写、`|| true` 掩盖必需步骤时报告实际失败传播问题。
+- 解析 `ls`、不受控 glob 或未核实 flag 只有在会产生歧义、错误目标或版本不兼容时形成 finding。
+- 未使用 `set -euo pipefail` 本身不是 finding；是否需要严格模式取决于脚本预期的失败与恢复语义。
 
 ## 其他语言
 
-Go 及未列出的语言：只套用 `SKILL.md` 通用清单，并在报告里注明语言专项检查已跳过。不要把某一语言的 idiom 套到另一语言上。
+只使用主 skill 的通用清单和目标仓库约定。没有具体 failure mode 时不把另一种 idiom 当成自动 finding。
