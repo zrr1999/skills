@@ -29,7 +29,19 @@ const accepted = [
   ["universe background", "Universe<u>: Universe<next(u)>; Prop = Universe<0>; Type = Universe<1>;"],
   ["universe polymorphic function", "def fn keep<u>[A: Universe<u>](value: A) -> A { value }"],
   ["max and inferred level", "type PairType<u,v> { carrier: Universe<max(u,next(v))>; } chosen: Universe<_> = Int;"],
-  ["family-wide static completion", "type Box[A: Type]: Functor[types,types] { case Pack { value: A; } static obj: Type -> Type = X => Box[X]; static map[X,Y]: (X -> Y) -> Box[X] -> Box[Y] = f => value => match value { Box[X].Pack { value: x } => Box[Y].Pack { value: f(x) } }; static identity[X] = funext(value => match value { Box[X].Pack { value: x } => refl }); static composition[X,Y,Z] = (f,g) => funext(value => match value { Box[X].Pack { value: x } => refl }); }"],
+  ["family-wide static completion", `type Box[A: Type]: Functor[types,types] {
+    case Pack { value: A; }
+    static obj: Type -> Type = X => Box[X];
+    static map[X,Y]: (X -> Y) -> Box[X] -> Box[Y] = f => value => match value {
+      Box[X].Pack { value: x } => Box[Y].Pack { value: f(x) }
+    };
+    static identity[X] = funext(value => match value {
+      Box[X].Pack { value: x } => refl
+    });
+    static composition[X,Y,Z] = (f,g) => funext(value => match value {
+      Box[X].Pack { value: x } => refl
+    });
+  }`],
   ["generic type definition", "Hom[X: Type,Y: Type] = X -> Y;"],
   ["dependent proposition", "Reflexivity<u>: Prop = (A: Universe<u>) -> (x: A) -> (x ~= x);"],
   ["proof value and proof function", "type Evidence { law same[X] -> (X ~= X); law again[X]() -> (X ~= X); } def law reflexive[X] -> (X ~= X) { refl }"],

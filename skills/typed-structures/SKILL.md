@@ -72,7 +72,7 @@ description: >-
 - Functor 的 obj 是显式对象映射，不是类型反射。核对 map 的起终点与恒等、复合律。product_category 返回范畴值，pair_bifunctor 是双函子值，compose_functors 构造复合函子值。
 - 自然变换 alpha 携带分量族 `alpha.app`，`alpha.app[X]` 是目标 Hom 中的一条态射；只有 Hom 确实为函数时才能写 `alpha.app[X](value)`。检查同构的正逆方向、自然性、五边形和三角形的起终点。
 - `type Option[A: Type]: Monad` 同时建立数据族与全族结构：先生成数据族，再定义 static obj 对应该族，Option.obj(A) 与 Option[A] 定义相等，不循环展开或换成其他族。这是 Option 的全族规则，不把一般 `type Z: T` 限于带 obj 的结构。
-- 结构操作和证据独立量化 X/Y，不捕获固定 A 或 self；Option: Monad，Option[A]: Type，但 Option[A] 和 Option[A] 的数据值都不是 Monad。全族 static 操作可经 Option 或 Option[A] 选择。
+- 结构操作和证据独立量化 X/Y，不捕获固定 A 或 self；Option: Monad，Option[A]: Type，但 Option[A] 和 Option[A] 的数据值都不是 Monad。全族 static 操作可经 Option 或 Option[A] 选择；运行时实例的 value.name 仍只查实例域，不回退到 static。
 - 四层实际声明为 Applicative <: Functor[types,types]、Selective <: Applicative、Monad <: Selective，继承同一 obj/map；pure、ap、select、bind 使用该对象映射。不恢复 Option <: Functor、Functor[Option]、for F、Family 或 Self[B]。
 - 核对全部证据：Functor 恒等/复合；Applicative 恒等/同态/交换/复合及 map_from_ap；Selective 恒等/分配/结合；Monad 左右单位元/结合及 ap_from_bind、select_from_bind。派生配对操作也需自然性、单位和结合证明，不写“laws 显然成立”。
 - Option 的 method map 接收 A -> B，返回 Option[B]；Self.map 选择共享 static 操作，不把 Self 变成类型构造器。泛型辅助函数显式接收结构或操作，不查找隐式实例。参数逆变、结果协变不能凭 map 推导容器子类型。

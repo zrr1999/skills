@@ -153,8 +153,8 @@ def law argument_shapes() -> (
     (add(20, 22), add_pair((20, 22)), curry(add)(20)(22)) ~= (42, 42, 42)
 ) { refl }
 
-// 应拒绝：Counter { value: 1, step: 2 }；预定义不是可覆盖的字段默认值。
-// 应拒绝：counter.step；普通类型预定义通过 Counter.step 访问。
+// 应拒绝：Counter { value: 1, step: 2 }；static 成员不是可覆盖的字段默认值。
+// 应拒绝：counter.step；static 成员通过 Counter.step 访问。
 // 应拒绝：无 body 的 method、同一实例域的 transform 字段与同名 method。
 // 类型域的 map 与实例域的 map 可以同名，见 05-computation.sp。
 // Self 只表示当前完整类型；Option[A] 的作用域里 Self[A] / Self[B] 都应拒绝。

@@ -24,6 +24,14 @@ hooks = [
     always_run = true
   },
   {
+    id = "installer-smoke",
+    name = "check skill installer",
+    language = "system",
+    entry = "bash scripts/test-install.sh",
+    files = '^(install\.sh|scripts/test-install\.sh)$',
+    pass_filenames = false
+  },
+  {
     id = "typed-structures-syntax",
     name = "check typed-structures syntax",
     language = "node",
