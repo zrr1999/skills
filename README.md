@@ -69,7 +69,7 @@ curl -fsSL https://raw.githubusercontent.com/zrr1999/skills/main/install.sh | ba
 | 来源 | 默认安装 |
 | --- | --- |
 | `vercel-labs/skills` | `find-skills` |
-| `zendev-lab/zendev` | `zendev-add-proposal` |
+| `zendev-lab/zendev` | `evolution` |
 | `emilkowalski/skills` | `write-swift` |
 | `pbakaus/impeccable` | `impeccable` |
 | `cloudflare/skills` | `cloudflare`、`wrangler` |
