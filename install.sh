@@ -82,6 +82,7 @@ add_skills() {
 install_core() {
   add_skills "$REPO_SOURCE" '*'
   add_skills vercel-labs/skills find-skills
+  add_skills zendev-lab/zendev zendev-add-proposal
   add_skills emilkowalski/skills write-swift
   add_skills pbakaus/impeccable impeccable
   add_skills cloudflare/skills cloudflare wrangler
