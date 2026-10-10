@@ -47,13 +47,19 @@
 
 ## PR 标题规范
 
-- 与提交规范保持一致（同一套 type/scope），描述可更宏观
+- 始终用英文，与提交规范保持一致（同一套 type/scope），描述可更宏观
 - 使用简洁的动宾短语
 
 示例：
 
 - `✨ feat(modern-tech): add modern-stack skill for tech-stack`
 - `✨ feat(paddle-pull-request): support multi template`
+
+## 验证
+
+- 运行 `bash scripts/check-evals.sh`、适用的 `prek` 检查和 `git diff --check`。
+- 评测用例保留在仓库级 `evals/<skill-name>/evals.json`；结构校验通过不等于模型行为评测通过。
+- 用户当前指令优先于 skill 指南；沿用已明确的授权。若缺失决策影响行为或权限，只暂停依赖该决策的动作，并说明具体来源。
 
 ## Learned User Preferences
 
