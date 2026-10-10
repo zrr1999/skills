@@ -52,7 +52,7 @@ description: >-
 - fn/law 是语法糖；def 只用于带大括号的 def fn / def law。拒绝裸 def、def method、无 body 的 method、`def law ... = ...`、独立 proof 声明、`:=` 和 `#` 方法调用。`=` 只定义名字，不表示可变赋值。
 - `T.name` 取类型侧成员，`value.name` 取实例字段或绑定方法，两域不回退。可有 `SameName.value` 与 `same_name.value`；不自动生成占用静态名字的实例字段投影函数。同一实例域的字段与方法不能同名，不引入一般重载集合。
 - `.` 先选成员，`()` 再应用。方法取值时保存一次求值后的接收者，调用时执行 body；不自动产生 `T.method` 普通函数入口。函数字段不额外绑定接收者。
-- method 省略 `self: Self`，字段显式写 self.field；裸名字查参数、局部绑定和外层词法定义。普通函数没有隐式 self。实例 law 可依赖此前实例字段，证据按补全后的字段检查；static 不能暗中捕获实例字段。
+- method 省略 `self: Self`，字段显式写 self.field；裸名字查参数、局部绑定和外层词法定义；同一类型体的 static 成员属于外层词法定义，方法体可直接写 `step` 而不必写 `Counter.step`。这只是词法查找，与 `value.name` 不回退到 static 并不冲突：`counter.step` 仍应拒绝。普通函数没有隐式 self。实例 law 可依赖此前实例字段，证据按补全后的字段检查；static 不能暗中捕获实例字段。
 - Self 是当前实例化的完整类型。在 Option[A] 中是 Option[A]，不能写 Self[B]；在 Functor[C,D] 中是完整的结构类型，不是 obj(A)。内层 type 建立自己的 Self，when 的 self 仅绑定基础值。
 - 对抽象 Self 成立的定义和证明可在子类型下实例化。仅凭父字段不能构造任意 Self：Counter.make 返回 Counter，keep 原样返回输入 Self；next 不自动保持新增字段或约束。Self.make 不收窄父函数返回类型。
 - 子类型项可以按父要求使用，但不组装新记录或恢复原始类型。需要父类型约束时显式绑定 `value: T = self;`；其方法的 Self 按已声明的 T 实例化。
