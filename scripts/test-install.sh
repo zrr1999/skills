@@ -50,10 +50,11 @@ refuse() {
   fi
 }
 
-removed='anthropics/skills|svg-assembly-animator|emil-design-eng|gh-stack|--all'
+removed='anthropics/skills|svg-assembly-animator|emil-design-eng|gh-stack|zendev-add-proposal|--all'
 
 run_install
 require $'vpx\tskills\tadd\tzrr1999/skills\t'
+require $'vpx\tskills\tadd\tzendev-lab/zendev\t-g\t-y\t--agent\tcline\t--skill\tevolution'
 require 'kucherenko/jscpd'
 refuse "$removed|animate-expo|agent.qq.com|vibe-motion|^curl|^vp[[:space:]]"
 
