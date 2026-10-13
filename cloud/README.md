@@ -6,7 +6,7 @@
 
 冷启动执行 `cloud/setup.sh`。它安装缺失的 Vite+、Python 3.12/3.13/3.14、ty、Ruff、Pyrefly、Just、prek、gh、gh-llm、fd、Zellij、ShellCheck、lychee 和 Chromium；恢复三个仓库，按各自 lockfile 安装依赖，并预热固定版本的 Typst 包。
 
-缓存环境恢复时执行 `cloud/maintenance.sh`。它复用相同的幂等逻辑，修复缺失工具或依赖，并更新 skills。维护必须在新任务加载 skill 目录前执行；不使用后台定时任务在活跃任务中替换指令。
+任务开始或恢复时执行 `cloud/maintenance.sh`。它复用相同的幂等逻辑，修复缺失工具或依赖，并更新 skills。新版 Codex Cloud 的 Start skill 指示任务先执行维护，再重新读取本次需要的 SKILL.md；旧版使用维护脚本字段。不使用后台定时任务在活跃任务中替换指令。
 
 运行时保存到以下位置：
 
@@ -22,7 +22,7 @@
 
 ## 自动更新范围
 
-- 每次启动查询 `zrr1999/skills` 的默认分支。安装清单变化时重新执行上游 `install.sh all`，补上新 core skills 和各可选组；随后用 skill manager 更新已登记的全局来源。
+- 每次执行 setup 或 maintenance 查询 `zrr1999/skills` 的默认分支。安装清单变化时重新执行上游 `install.sh all`，补上新 core skills 和各可选组；随后用 skill manager 更新已登记的全局来源。
 - 成功后记录安装清单的 commit SHA、skill 文件摘要和来源清单。失败时恢复此前的 skill 文件与来源 lock，保留失败副本及日志，并返回非零退出码；不会把失败标记为最新。
 - 沿用上游安装器的边界：保留用户本地 skill，以及安装器已退役但未自动卸载的旧条目；不删除宿主或插件提供的技能。
 - 仓库仅对干净的默认分支进行快进更新。未提交改动、任务分支和未推送提交均保留，并记录为跳过同步。依赖只在 lock/manifest 改变或缓存缺失时重新安装。
@@ -36,13 +36,17 @@
 python3 cloud/render-hooks.py "$(git rev-parse HEAD)" /tmp/shared-dev-pilot
 ```
 
-在云环境设置页创建或编辑 `shared-dev-pilot`：启动脚本使用 `setup-hook.sh` 的完整内容；如有维护脚本字段，使用 `maintenance-hook.sh`。若只有一个每次启动执行的字段，使用 setup hook，它也能处理缓存环境。
+网页版或桌面版打开 **Settings → Codex Cloud → Environments**，点 **Create environment**；已有环境从 **… → Edit** 进入。也可在新任务中选择 **Work in → Cloud → Select environment → Create environment**。选择三个试点仓库，环境名称使用 `shared-dev-pilot`。
+
+新版配置的 **Install script** 使用 `setup-hook.sh` 的完整内容；**Start skill** 使用 `start-skill.md` 的完整内容。Start skill 要求任务开始或恢复时先运行固定版本的维护入口、检查状态，然后重新读取更新后的技能。它是任务执行指令，不能当成平台保证执行的后台定时器。
 
 设置 `NODE_USE_ENV_PROXY=1`、`SKILLS_AGENT=cline`、`CLOUD_PILOT_ROOT=/workspace/cloud-repos`。使用已有 GitHub 连接提供认证，不在这些文件中填写 token。
 
-`configuration.json` 是供核对字段的清单，平台不会因为仓库里存在该文件而自动绑定。必须在设置页实际保存并启动验证；脚本执行成功和环境配置绑定是两项不同的结果。配置保存前，生成文件中的状态明确为 prepared。
+在准备会话内运行 Install script 并核对结果，保存修改后点 **Publish**；更新已发布环境则点 **Republish**。发布会捕获准备好的文件系统，新任务才能使用这份环境；已有任务继续使用自己的状态。平台的仓库后台刷新不会重新执行安装或启动命令，因而不能代替 skills 维护。
 
-旧 Codex Cloud 的 setup 与 maintenance 生命周期及环境变量持久化行为见[官方环境文档](https://learn.chatgpt.com/docs/environments/cloud-environment)。ChatGPT Work 的配置入口以当前设置页实际提供的字段为准。
+`configuration.json` 是供核对字段的清单，不是平台的导入格式，仓库里存在该文件不会自动绑定。配置保存和发布前，生成文件中的状态明确为 prepared。发布后启动一个新任务，核对维护执行记录、技能版本和三个仓库的状态，再确认平台生命周期接入成功。
+
+新版入口、Install script / Start skill 和发布行为见[官方 Codex Cloud 文档](https://learn.chatgpt.com/docs/environments/cloud-environments)。[旧版文档](https://learn.chatgpt.com/docs/environments/cloud-environment)使用 setup 与 maintenance 脚本字段，对应生成文件中的 `setup-hook.sh` 与 `maintenance-hook.sh`。
 
 ## 验证
 
