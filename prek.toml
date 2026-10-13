@@ -35,6 +35,14 @@ hooks = [
     pass_filenames = false
   },
   {
+    id = "cloud-bootstrap",
+    name = "check cloud recovery and repository preservation",
+    language = "system",
+    entry = "python3 -m unittest discover -s cloud/tests",
+    files = "^cloud/",
+    pass_filenames = false
+  },
+  {
     id = "typed-structures-syntax",
     name = "check typed-structures syntax",
     language = "node",

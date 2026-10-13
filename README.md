@@ -56,6 +56,10 @@
 
 ## 安装
 
+### 共享云环境
+
+跨 `zendev`、`zrr.dev`、`spore-lang.dev` 的共享云环境配置见 [cloud/README.md](./cloud/README.md)。它提供冷启动、缓存维护、安装清单新增技能的补装、来源更新和失败回滚；运行时工具、仓库依赖和 skills 各有验证记录。
+
 ### 一键安装
 
 安装脚本按需准备 [Vite+](https://viteplus.dev/guide/vpx)、`gh-llm` 扩展和 `chub`，统一通过 `vpx skills add` 安装并登记来源。已有工具不会例行升级；日常更新 skills 使用下方的更新命令。

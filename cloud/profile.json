@@ -1,0 +1,12 @@
+{
+  "name": "shared-dev-pilot",
+  "repositories": [
+    { "name": "zendev-lab/zendev", "installer": "uv" },
+    {
+      "name": "zrr1999/zrr.dev",
+      "installer": "vp",
+      "typst_paths": ["apps/blog/src", "apps/blog/data"]
+    },
+    { "name": "spore-lang/spore-lang.dev", "installer": "pnpm" }
+  ]
+}

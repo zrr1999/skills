@@ -1,0 +1,26 @@
+name: CI - Cloud Bootstrap
+
+on:
+  push:
+    branches: [main]
+    paths: ["cloud/**", ".github/workflows/ci-cloud.yml"]
+  pull_request:
+    paths: ["cloud/**", ".github/workflows/ci-cloud.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    name: Cloud bootstrap checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check shell scripts
+        run: |
+          for script in cloud/*.sh; do bash -n "$script"; done
+          shellcheck -x cloud/*.sh
+      - name: Test recovery and repository preservation
+        run: python3 -m unittest discover -s cloud/tests -v
