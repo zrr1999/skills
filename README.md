@@ -2,7 +2,7 @@
 
 面向个人项目的代理技能合集，用于在 Cursor、Copilot 等工具中复用工作流程。
 
-## 技能分层（共 10 个）
+## 技能分层（共 11 个）
 
 `skills/<name>/` 保持平铺，兼容现有 skill manager 的发现与安装；下面的分层用于选 skill，不改变目录或安装 ID。
 
@@ -34,6 +34,7 @@
 | `zellij` | 组织、恢复、观察或分享持久终端工作区 |
 | `ssh-fleet` | 管理私有 SSH 设备事实源、host key 信任和生成配置 |
 | `skill-creator` | 创建、修改和验证可跨 Agent 宿主使用的 skill |
+| `explain-concept` | 在对话中按已有知识解释、澄清或比较概念；完整文章交付和个人文风保留各自职责 |
 | `writing-style` | 起草、改写和审阅六个骨头的技术博客；其他文体仅在明确要求个人文风时应用 |
 | `typed-structures` | 编写或审阅 Spore Notation 的宇宙、范畴、计算结构与 Self；结合具体数据结构和 law，并用 Ohm 识别句法 |
 
@@ -64,7 +65,7 @@
 curl -fsSL https://raw.githubusercontent.com/zrr1999/skills/main/install.sh | bash
 ```
 
-默认集合包括本仓库 10 个 skills，以及以下外仓能力：
+默认集合包括本仓库 11 个 skills，以及以下外仓能力：
 
 | 来源 | 默认安装 |
 | --- | --- |
