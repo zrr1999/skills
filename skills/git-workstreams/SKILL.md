@@ -113,6 +113,14 @@ gh stack --help  # GitHub stack 请求；用于发现本地扩展是否可用
 5. 宿主实际提供的 GitHub 发布能力可以在已选交付范围内负责 stage/commit/push/PR，但 checkout/worktree 拓扑和权限先由本 skill 解析；任何执行能力都不得覆盖这里的主工作区保护或扩大授权。
 6. 最终报告主工作区的起始与结束 branch、当前 dirty 状态，以及创建或复用的 owning checkout。主工作区分支变化若未经明确选择，任务不得标记完成。
 
+## CI trigger boundaries
+
+- 工作流的触发范围属于仓库策略。组织 stack、修复失败 checks、处理安全告警或解决合并冲突，不自动授权修改事件类型、`branches` / `branches-ignore`、`paths` / `paths-ignore` 等过滤条件，也不授权放宽权限或 required checks；已有明确授权继续有效。
+- 交付前对照当前 trunk 检查完整 PR diff 中的触发条件，不只看本轮新增 commit。较早提交、PR 描述或冲突解决带入的触发范围变更，同样要与用户当前约束核对，不能因为已经存在便视为已授权。
+- GitHub 原生 stack 会让默认分支的 GitHub Actions PR CI 在各层运行，并把 trunk 的合并要求应用到各层；无需删除 `branches: [main]` 来覆盖上层。普通 `head -> base` 链和本地 stack tracking 不能证明服务端已注册原生 stack。
+- 上层缺少 CI 时，先用本机已核实的 `gh stack` 只读能力及 GitHub API 检查服务端 stack 的 number、trunk、entries 和 position。未注册时，在当前授权范围内用 `gh stack` 建立或补齐关联，再回读确认并等待当前 head 的检查；已注册时继续核对 head、事件、路径过滤、job 条件和检查来源。不得仅因直接 base 不是 `main` 就把缺少 CI 判为预期跳过，也不得删除过滤、改成全分支、切换到 `pull_request_target` 或擅自 retarget PR 来补跑。
+- 只有用户明确将触发范围调整纳入任务时，才修改对应工作流的对应过滤条件。提交前确认触发范围与授权一致，其余过滤、权限和检查要求保持不变；无法在既有策略内满足远端检查时，报告具体限制，不用扩大 CI 范围绕过它。
+
 ## Branch and PR stacks
 
 线性 stack 的稳定表示是：
@@ -154,6 +162,7 @@ ui         -> api
 按任务读取官方资料：
 
 - [Overview](https://github.github.com/gh-stack/introduction/overview/)：stack 语义、CI/rules、merge 与 rebase。
+- [Rules and CI enforcement](https://docs.github.com/en/pull-requests/get-started/about-stacked-prs#rules-and-ci-enforcement)：原生 stack 在各层运行默认分支的 PR CI；缺少上层检查时先核实服务端关联。
 - [Quick Start](https://github.github.com/gh-stack/getting-started/quick-start/)：前置条件、CLI/agent setup 与首个 stack。
 - [Working with Stacked PRs](https://github.github.com/gh-stack/guides/stacked-prs/)：push、submit、review、merge 与 sync。
 - [Typical Workflows](https://github.github.com/gh-stack/guides/workflows/)：日常提交、review feedback、sync、rebase 与既有 branch。

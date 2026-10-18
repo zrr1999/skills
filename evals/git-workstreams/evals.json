@@ -517,6 +517,57 @@
         "正文不额外添加验证章节，也不罗列本地测试情况、命令、路径或 CI 状态",
         "在任务报告中说明实际运行的检查及结果"
       ]
+    },
+    {
+      "id": 42,
+      "prompt": "仓库 CI 的 pull_request 只允许 branches: [main]。现有 PR base 链是 schema -> main、service -> schema、docs -> service，只有最底层有远端检查，服务端原生 stack 关联尚未核实。帮我用 gh stack 同步这个 stack 并处理 CI；没有要求改变工作流触发范围。",
+      "expected_output": "先核实服务端原生 stack 关联、trunk 与各层顺序，不把普通 PR base 链当成原生 stack，也不把上层缺少 CI 归结为 main 过滤的预期结果；在当前授权范围内用 gh stack 建立或补齐关联，回读后等待各层当前 head 的检查，保持工作流触发范围不变。",
+      "files": [],
+      "expectations": [
+        "检查服务端 stack 的 number、trunk、entries 和 position，不只读取 PR base 链或本地 tracking",
+        "识别 GitHub 原生 stack 会让默认分支的 PR CI 覆盖上层，不以直接 base 不是 main 为由接受缺少 CI",
+        "保留 main 限制以及其他事件、路径、权限和 required checks",
+        "不擅自删除 branches、扩大为全分支、切换 pull_request_target 或 retarget PR",
+        "在当前授权范围内用 gh stack 建立或补齐关联，回读服务端状态并等待当前 head 的检查"
+      ]
+    },
+    {
+      "id": 43,
+      "prompt": "仓库要求 PR CI 仅对 main 运行。PR #82 的旧提交为了 stack 删除了五份工作流的 pull_request.branches，PR 描述也声称覆盖所有 base。现在修复它的两条 Action 固定 SHA 告警并交付，保留仓库原来的触发范围。",
+      "expected_output": "按当前用户约束检查完整 PR diff，不能只验证本轮 SHA 修改，也不能把旧提交和 PR 描述当作扩大触发范围的授权；恢复被删除的 main 过滤、修复范围内 Action 引用，保持其他工作流行为，并更正已失效的 PR 描述。",
+      "files": [],
+      "expectations": [
+        "对照 trunk 检查完整 PR diff，发现较早提交带入的触发范围变更",
+        "以当前 main-only 约束为准，恢复五份工作流被删除的分支过滤",
+        "保留 Action 安全修复及其他路径过滤、事件和权限",
+        "更正 PR 描述中覆盖所有 base 的过时说法",
+        "按恢复后的触发范围验证和交付；上层缺少 CI 时核实原生 stack 关联，不再次删除过滤"
+      ]
+    },
+    {
+      "id": 44,
+      "prompt": "我明确要让 ci-build.yml 也覆盖以 feature/* 为目标分支的 PR，在保留 main 的基础上增加这个 base 分支模式。其他工作流、事件、paths 和权限保持原样；只保留本地修改。",
+      "expected_output": "识别用户已明确授权指定工作流的分支过滤调整，只在 ci-build.yml 的 pull_request.branches 中保留 main 并增加 feature/*，验证后停在本地，不机械拒绝已授权的策略变更，也不修改其他工作流或 Git 交付终点。",
+      "files": [],
+      "expectations": [
+        "识别用户明确授权对指定工作流扩大目标 base 分支范围",
+        "只调整 ci-build.yml 的 pull_request.branches，保留 main 并增加 feature/*",
+        "其他工作流、触发事件、路径过滤和权限保持不变",
+        "验证修改后停在本地，不 commit、push、创建 PR 或重复询问相同授权"
+      ]
+    },
+    {
+      "id": 45,
+      "prompt": "这三个 PR 已通过 GitHub 网页注册为原生 stack #7，服务端 API 确认 trunk 是 main，entries 和 position 顺序正确。本机 gh stack view 却提示没有本地 tracking，上层的一项 CI 也没运行。请诊断，保持工作流触发范围和 stack 组成不变。",
+      "expected_output": "以服务端原生 stack 对象为关联事实，不因本地缺少 tracking 或未通过 CLI 创建就判定未组 stack；继续检查当前 head、触发事件、路径过滤、job 条件和检查来源，定位真实原因，不重复注册 stack 或放宽工作流。",
+      "files": [],
+      "expectations": [
+        "接受服务端已验证的原生 stack 关联，区分它与本地 tracking",
+        "不把上层缺少 CI 机械归因为 main 过滤或没有执行 gh stack init",
+        "核对当前 head、触发事件、路径过滤、job 条件和 GitHub Actions 或第三方检查来源",
+        "不重复创建 stack、不改变其组成，也不修改触发范围或 retarget PR",
+        "仅根据实际证据报告检查未运行的原因和验证限制"
+      ]
     }
   ]
 }
