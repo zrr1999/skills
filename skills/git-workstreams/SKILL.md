@@ -79,6 +79,9 @@ gh stack --help  # GitHub stack 请求；用于发现本地扩展是否可用
 - 用户未指定终点时，只有已由只读证据判定为规范化仓库的普通实现、修复或重构，才把经过仓库要求验证的改动 commit、push 并创建 Draft PR；不再为“是否提 PR”单独等待确认。非规范化仓库完成修改与验证后停在本地，不 commit、push 或创建 PR。只读、诊断、评审、规划和回答类请求不触发任何实现交付。
 - 用户显式要求 PR 时，无论仓库是否规范化，都按确认范围 commit、push 并创建 PR；未指定 Ready 状态时创建 Draft PR。显式 PR 请求同时提供按现场需要创建或复用 owning worktree 的选择，但不强制在已安全隔离的 checkout 再建一个。
 - 一个可独立 review 的 concern 默认对应一个 Draft PR。只有后续 concern 真实依赖前层、且每层都值得独立 review 时才创建 stacked Draft PR；互不依赖的 concern 使用独立 PR，不为展示 stack 而制造依赖。
+- 普通功能增加或产品缺陷修复 PR 不混入 CI 基础设施修复、CI 重构或其他独立重构。runner、缓存、Action 升级、共享流水线迁移等维护改动应单独提 PR；已混入的改动应移出，不能用“顺便修 CI”或“让检查变绿”扩大功能 PR 的范围。
+- 功能直接必需的局部代码整理、回归测试及其最小 CI 接入可以随功能提交；按改动目的和能否独立审阅判断，不因修改了 workflow 文件就一律拆分，也不把共享基础设施改造包装成必要验证。
+- 独立基础设施故障即使阻塞当前功能 PR，也应在授权范围内另提修复 PR；只有真实依赖时才作为前置 stack 层，否则保持独立 PR。尚未获准修复时报告具体 blocker，拆分交付不自动扩大实现授权。
 - 默认交付只覆盖当前任务确认范围内的非破坏性 commit、push 和 Draft PR 创建。它不授权改变未确认的 checkout/worktree 拓扑，也不授权 force-push、retarget、标记 Ready、merge、清理、deploy 或 release。
 - 发布前仍需满足主工作区保护、仓库贡献规范和本地验证。无法安全取得 owning branch/checkout、远端写权限或合规 PR base 时停止并报告具体 blocker，不把默认交付当成绕过权限与拓扑边界的理由。
 - PR 创建后回读 head/base、Draft 状态和 CI。用户明确要求推进 Ready 时，只在 exact head 未漂移、required checks 处于仓库允许的终态且没有仓库定义的 Ready blocker 后标记；review approval 与最终 mergeability 留给 Ready 后的 review 或 merge preflight。CI 仍在运行或 head 漂移时继续等待或处理范围内失败。
