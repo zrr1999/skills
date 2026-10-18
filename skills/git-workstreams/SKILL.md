@@ -79,6 +79,9 @@ gh stack --help  # GitHub stack 请求；用于发现本地扩展是否可用
 - 用户未指定终点时，只有已由只读证据判定为规范化仓库的普通实现、修复或重构，才把经过仓库要求验证的改动 commit、push 并创建 Draft PR；不再为“是否提 PR”单独等待确认。非规范化仓库完成修改与验证后停在本地，不 commit、push 或创建 PR。只读、诊断、评审、规划和回答类请求不触发任何实现交付。
 - 用户显式要求 PR 时，无论仓库是否规范化，都按确认范围 commit、push 并创建 PR；未指定 Ready 状态时创建 Draft PR。显式 PR 请求同时提供按现场需要创建或复用 owning worktree 的选择，但不强制在已安全隔离的 checkout 再建一个。
 - 一个可独立 review 的 concern 默认对应一个 Draft PR。只有后续 concern 真实依赖前层、且每层都值得独立 review 时才创建 stacked Draft PR；互不依赖的 concern 使用独立 PR，不为展示 stack 而制造依赖。
+- 普通功能增加或产品缺陷修复 PR 不混入 CI 基础设施修复、CI 重构或其他独立重构。runner、缓存、Action 升级、共享流水线迁移等维护改动应单独提 PR；已混入的改动应移出，不能用“顺便修 CI”或“让检查变绿”扩大功能 PR 的范围。
+- 功能直接必需的局部代码整理、回归测试及其最小 CI 接入可以随功能提交；按改动目的和能否独立审阅判断，不因修改了 workflow 文件就一律拆分，也不把共享基础设施改造包装成必要验证。
+- 独立基础设施故障即使阻塞当前功能 PR，也应在授权范围内另提修复 PR；只有真实依赖时才作为前置 stack 层，否则保持独立 PR。尚未获准修复时报告具体 blocker，拆分交付不自动扩大实现授权。
 - 默认交付只覆盖当前任务确认范围内的非破坏性 commit、push 和 Draft PR 创建。它不授权改变未确认的 checkout/worktree 拓扑，也不授权 force-push、retarget、标记 Ready、merge、清理、deploy 或 release。
 - 发布前仍需满足主工作区保护、仓库贡献规范和本地验证。无法安全取得 owning branch/checkout、远端写权限或合规 PR base 时停止并报告具体 blocker，不把默认交付当成绕过权限与拓扑边界的理由。
 - PR 创建后回读 head/base、Draft 状态和 CI。用户明确要求推进 Ready 时，只在 exact head 未漂移、required checks 处于仓库允许的终态且没有仓库定义的 Ready blocker 后标记；review approval 与最终 mergeability 留给 Ready 后的 review 或 merge preflight。CI 仍在运行或 head 漂移时继续等待或处理范围内失败。
@@ -112,6 +115,14 @@ gh stack --help  # GitHub stack 请求；用于发现本地扩展是否可用
 4. 如果主工作区已经位于目标非默认分支，或当前是已确认的 linked worktree，留在原 branch 完成发布；不要为了符合命名约定再次切分支。
 5. 宿主实际提供的 GitHub 发布能力可以在已选交付范围内负责 stage/commit/push/PR，但 checkout/worktree 拓扑和权限先由本 skill 解析；任何执行能力都不得覆盖这里的主工作区保护或扩大授权。
 6. 最终报告主工作区的起始与结束 branch、当前 dirty 状态，以及创建或复用的 owning checkout。主工作区分支变化若未经明确选择，任务不得标记完成。
+
+## CI trigger boundaries
+
+- 工作流的触发范围属于仓库策略。组织 stack、修复失败 checks、处理安全告警或解决合并冲突，不自动授权修改事件类型、`branches` / `branches-ignore`、`paths` / `paths-ignore` 等过滤条件，也不授权放宽权限或 required checks；已有明确授权继续有效。
+- 交付前对照当前 trunk 检查完整 PR diff 中的触发条件，不只看本轮新增 commit。较早提交、PR 描述或冲突解决带入的触发范围变更，同样要与用户当前约束核对，不能因为已经存在便视为已授权。
+- GitHub 原生 stack 会让默认分支的 GitHub Actions PR CI 在各层运行，并把 trunk 的合并要求应用到各层；无需删除 `branches: [main]` 来覆盖上层。普通 `head -> base` 链和本地 stack tracking 不能证明服务端已注册原生 stack。
+- 上层缺少 CI 时，先用本机已核实的 `gh stack` 只读能力及 GitHub API 检查服务端 stack 的 number、trunk、entries 和 position。未注册时，在当前授权范围内用 `gh stack` 建立或补齐关联，再回读确认并等待当前 head 的检查；已注册时继续核对 head、事件、路径过滤、job 条件和检查来源。不得仅因直接 base 不是 `main` 就把缺少 CI 判为预期跳过，也不得删除过滤、改成全分支、切换到 `pull_request_target` 或擅自 retarget PR 来补跑。
+- 只有用户明确将触发范围调整纳入任务时，才修改对应工作流的对应过滤条件。提交前确认触发范围与授权一致，其余过滤、权限和检查要求保持不变；无法在既有策略内满足远端检查时，报告具体限制，不用扩大 CI 范围绕过它。
 
 ## Branch and PR stacks
 
@@ -154,6 +165,7 @@ ui         -> api
 按任务读取官方资料：
 
 - [Overview](https://github.github.com/gh-stack/introduction/overview/)：stack 语义、CI/rules、merge 与 rebase。
+- [Rules and CI enforcement](https://docs.github.com/en/pull-requests/get-started/about-stacked-prs#rules-and-ci-enforcement)：原生 stack 在各层运行默认分支的 PR CI；缺少上层检查时先核实服务端关联。
 - [Quick Start](https://github.github.com/gh-stack/getting-started/quick-start/)：前置条件、CLI/agent setup 与首个 stack。
 - [Working with Stacked PRs](https://github.github.com/gh-stack/guides/stacked-prs/)：push、submit、review、merge 与 sync。
 - [Typical Workflows](https://github.github.com/gh-stack/guides/workflows/)：日常提交、review feedback、sync、rebase 与既有 branch。
