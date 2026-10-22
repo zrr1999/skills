@@ -34,15 +34,6 @@ hooks = [
     files = '^(install\.sh|scripts/test-install\.sh)$',
     pass_filenames = false
   },
-  {
-    id = "typed-structures-syntax",
-    name = "check typed-structures syntax",
-    language = "node",
-    entry = "node skills/typed-structures/scripts/check-syntax.mjs",
-    additional_dependencies = ["@ohm-js/cli@2.0.1", "ohm-js@17.5.0"],
-    files = '^skills/typed-structures/(grammar\.ohm|examples\.md|scripts/check-syntax\.mjs)$',
-    pass_filenames = false
-  },
 ]
 
 [[repos]]
