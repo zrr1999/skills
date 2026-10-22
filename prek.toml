@@ -18,22 +18,8 @@ hooks = [
 [[repos]]
 repo = "local"
 hooks = [
-  {
-    id = "check-evals",
-    name = "check skill eval coverage",
-    language = "system",
-    entry = "bash scripts/check-evals.sh",
-    pass_filenames = false,
-    always_run = true
-  },
-  {
-    id = "installer-smoke",
-    name = "check skill installer",
-    language = "system",
-    entry = "bash scripts/test-install.sh",
-    files = '^(install\.sh|scripts/test-install\.sh)$',
-    pass_filenames = false
-  },
+  { id = "check-evals", name = "check skill eval coverage", language = "system", entry = "bash scripts/check-evals.sh", pass_filenames = false, always_run = true },
+  { id = "installer-smoke", name = "check skill installer", language = "system", entry = "bash scripts/test-install.sh", files = '^(install\.sh|scripts/test-install\.sh)$', pass_filenames = false },
 ]
 
 [[repos]]
@@ -45,7 +31,7 @@ hooks = [
 
 [[repos]]
 repo = "https://github.com/tombi-toml/tombi-pre-commit"
-rev = "v0.7.27"
+rev = "v1.9.0"
 hooks = [
   { id = "tombi-format", exclude = "^Cargo\\.lock$" },
   { id = "tombi-lint" },
