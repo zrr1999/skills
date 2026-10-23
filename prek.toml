@@ -24,7 +24,7 @@ hooks = [
 
 [[repos]]
 repo = "https://github.com/scop/pre-commit-shfmt"
-rev = "v3.13.1-1"
+rev = "v3.14.1-1"
 hooks = [
   { id = "shfmt", args = ["-i", "2"] },
 ]
@@ -39,14 +39,14 @@ hooks = [
 
 [[repos]]
 repo = "https://github.com/crate-ci/typos"
-rev = "v1.33.1"
+rev = "v1.51.1"
 hooks = [
   { id = "typos", args = ["--force-exclude"] },
 ]
 
 [[repos]]
 repo = "https://github.com/zrr1999/zendev"
-rev = "v0.0.6"
+rev = "v0.5.0"
 hooks = [
-  { id = "zendev-commit-msg" },
+  { id = "zendev-message-check", args = ["--profile", "zendev"] },
 ]
